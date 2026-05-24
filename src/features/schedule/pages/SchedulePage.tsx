@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createParticipantClient } from '@/data/createParticipantClient'
-import type { ScheduleDay } from '@/types/eventContent'
+import { createParticipantClient } from '@/shared/data/createParticipantClient'
+import type { ScheduleDay } from '@/shared/types/eventContent'
 
 export function SchedulePage() {
   const navigate = useNavigate()

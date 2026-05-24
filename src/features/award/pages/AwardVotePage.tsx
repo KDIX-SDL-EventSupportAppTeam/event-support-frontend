@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createParticipantClient } from '@/data/createParticipantClient'
-import { useAuthStore } from '@/stores/authStore'
-import type { LegacyBooth } from '@/types/legacyBooth'
-import type { VoteAwardCategory } from '@/types/voteAward'
+import { createParticipantClient } from '@/shared/data/createParticipantClient'
+import { useAuthStore } from '@/features/auth/store/authStore'
+import type { LegacyBooth } from '@/shared/types/legacyBooth'
+import type { VoteAwardCategory } from '@/shared/types/voteAward'
 
 export function AwardVotePage() {
   const navigate = useNavigate()

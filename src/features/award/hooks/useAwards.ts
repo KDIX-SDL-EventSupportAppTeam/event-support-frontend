@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { createEventDataSource } from '@/data/createEventDataSource'
-import type { Award } from '@/types/award'
+import { createEventDataSource } from '@/shared/data/createEventDataSource'
+import type { Award } from '@/shared/types/award'
 
 export function useAwards(eventId: string | undefined) {
   const [awards, setAwards] = useState<Award[]>([])

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createParticipantClient } from '@/data/createParticipantClient'
-import type { QaItem } from '@/types/eventContent'
+import { createParticipantClient } from '@/shared/data/createParticipantClient'
+import type { QaItem } from '@/shared/types/eventContent'
 
 export function QaPage() {
   const navigate = useNavigate()
