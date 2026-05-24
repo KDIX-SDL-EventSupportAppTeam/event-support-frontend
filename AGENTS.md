@@ -193,3 +193,9 @@ Cursor はユーザーの指示に従ってコードを書く。技術詳細は�
 - [ ] `.env.example` をマルチレポ向けに更新（`VITE_API_URL`・`VITE_SOCKET_URL` 等）
 - [ ] checkin の v1 API 呼び出しを `shared/api` または feature api 層に集約
 - [ ] `shared/data/` を feature 固有 API へ段階的に分割
+- [ ] `LegacyBooth` を解体し、ユビキタス言語に沿った `Booth` ドメイン型を導入する
+  - 旧 Vue 由来の `booth_name` / `booth_display_code` / `booth_emoji` 等を `name` / `manual_code` / `labels`（から派生）へ
+  - Flask 経由の API レスポンスは引き続き受けるためマッパーを残し、UI/ストア側で新ドメイン型へ統一
+- [ ] v1 API 側 `id` / `method` を `booth_id` / `checkin_method` に揃える（server とのすり合わせが必要）
+- [ ] `apiParticipantClient` で v1 `synced_at` を破棄せずに保持し、再送制御に活用する余地を確保
+- [ ] `ApiErrorCode` の他コード（`UNAUTHORIZED` / `NOT_FOUND` / `VALIDATION_ERROR`）も画面側で個別ハンドリングを検討
