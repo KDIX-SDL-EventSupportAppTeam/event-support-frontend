@@ -131,6 +131,15 @@ Vite プロキシ（`vite.config.ts`）: `/api/v1` → `127.0.0.1:3000`、`/api`
 **新規の ADR・テスト記録・作業メモは `docs/legacy/` ではなく、上記ディレクトリに追加する。**
 README / 本ファイルを正とし、legacy は参照用のみ。
 
+### AI エージェント向け
+
+| ファイル | 用途 |
+|----------|------|
+| [AGENTS.md](./AGENTS.md) | 詳細ガイド（正本） |
+| [CLAUDE.md](./CLAUDE.md) | Claude Code 向け要約 |
+| [.cursor/rules/](./.cursor/rules/) | Cursor Project Rules |
+| [docs/cursor/](./docs/cursor/) | テンプレート・更新用メモ |
+
 ### レガシー（参照のみ）
 
 モノレポ時代の設計・ADR・テスト記録は `docs/legacy/` に退避済み。新規追加はしない。
