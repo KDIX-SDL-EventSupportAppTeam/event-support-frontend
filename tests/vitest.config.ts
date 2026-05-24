@@ -8,6 +8,6 @@ export default defineConfig({
     passWithNoTests: false,
   },
   resolve: {
-    alias: { '@': path.resolve(__dirname, '../frontend/src') },
+    alias: { '@': path.resolve(__dirname, '../src') },
   },
 })

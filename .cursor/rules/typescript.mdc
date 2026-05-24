@@ -1,0 +1,20 @@
+---
+description: TypeScript・import・API 呼び出しの規約
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# typescript
+
+- TypeScript strict。`any` は避ける
+- パスエイリアス `@/` → `src/`（相対パスの深い `../../../` は避ける）
+- feature 間 import 禁止 → 共有コードは `shared/` に抽出
+- 移行期: 既存の `src/data/EventDataSource` / `ParticipantClient` 経由でデータ取得
+
+```typescript
+// ❌ BAD — feature 間の直接 import
+import { LoginForm } from '@/features/auth/components/LoginForm'
+
+// ✅ GOOD — shared 経由、または router 経由で結合
+import { Button } from '@/shared/components/Button'
+```

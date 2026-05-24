@@ -1,0 +1,23 @@
+---
+description: リポジトリの責務境界とアーキテクチャ原則
+alwaysApply: true
+---
+
+# project-core
+
+## 境界
+
+- UI 描画・ユーザー操作のみ。ビジネスロジック・集計は server 側
+- DB 直接アクセス禁止。`event-support-recommender` へ直接通信しない
+- API は `event-support-server` の `/api/v1` 経由
+
+## コード構成
+
+- 目標: `src/features/*` + `src/shared/*`
+- **feature 間の直接 import 禁止** — 共有は `shared/` へ
+- 大規模移動は feature 単位の PR で行う
+
+## ドキュメント
+
+- 正本: [AGENTS.md](../../AGENTS.md)
+- 更新タイミング・粒度: [cursor-workflow.mdc](./cursor-workflow.mdc)

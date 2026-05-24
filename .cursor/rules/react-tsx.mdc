@@ -1,0 +1,21 @@
+---
+description: React コンポーネントと UI 状態管理
+globs: **/*.tsx
+alwaysApply: false
+---
+
+# react-tsx
+
+- 関数コンポーネント + hooks。クラスコンポーネントは使わない
+- UI 状態は Zustand（feature 単位の store）。server 状態は API レスポンスを正とする
+- 画面コンポーネントに axios を直書きしない — `src/api/` または将来の `shared/api/` 経由
+- スタイル: Bootstrap + SCSS。共通は `src/styles/`、feature 固有は co-locate
+- 本番ビルドでは `src/mocks/` を参照しない
+
+```tsx
+// ❌ BAD — コンポーネント内で API 直叩き
+const res = await axios.get('/api/v1/events/...')
+
+// ✅ GOOD — api 層経由
+import { fetchBooths } from '@/api/...'
+```

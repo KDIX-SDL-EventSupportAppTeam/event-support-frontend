@@ -1,13 +1,96 @@
-# Event Support — フロントエンド
+# event-support-frontend
 
-React + TypeScript + Vite。旧 Vue アプリの画面・ルートを維持したリプレイス。詳細は `frontend/AGENTS.md`。
+参加者・運営向け UI。React 19 + TypeScript + Vite + Zustand + axios。
 
-```bash
-npm install
-npm run dev
-npm run build
+## アーキテクチャ
+
+### このリポジトリの責任
+
+参加者・運営向け UI の描画と、ユーザー操作のハンドリングを担う。
+ビジネスロジック・データ集計・推薦アルゴリズムは持たず、
+すべて `event-support-server` の API を経由して行う。
+
+**担当すること**
+
+- 全画面の React コンポーネント
+- Fastify `/api/v1` への API 呼び出し
+- Zustand による UI 状態管理
+- 認証トークン（JWT）の保持と付与
+- PWA・Service Worker・オフラインキュー（将来）
+- QR コードスキャン（将来）
+
+**担当しないこと**
+
+- ビジネスロジック・データ集計
+- データベースへの直接アクセス
+- 推薦アルゴリズム
+- `event-support-recommender` への直接通信（必ず server 経由）
+
+---
+
+### 他サービスとの関係
+
+```
+[event-support-frontend]
+        │
+        │ HTTPS REST API（/api/v1）
+        │ WebSocket（リアルタイム推薦・ダッシュボード）
+        ▼
+[event-support-server]
 ```
 
-ローカル用のログイン例は [docs/tests/fixtures/dummy-login.md](../docs/tests/fixtures/dummy-login.md)。**`npm run dev` では既定でモック認証**（バックエンド不要）。実 API に繋ぐときは `.env` に `VITE_MOCK_API=false`。
+---
 
-**データ:** 既定は `sample`。`VITE_DATA_SOURCE=api` ではブース・ホームが Fastify `/api/v1`（`VITE_MOCK_API=false` 時）。ガチャ・投票等はまだ旧 Flask 経路。詳細は `frontend/AGENTS.md`。
+### ディレクトリ構造
+
+```
+src/
+├── features/          # ドメインごとに完結したモジュール
+│   ├── auth/          # ログイン・新規登録・認証状態管理
+│   ├── booth/         # ブース一覧・詳細
+│   ├── checkin/       # チェックイン・評価・推薦表示
+│   ├── home/          # ホーム画面
+│   ├── survey/        # アンケート
+│   └── admin/         # 運営ダッシュボード（Issue #8）
+├── shared/            # 複数 feature をまたいで使うもの
+│   ├── api/           # axios クライアント・共通エラー処理
+│   ├── components/    # 汎用 UI コンポーネント
+│   ├── hooks/
+│   ├── types/
+│   └── lib/
+├── router/
+│   └── index.tsx
+├── styles/
+├── config/
+└── main.tsx
+```
+
+**原則：feature をまたいだ直接 import を禁止する。
+feature 間で共有が必要なものは `shared/` に置く。**
+
+---
+
+## ローカル開発
+
+```bash
+cp .env.example .env   # VITE_API_URL・VITE_SOCKET_URL を設定
+npm install
+npm run dev            # http://localhost:5173
+```
+
+実 API に接続する場合は `.env` に `VITE_DATA_SOURCE=api` を指定する。
+
+```bash
+npm run build          # 本番ビルド
+npm run preview        # ビルド成果物のプレビュー
+npm run lint           # ESLint
+```
+
+---
+
+## 関連リポジトリ
+
+| リポジトリ | 役割 |
+|---|---|
+| `event-support-server` | REST API・WebSocket |
+| `event-support-recommender` | 推薦エンジン（server 経由） |
