@@ -28,7 +28,7 @@ export function CheckInPage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
   const isV1Flow = resolveEventDataSourceMode() === 'api'
 
-  const { booths, checkedInIds, loading: boothsLoading } = useLegacyBoothList(eventId, userId)
+  const { booths, checkedInBoothIds, loading: boothsLoading } = useLegacyBoothList(eventId, userId)
 
   const [step, setStep] = useState<Step>('booth')
   const [selectedBoothId, setSelectedBoothId] = useState(boothIdParam)
@@ -44,7 +44,7 @@ export function CheckInPage() {
     [booths, selectedBoothId],
   )
 
-  const alreadyCheckedIn = selectedBoothId ? checkedInIds.includes(selectedBoothId) : false
+  const alreadyCheckedIn = selectedBoothId ? checkedInBoothIds.includes(selectedBoothId) : false
 
   useEffect(() => {
     if (boothIdParam) setSelectedBoothId(boothIdParam)
@@ -203,7 +203,7 @@ export function CheckInPage() {
       ) : (
         <div className="checkin-booth-picker d-grid gap-2 mb-4">
           {booths.map((booth) => {
-            const checked = checkedInIds.includes(booth.booth_id)
+            const checked = checkedInBoothIds.includes(booth.booth_id)
             const active = selectedBoothId === booth.booth_id
             return (
               <button

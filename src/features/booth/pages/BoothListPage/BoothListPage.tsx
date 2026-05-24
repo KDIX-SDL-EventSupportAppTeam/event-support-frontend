@@ -9,21 +9,21 @@ export function BoothListPage() {
   const navigate = useNavigate()
   const eventId = useAuthStore((s) => s.user?.event_id)
   const userId = useAuthStore((s) => s.user?.id)
-  const { booths, checkedInIds, loading } = useLegacyBoothList(eventId, userId)
+  const { booths, checkedInBoothIds, loading } = useLegacyBoothList(eventId, userId)
   const [sortByCheckedIn, setSortByCheckedIn] = useState(false)
   const [selected, setSelected] = useState<LegacyBooth | null>(null)
 
   const sorted = useMemo(() => {
     if (!sortByCheckedIn) return booths
     return [...booths].sort((a, b) => {
-      const ac = checkedInIds.includes(a.booth_id) ? 1 : 0
-      const bc = checkedInIds.includes(b.booth_id) ? 1 : 0
+      const ac = checkedInBoothIds.includes(a.booth_id) ? 1 : 0
+      const bc = checkedInBoothIds.includes(b.booth_id) ? 1 : 0
       return bc - ac
     })
-  }, [booths, checkedInIds, sortByCheckedIn])
+  }, [booths, checkedInBoothIds, sortByCheckedIn])
 
   function isCheckedIn(id: string) {
-    return checkedInIds.includes(id)
+    return checkedInBoothIds.includes(id)
   }
 
   return (

@@ -14,7 +14,7 @@ export function HomePage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
   const userId = useAuthStore((s) => s.user?.id)
   const clearSession = useAuthStore((s) => s.clearSession)
-  const { grid, bingoCount, gachaponCoinsSpent, checkedInIds, loading, error } = useHomeBingoData(eventId, userId)
+  const { grid, bingoCount, gachaponCoinsSpent, checkedInBoothIds, loading, error } = useHomeBingoData(eventId, userId)
   const missingUserContext = !eventId || !userId
   const hasBoothCells = grid.some((c) => c !== null)
 
@@ -41,7 +41,7 @@ export function HomePage() {
   }, [])
 
   function isCheckedIn(boothId: string) {
-    return checkedInIds.includes(boothId)
+    return checkedInBoothIds.includes(boothId)
   }
 
   function openBoothDetail(booth: LegacyBooth) {
