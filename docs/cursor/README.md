@@ -22,6 +22,7 @@ AGENTS.md（正本）
 |----------|-------------|-------|------|
 | [cursor-workflow.mdc](../../.cursor/rules/cursor-workflow.mdc) | yes | — | 役割・コマンド・コミット・ドキュメント更新 |
 | [project-core.mdc](../../.cursor/rules/project-core.mdc) | yes | — | 境界・アーキテクチャ原則 |
+| [ubiquitous-language.mdc](../../.cursor/rules/ubiquitous-language.mdc) | yes | — | ドメイン用語の統一 |
 | [react-tsx.mdc](../../.cursor/rules/react-tsx.mdc) | no | `**/*.tsx` | React・Zustand・スタイル |
 | [typescript.mdc](../../.cursor/rules/typescript.mdc) | no | `**/*.{ts,tsx}` | TypeScript・import 規約 |
 | [tests.mdc](../../.cursor/rules/tests.mdc) | no | `tests/**/*.ts` | テスト配置・記録 |

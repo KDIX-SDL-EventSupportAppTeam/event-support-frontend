@@ -8,6 +8,7 @@ Project Rules の正本は [.cursor/rules/](../../../.cursor/rules/)（リポジ
 |----------|------|
 | `cursor-workflow.mdc` | Cursor の役割・コマンド・コミット・ドキュメント（alwaysApply） |
 | `project-core.mdc` | 境界・アーキテクチャ（alwaysApply） |
+| `ubiquitous-language.mdc` | ドメイン用語の統一（alwaysApply） |
 | `react-tsx.mdc` | React コンポーネント |
 | `typescript.mdc` | TypeScript 全般 |
 | `tests.mdc` | Vitest |
