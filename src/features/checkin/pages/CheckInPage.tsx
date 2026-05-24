@@ -7,6 +7,7 @@ import {
   type V1RecommendationBooth,
   type V1RecommendationsResponse,
 } from '@/shared/api/v1Participant'
+import { ApiError } from '@/shared/api/unwrap'
 import { createParticipantClient } from '@/shared/data/createParticipantClient'
 import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
 import { useLegacyBoothList } from '@/shared/hooks/useLegacyBoothList'
@@ -84,7 +85,11 @@ export function CheckInPage() {
         setStep('done')
       }
     } catch (e) {
-      setErrorMessage(formatClientError(e, 'チェックインに失敗しました'))
+      if (e instanceof ApiError && e.code === 'CONFLICT') {
+        setErrorMessage('このブースには既にチェックイン済みです。')
+      } else {
+        setErrorMessage(formatClientError(e, 'チェックインに失敗しました'))
+      }
     } finally {
       setSubmitting(false)
     }
