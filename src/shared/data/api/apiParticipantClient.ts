@@ -25,8 +25,8 @@ export class ApiParticipantClient implements ParticipantClient {
     })
     return {
       checkin_id: data.checkin_id,
-      checkedInBooth: {
-        id: data.booth.id,
+      booth: {
+        booth_id: data.booth.id,
         name: data.booth.name,
         emoji: DEFAULT_CHECKIN_EMOJI,
       },

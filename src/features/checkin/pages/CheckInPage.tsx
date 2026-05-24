@@ -7,6 +7,7 @@ import {
   type V1RecommendationBooth,
   type V1RecommendationsResponse,
 } from '@/shared/api/v1Participant'
+import { ApiError } from '@/shared/api/unwrap'
 import { createParticipantClient } from '@/shared/data/createParticipantClient'
 import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
 import { useLegacyBoothList } from '@/shared/hooks/useLegacyBoothList'
@@ -15,7 +16,7 @@ import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
 import { CheckInRecommendView } from '@/features/checkin/pages/CheckInRecommendView'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
-import type { CheckInResult } from '@/shared/types/voteAward'
+import type { CheckInResult } from '@/shared/types/checkin'
 
 type Step = 'booth' | 'rating' | 'recommend' | 'done'
 
@@ -28,7 +29,7 @@ export function CheckInPage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
   const isV1Flow = resolveEventDataSourceMode() === 'api'
 
-  const { booths, checkedInIds, loading: boothsLoading } = useLegacyBoothList(eventId, userId)
+  const { booths, checkedInBoothIds, loading: boothsLoading } = useLegacyBoothList(eventId, userId)
 
   const [step, setStep] = useState<Step>('booth')
   const [selectedBoothId, setSelectedBoothId] = useState(boothIdParam)
@@ -44,7 +45,7 @@ export function CheckInPage() {
     [booths, selectedBoothId],
   )
 
-  const alreadyCheckedIn = selectedBoothId ? checkedInIds.includes(selectedBoothId) : false
+  const alreadyCheckedIn = selectedBoothId ? checkedInBoothIds.includes(selectedBoothId) : false
 
   useEffect(() => {
     if (boothIdParam) setSelectedBoothId(boothIdParam)
@@ -84,7 +85,11 @@ export function CheckInPage() {
         setStep('done')
       }
     } catch (e) {
-      setErrorMessage(formatClientError(e, 'チェックインに失敗しました'))
+      if (e instanceof ApiError && e.code === 'CONFLICT') {
+        setErrorMessage('このブースには既にチェックイン済みです。')
+      } else {
+        setErrorMessage(formatClientError(e, 'チェックインに失敗しました'))
+      }
     } finally {
       setSubmitting(false)
     }
@@ -143,7 +148,7 @@ export function CheckInPage() {
   if (step === 'rating' && checkInResult) {
     return (
       <CheckInRatingModal
-        boothName={checkInResult.checkedInBooth.name}
+        boothName={checkInResult.booth.name}
         submitting={submitting}
         onSubmit={(r) => void handleRatingSubmit(r)}
         onSkip={() => void handleRatingSkip()}
@@ -172,9 +177,9 @@ export function CheckInPage() {
         <div className="result-ui-container">
           <img src="/icons/success.png" alt="" className="success-icon" />
           <h2 className="result-title">チェックイン完了！</h2>
-          <div className="booth-emoji-large">{checkInResult.checkedInBooth.emoji}</div>
+          <div className="booth-emoji-large">{checkInResult.booth.emoji}</div>
           <p className="result-message">
-            「{checkInResult.checkedInBooth.name}」への
+            「{checkInResult.booth.name}」への
             <br />
             チェックインが完了しました。
           </p>
@@ -203,7 +208,7 @@ export function CheckInPage() {
       ) : (
         <div className="checkin-booth-picker d-grid gap-2 mb-4">
           {booths.map((booth) => {
-            const checked = checkedInIds.includes(booth.booth_id)
+            const checked = checkedInBoothIds.includes(booth.booth_id)
             const active = selectedBoothId === booth.booth_id
             return (
               <button

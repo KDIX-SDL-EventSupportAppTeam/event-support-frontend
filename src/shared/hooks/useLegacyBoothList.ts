@@ -5,14 +5,14 @@ import type { LegacyBooth } from '@/shared/types/legacyBooth'
 
 export function useLegacyBoothList(eventId: string | undefined, userId: string | undefined) {
   const [booths, setBooths] = useState<LegacyBooth[]>([])
-  const [checkedInIds, setCheckedInIds] = useState<string[]>([])
+  const [checkedInBoothIds, setCheckedInBoothIds] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     if (!eventId || !userId) {
       setBooths([])
-      setCheckedInIds([])
+      setCheckedInBoothIds([])
       return
     }
     setLoading(true)
@@ -24,12 +24,12 @@ export function useLegacyBoothList(eventId: string | undefined, userId: string |
         ds.getCheckedInBoothIds(eventId, userId),
       ])
       setBooths(b)
-      setCheckedInIds(c)
+      setCheckedInBoothIds(c)
     } catch (e) {
       const message = formatClientError(e, 'データの取得に失敗しました')
       setError(message)
       setBooths([])
-      setCheckedInIds([])
+      setCheckedInBoothIds([])
     } finally {
       setLoading(false)
     }
@@ -39,5 +39,5 @@ export function useLegacyBoothList(eventId: string | undefined, userId: string |
     void load()
   }, [load])
 
-  return { booths, checkedInIds, loading, error, reload: load }
+  return { booths, checkedInBoothIds, loading, error, reload: load }
 }

@@ -8,7 +8,7 @@ export function useHomeBingoData(eventId: string | undefined, userId: string | u
   const [grid, setGrid] = useState<BingoGridCell[]>([])
   const [bingoCount, setBingoCount] = useState(0)
   const [gachaponCoinsSpent, setGachaponCoinsSpent] = useState(0)
-  const [checkedInIds, setCheckedInIds] = useState<string[]>([])
+  const [checkedInBoothIds, setCheckedInBoothIds] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -38,7 +38,7 @@ export function useHomeBingoData(eventId: string | undefined, userId: string | u
           setGrid(g)
           setBingoCount(c)
           setGachaponCoinsSpent(s)
-          setCheckedInIds(chk)
+          setCheckedInBoothIds(chk)
         }
       } catch (e) {
         if (!cancelled) {
@@ -54,5 +54,5 @@ export function useHomeBingoData(eventId: string | undefined, userId: string | u
     }
   }, [eventId, userId])
 
-  return { grid, bingoCount, gachaponCoinsSpent, checkedInIds, loading, error }
+  return { grid, bingoCount, gachaponCoinsSpent, checkedInBoothIds, loading, error }
 }
