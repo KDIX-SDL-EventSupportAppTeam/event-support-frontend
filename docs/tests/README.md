@@ -70,10 +70,10 @@ YYYY-MM-DD-kebab-case-summary.md
 
 | テストコード | 種別 | 主な対象（src） |
 |--------------|------|-----------------|
-| [tests/unit/api-unwrap.test.ts](../../tests/unit/api-unwrap.test.ts) | unit | `src/api/unwrap.ts` |
-| [tests/unit/auth-mock.test.ts](../../tests/unit/auth-mock.test.ts) | unit | `src/mocks/authMock.ts`, `src/mocks/devDummyCredentials.ts` |
-| [tests/unit/bingo-random.test.ts](../../tests/unit/bingo-random.test.ts) | unit | `src/data/sample/bingoRandom.ts` |
-| [tests/unit/sample-event-data.test.ts](../../tests/unit/sample-event-data.test.ts) | unit | `src/data/sample/SampleEventData.ts`, `src/data/createEventDataSource.ts` |
+| [tests/unit/api-unwrap.test.ts](../../tests/unit/api-unwrap.test.ts) | unit | `src/shared/api/unwrap.ts` |
+| [tests/unit/auth-mock.test.ts](../../tests/unit/auth-mock.test.ts) | unit | `src/features/auth/mocks/authMock.ts`, `devDummyCredentials.ts` |
+| [tests/unit/bingo-random.test.ts](../../tests/unit/bingo-random.test.ts) | unit | `src/shared/data/sample/bingoRandom.ts` |
+| [tests/unit/sample-event-data.test.ts](../../tests/unit/sample-event-data.test.ts) | unit | `src/shared/data/sample/SampleEventData.ts`, `createEventDataSource.ts` |
 | [tests/integration/frontend-package.test.ts](../../tests/integration/frontend-package.test.ts) | integration | ルート `package.json`（build スクリプト） |
 
 新規テストを追加したら、この表も更新する。
@@ -84,7 +84,7 @@ YYYY-MM-DD-kebab-case-summary.md
 
 | 日付 | ファイル | 概要 | テストコード |
 |------|----------|------|--------------|
-| — | — | （まだなし） | — |
+| 2026-05-24 | [runs/2026-05-24-features-shared-refactor.md](./runs/2026-05-24-features-shared-refactor.md) | features/shared 移行後の lint/build/test | 全 unit + integration |
 
 ---
 
