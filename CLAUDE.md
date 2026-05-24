@@ -28,12 +28,17 @@ Claude Code 向けの役割定義。プロジェクトの技術詳細・アー�
 - **可読性** — ファイル名・配置から責務が推測できる構成にする。「どこに何があるか」を迷わせない
 - **一貫性** — [AGENTS.md](./AGENTS.md) の目標構成（`src/features/*` + `src/shared/*`）に沿う。既存の旧構成（`src/pages/` 等）との移行方針も明示する
 
+## ユビキタス言語
+
+**[docs/ubiquitous-language.md](./docs/ubiquitous-language.md) を正とする。** 設計・要件定義の文書では必ずこの語彙を使う。曖昧な用語が出てきたらまずここを確認し、定義がない場合は追加を提案する。
+
 ## 参照ドキュメント
 
 | ファイル | いつ見るか |
 |----------|------------|
 | [AGENTS.md](./AGENTS.md) | 境界・データ層・開発・テスト・ドキュメント運用 |
 | [README.md](./README.md) | アーキテクチャ概要・関連リポジトリ |
+| [docs/ubiquitous-language.md](./docs/ubiquitous-language.md) | ドメイン用語の正本 |
 | [docs/adrs/](./docs/adrs/) | 過去の設計判断 |
 | [docs/orders/](./docs/orders/) | 作業指示・実装メモ |
 

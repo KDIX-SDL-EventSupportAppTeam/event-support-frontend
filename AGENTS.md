@@ -7,6 +7,10 @@ Cursor / AI エージェントがこのリポジトリで作業するときの�
 
 React 19 + TypeScript + Vite + Zustand + axios + Bootstrap（SCSS）。
 
+## ユビキタス言語
+
+**用語は [docs/ubiquitous-language.md](./docs/ubiquitous-language.md) を正とする。** 参加者 / ブース / チェックイン / 推薦などの呼び方をコード・ドキュメント・会話すべてで揃える。新語や変更は本ファイルではなく `docs/ubiquitous-language.md` を更新する。
+
 ## 境界（守ること）
 
 | やる | やらない |

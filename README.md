@@ -91,6 +91,12 @@ npm run lint           # ESLint
 
 ---
 
+## ユビキタス言語
+
+参加者・ブース・チェックイン・推薦などの用語は [docs/ubiquitous-language.md](./docs/ubiquitous-language.md) を正とする。コード・ドキュメント・会話すべてでこの語彙を統一して使う。
+
+---
+
 ## 関連リポジトリ
 
 | リポジトリ | 役割 |
