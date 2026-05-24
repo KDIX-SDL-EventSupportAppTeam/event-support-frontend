@@ -19,49 +19,59 @@ React 19 + TypeScript + Vite + Zustand + axios + Bootstrap（SCSS）。
 
 ## ディレクトリ
 
-### 目標構成
-
-README のとおり `src/features/*` + `src/shared/*`。
-**feature 間の直接 import は禁止。** 共有が必要なものは `shared/` に置く。
-
-各 feature の想定イメージ:
+### ディレクトリ構成
 
 ```
-features/auth/      pages, store, hooks
-features/booth/     pages, hooks, api（feature 固有）
-features/checkin/
-features/home/
-features/survey/
-features/admin/     運営ダッシュボード（Issue #8）
+src/
+├── features/
+│   ├── auth/          # ログイン・登録・認証（store, hooks, api, mocks）
+│   ├── home/          # ホーム・ビンゴ
+│   ├── booth/         # ブース一覧
+│   ├── checkin/       # チェックイン・評価・推薦
+│   ├── gachapon/      # ガチャポン
+│   ├── award/         # アワード投票
+│   ├── schedule/      # スケジュール
+│   ├── qa/            # Q&A
+│   └── admin/         # 運営（プレースホルダー）
+├── shared/
+│   ├── api/           # v1 / legacy HTTP クライアント
+│   ├── data/          # EventDataSource / ParticipantClient（移行期）
+│   ├── hooks/         # 複数 feature から使う hooks
+│   ├── types/         # 共通型
+│   ├── lib/           # ユーティリティ
+│   └── styles/        # グローバル SCSS
+├── router/
+│   └── index.tsx
+├── App.tsx
+└── main.tsx
 ```
 
-### 現状（移行中）
+**原則：feature 間の直接 import は禁止。** 共有は `shared/` に置く。
 
-モノレポから独立直後のため、旧構成が残っている。新規・改修コードは目標構成に寄せる。
-
-| 現状 | 移行先 |
-|---|---|
-| `src/pages/` | `src/features/*/pages/` |
-| `src/api/` | `src/shared/api/` |
-| `src/stores/` | 各 feature の store |
-| `src/hooks/`（汎用） | `src/shared/hooks/` |
-| `src/data/` | feature 固有 API + server 経由（段階的に廃止） |
-
-大規模なファイル移動は機能単位の PR で行い、1 PR で全体を動かさない。
+| feature | 主なパス |
+|---------|----------|
+| auth | `features/auth/{pages,store,hooks,api,mocks,config,types}` |
+| home | `features/home/{pages,hooks,styles}` |
+| booth | `features/booth/{pages,styles}` |
+| checkin | `features/checkin/pages` |
+| gachapon | `features/gachapon/pages` |
+| award | `features/award/{pages,hooks}` |
+| schedule / qa | `features/{schedule,qa}/pages` |
+| admin | `features/admin/pages` |
 
 ## データ層（移行期）
 
-`EventDataSource`（`src/data/EventDataSource.ts`）と `ParticipantClient`（`src/data/participantTypes.ts`）が画面から参照するデータ契約。
+`EventDataSource`（`src/shared/data/EventDataSource.ts`）と `ParticipantClient`（`src/shared/data/participantTypes.ts`）が画面から参照するデータ契約。
 `createEventDataSource()` / `createParticipantClient()` で実装を切り替える。
 
 | モード | 用途 | 実装 |
 |---|---|---|
-| `sample`（開発既定） | バックエンド不要で UI 確認 | `src/data/sample/` |
-| `api` | 実 server 接続 | `src/data/api/` |
+| `sample`（開発既定） | バックエンド不要で UI 確認 | `src/shared/data/sample/` |
+| `api` | 実 server 接続 | `src/shared/data/api/` |
 
-- **認証:** `src/api/auth.ts` — `VITE_MOCK_API=false` 時に `POST /api/v1/auth/login` 等（モックは `src/mocks/authMock.ts`）
-- **v1:** ブース・チェックイン等 — Fastify `/api/v1`
-- **legacy:** ガチャ・投票等 — 旧 Flask `/api`（段階的に v1 へ移行予定）
+- **認証:** `features/auth/api/auth.ts` — `VITE_MOCK_API=false` 時に `POST /api/v1/auth/login` 等（モックは `features/auth/mocks/`）
+- **v1:** ブース・チェックイン等 — `shared/api/v1Participant.ts`
+- **legacy:** ガチャ・投票等 — `shared/api/legacyParticipant.ts`（段階的に v1 へ移行予定）
 
 ## 開発
 
@@ -96,8 +106,8 @@ Vite プロキシ（`vite.config.ts`）: `/api/v1` → `127.0.0.1:3000`、`/api`
 - TypeScript strict。any は避ける
 - パスエイリアス `@/` → `src/`
 - feature 間 import 禁止 → 共有は `shared/` へ抽出
-- API 呼び出しは `shared/api`（移行後）または既存 `src/api/` 経由。画面コンポーネントに axios を直書きしない
-- スタイルは feature 固有を co-locate、共通は `src/styles/`
+- API 呼び出しは `shared/api` 経由。画面コンポーネントに axios を直書きしない
+- スタイル: feature 固有は `features/*/styles/`、共通は `shared/styles/`
 - 本番ビルド（`npm run build`）ではモックをバンドルしない
 
 ## テスト
@@ -177,4 +187,5 @@ Cursor はユーザーの指示に従ってコードを書く。技術詳細は�
 **PR を作成するたびに、このセクションを更新すること。** 完了した項目は削除し、次の PR で取り組む内容を書く。
 
 - [ ] `.env.example` をマルチレポ向けに更新（`VITE_API_URL`・`VITE_SOCKET_URL` 等）
-- [ ] `src/` を `features/` + `shared/` 構成へ段階的に移行（feature 単位の PR）
+- [ ] checkin の v1 API 呼び出しを `shared/api` または feature api 層に集約
+- [ ] `shared/data/` を feature 固有 API へ段階的に分割

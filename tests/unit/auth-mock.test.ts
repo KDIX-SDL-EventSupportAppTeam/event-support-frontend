@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { ApiError } from '@/api/unwrap'
-import { mockLogin, MOCK_DEV_JWT } from '@/mocks/authMock'
+import { ApiError } from '@/shared/api/unwrap'
+import { mockLogin, MOCK_DEV_JWT } from '@/features/auth/mocks/authMock'
 import {
   DEV_DUMMY_EMAIL,
   DEV_DUMMY_EVENT_ID,
   DEV_DUMMY_PASSWORD,
-} from '@/mocks/devDummyCredentials'
+} from '@/features/auth/mocks/devDummyCredentials'
 
 describe('mockLogin', () => {
   it('fixtures のダミーで成功する', async () => {

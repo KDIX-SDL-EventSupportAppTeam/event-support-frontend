@@ -47,21 +47,24 @@
 src/
 ├── features/          # ドメインごとに完結したモジュール
 │   ├── auth/          # ログイン・新規登録・認証状態管理
-│   ├── booth/         # ブース一覧・詳細
+│   ├── home/          # ホーム画面・ビンゴ
+│   ├── booth/         # ブース一覧
 │   ├── checkin/       # チェックイン・評価・推薦表示
-│   ├── home/          # ホーム画面
-│   ├── survey/        # アンケート
+│   ├── gachapon/      # ガチャポン
+│   ├── award/         # アワード投票
+│   ├── schedule/      # スケジュール
+│   ├── qa/            # Q&A
 │   └── admin/         # 運営ダッシュボード（Issue #8）
 ├── shared/            # 複数 feature をまたいで使うもの
 │   ├── api/           # axios クライアント・共通エラー処理
-│   ├── components/    # 汎用 UI コンポーネント
-│   ├── hooks/
-│   ├── types/
-│   └── lib/
+│   ├── data/          # EventDataSource / ParticipantClient（移行期）
+│   ├── hooks/         # 共通 hooks
+│   ├── types/         # 共通型
+│   ├── lib/           # ユーティリティ
+│   └── styles/        # グローバル SCSS
 ├── router/
 │   └── index.tsx
-├── styles/
-├── config/
+├── App.tsx
 └── main.tsx
 ```
 
