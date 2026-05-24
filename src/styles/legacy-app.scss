@@ -1,0 +1,30 @@
+$proto-red: #f84f35;
+$proto-orange: #f8730d;
+$proto-dark-orange: #f8920d;
+$primary: $proto-red;
+$secondary: $proto-dark-orange;
+
+@import 'bootstrap/scss/bootstrap';
+
+:root {
+  --color-accent-primary: #fdcc50;
+  --color-border: #000;
+  --color-background: #f8f9fa;
+}
+
+body {
+  background-color: #fff;
+}
+
+.action-button {
+  border: 2px solid $gray-400;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+
+  span {
+    color: #212529;
+  }
+
+  &:hover {
+    border-color: $gray-500;
+  }
+}

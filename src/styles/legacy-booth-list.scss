@@ -1,0 +1,99 @@
+.legacy-booth-list {
+  .container {
+    max-width: 600px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  .main-title {
+    font-weight: bold;
+  }
+
+  .sort-container {
+    text-align: right;
+  }
+
+  .sort-button {
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.75rem;
+  }
+
+  .sort-button.active {
+    background-color: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+  }
+
+  .booth-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .booth-card {
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+  }
+
+  .booth-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .booth-card.checked-in {
+    background-color: #e9ecef;
+  }
+
+  .card-body {
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .booth-identity-area {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    gap: 0.5rem;
+  }
+
+  .booth-number-badge {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .booth-emoji {
+    font-size: 1.5rem;
+  }
+
+  .booth-content {
+    flex: 1;
+  }
+
+  .booth-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .home-button {
+    display: block;
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: #fff;
+  }
+}

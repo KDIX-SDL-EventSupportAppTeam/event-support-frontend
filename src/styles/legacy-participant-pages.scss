@@ -1,0 +1,500 @@
+/* ガチャポン・チェックイン・アワード投票・スケジュール・Q&A（旧 Vue 相当） */
+
+.gachapon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 1rem;
+}
+
+.gachapon-container .card {
+  max-width: 500px;
+  width: 100%;
+}
+
+.gachapon-container .btn-proceed {
+  background-color: #fdcc50;
+  border-color: #000;
+  color: #000;
+  font-weight: bold;
+  padding: 0.8rem 0;
+  font-size: 1.3rem;
+}
+
+.gachapon-container .btn-proceed:hover:not(:disabled) {
+  background-color: #f8c030;
+  border-color: #000;
+}
+
+.gachapon-container .btn-proceed:disabled {
+  opacity: 0.7;
+}
+
+.gachapon-container .btn-back {
+  background-color: #fff;
+  border-color: #000;
+  font-weight: bold;
+  padding: 0.8rem 0;
+  font-size: 1.3rem;
+}
+
+.gachapon-container .btn-back:hover {
+  background-color: #d2d5d8;
+  border-color: #545b62;
+}
+
+.gachapon-container .coins-display {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.gachapon-container .coins-display img {
+  height: 40px;
+}
+
+.reader-container {
+  padding: 1rem;
+  text-align: center;
+}
+
+.scanner-ui-container,
+.result-ui-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.scanner-instruction {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #000;
+}
+
+#qr-reader {
+  width: 100%;
+  max-width: 300px;
+  margin: auto;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+}
+
+#qr-reader video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+.success-icon,
+.cooldown-icon {
+  width: 56px;
+  height: auto;
+}
+
+.result-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.result-message {
+  font-size: 1.1rem;
+}
+
+.cooldown-timer {
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.checkin-home-button {
+  padding: 0.6rem 2.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #fdcc50;
+  color: #000;
+  border: 1px solid #000;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.checkin-error-box {
+  padding: 1rem;
+  margin-top: 1rem;
+  border-radius: 8px;
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.booth-emoji-large {
+  font-size: 3rem;
+}
+
+.checkin-booth-option {
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  background: #fff;
+
+  &.active {
+    border-color: #000;
+    background: #fff9e6;
+  }
+}
+
+.checkin-rating-modal {
+  max-width: 360px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.checkin-rating-stars {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.checkin-star {
+  font-size: 2rem;
+  color: #ccc;
+  text-decoration: none;
+  padding: 0 0.15rem;
+
+  &.active {
+    color: #fdcc50;
+  }
+}
+
+.checkin-recommend-card {
+  border: 2px solid #000;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+/* スケジュール */
+.schedule-page.container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.schedule-page .main-title {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+}
+
+.schedule-page .day-container {
+  background-color: #fff;
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-page .day-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.schedule-page .schedule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.schedule-page .schedule-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  position: relative;
+  padding-left: 2rem;
+}
+
+.schedule-page .schedule-item.bg-yellow {
+  background-color: #fffbeb;
+}
+
+.schedule-page .schedule-item.bg-red {
+  background-color: #fff2f2;
+}
+
+.schedule-page .schedule-item .time-bar {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: calc(100% - 10px);
+  border-radius: 3px;
+}
+
+.schedule-page .schedule-item.bg-yellow .time-bar {
+  background-color: #ffca28;
+}
+
+.schedule-page .schedule-item.bg-red .time-bar {
+  background-color: #ef5350;
+}
+
+.schedule-page .time {
+  font-weight: bold;
+  margin-right: 1rem;
+  min-width: 60px;
+  text-align: left;
+}
+
+.schedule-page .event-title {
+  font-weight: 500;
+  flex-grow: 1;
+  text-align: left;
+}
+
+.schedule-page .footer {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+/* Q&A */
+.qa-page.container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.qa-page .main-title {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 2.5rem;
+}
+
+.qa-page .qa-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.qa-page .question,
+.qa-page .answer {
+  display: flex;
+  align-items: flex-start;
+}
+
+.qa-page .q-icon,
+.qa-page .a-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #fff;
+  margin-right: 0.8rem;
+}
+
+.qa-page .q-icon {
+  background-color: #fa8072;
+}
+
+.qa-page .a-icon {
+  background-color: #333;
+}
+
+.qa-page .question p,
+.qa-page .answer p {
+  margin: 0;
+  padding-top: 2px;
+  white-space: pre-line;
+  text-align: left;
+}
+
+.qa-page .answer {
+  margin-top: 1rem;
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.qa-page .footer {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+/* アワード投票 */
+.award-vote-page .btn-custom-secondary {
+  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #000;
+  font-size: 0.9rem;
+  font-weight: bold;
+  background-color: #fdcc50;
+  color: #333;
+}
+
+.award-vote-page .vote-result-container {
+  border: 2px solid #000;
+  border-radius: 20px;
+  padding: 2rem 1.5rem;
+  background-color: #fff;
+}
+
+.award-vote-page .vote-result-header h1 {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.award-vote-page .vote-result-list {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.award-vote-page .vote-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.award-vote-page .award-name {
+  flex: 5;
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.award-vote-page .award-arrow {
+  flex: 1;
+  font-weight: bold;
+  font-size: 0.65rem;
+}
+
+.award-vote-page .booth-name-box {
+  flex: 5;
+  border: 2px solid;
+  border-radius: 15px;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: bold;
+  text-align: center;
+  background-color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.award-vote-page .award-title-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 0.25rem;
+}
+
+.award-vote-page .award-underline {
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  opacity: 0.3;
+  z-index: 0;
+}
+
+.award-vote-page .award-item .form-label {
+  position: relative;
+  z-index: 1;
+  font-size: 1rem;
+  margin-bottom: 0.1rem;
+}
+
+.award-vote-page .bg-pink {
+  background-color: #e91e63;
+}
+.award-vote-page .bg-purple {
+  background-color: #9c27b0;
+}
+.award-vote-page .bg-green {
+  background-color: #4caf50;
+}
+.award-vote-page .bg-yellow {
+  background-color: #ffeb3b;
+}
+.award-vote-page .bg-orange {
+  background-color: #ff9800;
+}
+.award-vote-page .bg-deep-pink {
+  background-color: #f06292;
+}
+.award-vote-page .bg-cyan {
+  background-color: #00bcd4;
+}
+.award-vote-page .bg-gray {
+  background-color: #757575;
+}
+
+.award-vote-page .color-pink {
+  color: #e91e63;
+}
+.award-vote-page .border-pink {
+  border-color: #e91e63;
+}
+.award-vote-page .color-purple {
+  color: #9c27b0;
+}
+.award-vote-page .border-purple {
+  border-color: #9c27b0;
+}
+.award-vote-page .color-green {
+  color: #4caf50;
+}
+.award-vote-page .border-green {
+  border-color: #4caf50;
+}
+.award-vote-page .color-yellow {
+  color: #f9a825;
+}
+.award-vote-page .border-yellow {
+  border-color: #fbc02d;
+}
+.award-vote-page .color-orange {
+  color: #ff9800;
+}
+.award-vote-page .border-orange {
+  border-color: #ff9800;
+}
+.award-vote-page .color-deep-pink {
+  color: #f06292;
+}
+.award-vote-page .border-deep-pink {
+  border-color: #f06292;
+}
+.award-vote-page .color-cyan {
+  color: #00bcd4;
+}
+.award-vote-page .border-cyan {
+  border-color: #00bcd4;
+}
+.award-vote-page .color-gray {
+  color: #757575;
+}
+.award-vote-page .border-gray {
+  border-color: #757575;
+}
+
+.award-vote-page .award-item .form-select {
+  border-radius: 10px;
+}

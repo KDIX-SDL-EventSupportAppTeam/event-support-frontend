@@ -1,0 +1,35 @@
+# --- Environment & secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Node / Vite ---
+node_modules/
+dist/
+.vite/
+
+# Vitest (tests/)
+tests/node_modules/
+tests/coverage/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- IDE & editors ---
+.claude/
+.cursor/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini

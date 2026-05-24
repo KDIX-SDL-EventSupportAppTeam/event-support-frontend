@@ -1,0 +1,22 @@
+runtime: nodejs22
+env: standard
+
+automatic_scaling:
+  min_instances: 0
+  max_instances: 1
+
+handlers:
+# 1. /assets ディレクトリ内の静的ファイル（JS, CSSなど）を配信します
+- url: /assets
+  static_dir: dist/assets
+
+# 2. 拡張子で終わる静的ファイル（例: /favicon.ico）を配信します
+#    URLの途中にドットが含まれるAPIパス（パスワードリセット等）と衝突しないよう、正規表現を修正しました。
+- url: /(.*\.(css|js|ico|png|jpg|jpeg|gif|svg|json|txt|webmanifest))$
+  static_files: dist/\1
+  upload: dist/(.*\.(css|js|ico|png|jpg|jpeg|gif|svg|json|txt|webmanifest))$
+
+# 3. 上記のいずれにも一致しない、すべてのリクエストをindex.htmlに転送します
+- url: /.*
+  static_files: dist/index.html
+  upload: dist/index.html
