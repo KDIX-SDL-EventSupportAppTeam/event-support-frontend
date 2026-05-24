@@ -1,5 +1,5 @@
-import type { V1RecommendationBooth } from '@/api/v1Participant'
-import { v1RecommendationReasonLabel } from '@/api/v1Participant'
+import type { V1RecommendationBooth } from '@/shared/api/v1Participant'
+import { v1RecommendationReasonLabel } from '@/shared/api/v1Participant'
 
 type Props = {
   booths: V1RecommendationBooth[]

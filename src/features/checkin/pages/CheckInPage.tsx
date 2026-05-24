@@ -6,16 +6,16 @@ import {
   postV1SelectRecommendation,
   type V1RecommendationBooth,
   type V1RecommendationsResponse,
-} from '@/api/v1Participant'
-import { createParticipantClient } from '@/data/createParticipantClient'
-import { resolveEventDataSourceMode } from '@/data/createEventDataSource'
-import { useLegacyBoothList } from '@/hooks/useLegacyBoothList'
-import { formatClientError } from '@/lib/formatClientError'
-import { CheckInRatingModal } from '@/pages/checkin/CheckInRatingModal'
-import { CheckInRecommendView } from '@/pages/checkin/CheckInRecommendView'
-import { useAuthStore } from '@/stores/authStore'
-import type { LegacyBooth } from '@/types/legacyBooth'
-import type { CheckInResult } from '@/types/voteAward'
+} from '@/shared/api/v1Participant'
+import { createParticipantClient } from '@/shared/data/createParticipantClient'
+import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
+import { useLegacyBoothList } from '@/shared/hooks/useLegacyBoothList'
+import { formatClientError } from '@/shared/lib/formatClientError'
+import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
+import { CheckInRecommendView } from '@/features/checkin/pages/CheckInRecommendView'
+import { useAuthStore } from '@/features/auth/store/authStore'
+import type { LegacyBooth } from '@/shared/types/legacyBooth'
+import type { CheckInResult } from '@/shared/types/voteAward'
 
 type Step = 'booth' | 'rating' | 'recommend' | 'done'
 
