@@ -43,3 +43,14 @@ alwaysApply: true
 
 - 正本は **AGENTS.md** と **docs/**（`adrs` / `tests` / `orders`）
 - [AGENTS.md](../../AGENTS.md) に既にある内容を rule に重複して書かない
+
+## ルールの追加・更新
+
+繰り返し適用したい規約やパターンが生まれたら、**必要に応じて** `.cursor/rules/*.mdc` を追加する。
+
+1. [docs/cursor/rules/_template.mdc](../../docs/cursor/rules/_template.mdc) をコピー
+2. 関心ごとに分割（1 rule = 1 トピック、50 行以内を目安）
+3. [docs/cursor/README.md](../../docs/cursor/README.md) の一覧を更新
+4. 設計判断を伴う場合は `docs/adrs/` にも ADR を検討
+
+Claude 向けの設計方針は [CLAUDE.md](../../CLAUDE.md) へ。実装規約は Cursor rule へ。

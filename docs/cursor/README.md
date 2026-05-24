@@ -33,6 +33,18 @@ AGENTS.md（正本）
 | [CLAUDE.md.template](./CLAUDE.md.template) | CLAUDE.md 更新用 |
 | [rules/_template.mdc](./rules/_template.mdc) | 新規 Cursor rule 用 |
 
+## ルールの追加・更新
+
+Claude / Cursor ともに、繰り返し参照する方針が生まれたら **必要に応じて** rule を追加する。
+
+| ツール | 追加先 | 一覧の更新 |
+|--------|--------|------------|
+| Claude Code | [CLAUDE.md](../../CLAUDE.md) または `docs/adrs/` | ADR 一覧 |
+| Cursor | `.cursor/rules/*.mdc` | 本ファイル「Cursor rules 一覧」 |
+
+- 1 トピック = 1 rule / 1 ADR。詳細は [AGENTS.md](../../AGENTS.md) に書き、rule には要約のみ
+- テンプレート: [rules/_template.mdc](./rules/_template.mdc)
+
 ## 作業記録
 
 - [2026-05-24-claude-cursor-agent-docs.md](../orders/2026-05-24-claude-cursor-agent-docs.md)

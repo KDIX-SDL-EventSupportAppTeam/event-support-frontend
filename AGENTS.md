@@ -153,9 +153,14 @@ Cursor はユーザーの指示に従ってコードを書く。技術詳細は�
 
 詳細: [.cursor/rules/cursor-workflow.mdc](./.cursor/rules/cursor-workflow.mdc)
 
+- 繰り返し適用する規約は **必要に応じて** `.cursor/rules/*.mdc` を追加し、[docs/cursor/README.md](./docs/cursor/README.md) を更新
+
 #### Claude Code（設計担当）
 
 設計・要件定義が主務。明示的な指示がない限りコードを書かない。詳細: [CLAUDE.md](./CLAUDE.md)
+
+- 繰り返し参照する設計方針は **必要に応じて** [CLAUDE.md](./CLAUDE.md) または `docs/adrs/` に追加
+- Cursor 実装時の規約は `.cursor/rules/` への追加を提案
 
 ### レガシー（参照のみ）
 
