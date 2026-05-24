@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { unwrapApiData, ApiError } from '@/api/unwrap'
-import type { ApiResponse } from '@/types/api'
+import { unwrapApiData, ApiError } from '@/shared/api/unwrap'
+import type { ApiResponse } from '@/shared/types/api'
 
 describe('unwrapApiData', () => {
   it('成功レスポンスから data を取り出す', () => {

@@ -1,8 +1,8 @@
 import axios from 'axios'
-import { legacyApi } from '@/api/legacyHttp'
-import type { Award } from '@/types/award'
-import type { BingoGridCell, LegacyBooth } from '@/types/legacyBooth'
-import type { CheckInResult, VoteAwardCategory } from '@/types/voteAward'
+import { legacyApi } from '@/shared/api/legacyHttp'
+import type { Award } from '@/shared/types/award'
+import type { BingoGridCell, LegacyBooth } from '@/shared/types/legacyBooth'
+import type { CheckInResult, VoteAwardCategory } from '@/shared/types/voteAward'
 
 /** 同一オリジンの `/checkin` 等（Vite プロキシで Flask へ） */
 export const legacySiteApi = axios.create({

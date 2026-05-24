@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { ApiError } from '@/api/unwrap'
+import { ApiError } from '@/shared/api/unwrap'
 
 /** API 呼び出し失敗を画面向けメッセージに変換する */
 export function formatClientError(e: unknown, fallback: string): string {

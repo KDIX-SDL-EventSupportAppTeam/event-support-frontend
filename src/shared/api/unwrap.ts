@@ -1,4 +1,4 @@
-import type { ApiResponse } from '@/types/api'
+import type { ApiResponse } from '@/shared/types/api'
 
 export class ApiError extends Error {
   constructor(

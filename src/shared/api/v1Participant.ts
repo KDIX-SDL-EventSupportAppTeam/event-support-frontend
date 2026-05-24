@@ -1,6 +1,6 @@
-import { apiClient } from '@/api/client'
-import { unwrapApiData } from '@/api/unwrap'
-import type { ApiResponse } from '@/types/api'
+import { apiClient } from '@/shared/api/client'
+import { unwrapApiData } from '@/shared/api/unwrap'
+import type { ApiResponse } from '@/shared/types/api'
 
 export type V1BoothListItem = {
   id: string
