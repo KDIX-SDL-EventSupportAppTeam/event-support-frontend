@@ -15,7 +15,7 @@ import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
 import { CheckInRecommendView } from '@/features/checkin/pages/CheckInRecommendView'
 import { useAuthStore } from '@/features/auth/store/authStore'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
-import type { CheckInResult } from '@/shared/types/voteAward'
+import type { CheckInResult } from '@/shared/types/checkin'
 
 type Step = 'booth' | 'rating' | 'recommend' | 'done'
 
@@ -143,7 +143,7 @@ export function CheckInPage() {
   if (step === 'rating' && checkInResult) {
     return (
       <CheckInRatingModal
-        boothName={checkInResult.checkedInBooth.name}
+        boothName={checkInResult.booth.name}
         submitting={submitting}
         onSubmit={(r) => void handleRatingSubmit(r)}
         onSkip={() => void handleRatingSkip()}
@@ -172,9 +172,9 @@ export function CheckInPage() {
         <div className="result-ui-container">
           <img src="/icons/success.png" alt="" className="success-icon" />
           <h2 className="result-title">チェックイン完了！</h2>
-          <div className="booth-emoji-large">{checkInResult.checkedInBooth.emoji}</div>
+          <div className="booth-emoji-large">{checkInResult.booth.emoji}</div>
           <p className="result-message">
-            「{checkInResult.checkedInBooth.name}」への
+            「{checkInResult.booth.name}」への
             <br />
             チェックインが完了しました。
           </p>

@@ -2,7 +2,8 @@ import axios from 'axios'
 import { legacyApi } from '@/shared/api/legacyHttp'
 import type { Award } from '@/shared/types/award'
 import type { BingoGridCell, LegacyBooth } from '@/shared/types/legacyBooth'
-import type { CheckInResult, VoteAwardCategory } from '@/shared/types/voteAward'
+import type { CheckInResult } from '@/shared/types/checkin'
+import type { VoteAwardCategory } from '@/shared/types/voteAward'
 
 /** 同一オリジンの `/checkin` 等（Vite プロキシで Flask へ） */
 export const legacySiteApi = axios.create({
@@ -86,8 +87,8 @@ export async function postLegacyCheckIn(boothId: string, userId: string): Promis
   const booth = data.checkedInBooth
   return {
     checkin_id: `legacy-${boothId}`,
-    checkedInBooth: {
-      id: boothId,
+    booth: {
+      booth_id: boothId,
       name: booth.name,
       emoji: booth.emoji ?? '🎪',
     },

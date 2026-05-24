@@ -13,7 +13,7 @@ import {
   writeSampleVotes,
 } from '@/shared/data/sample/sampleSession'
 import { SAMPLE_VOTE_AWARDS } from '@/shared/data/sample/sampleVoteAwards'
-import type { CheckInResult } from '@/shared/types/voteAward'
+import type { CheckInResult } from '@/shared/types/checkin'
 
 export class SampleParticipantClient implements ParticipantClient {
   private readonly sample = new SampleEventData()
@@ -51,8 +51,8 @@ export class SampleParticipantClient implements ParticipantClient {
 
     return {
       checkin_id: `sample-${booth.booth_id}`,
-      checkedInBooth: {
-        id: booth.booth_id,
+      booth: {
+        booth_id: booth.booth_id,
         name: booth.booth_name,
         emoji: booth.booth_emoji,
       },
