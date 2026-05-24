@@ -1,7 +1,7 @@
-import { ApiError } from '@/api/unwrap'
-import type { LoginResult } from '@/types/auth'
-import { DEV_DUMMY_EVENT_ID } from '@/config/eventIds'
-import { DEV_DUMMY_EMAIL, DEV_DUMMY_PASSWORD } from '@/mocks/devDummyCredentials'
+import { ApiError } from '@/shared/api/unwrap'
+import type { LoginResult } from '@/features/auth/types/auth'
+import { DEV_DUMMY_EVENT_ID } from '@/features/auth/config/eventIds'
+import { DEV_DUMMY_EMAIL, DEV_DUMMY_PASSWORD } from '@/features/auth/mocks/devDummyCredentials'
 
 /** `npm run dev` では既定で有効。実 API に繋ぐときは `.env` に `VITE_MOCK_API=false`。本番ビルドでは常に無効 */
 export function isMockAuthEnabled(): boolean {

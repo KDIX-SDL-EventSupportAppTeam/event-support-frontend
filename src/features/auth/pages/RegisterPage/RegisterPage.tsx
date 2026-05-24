@@ -1,13 +1,13 @@
 import { FormEvent, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { resolveLoginEventId } from '@/config/eventIds'
-import { useAuth } from '@/hooks/useAuth'
+import { resolveLoginEventId } from '@/features/auth/config/eventIds'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import {
   DEV_API_DISPLAY_NAME,
   resolveDevLoginEmail,
   resolveDevLoginPassword,
-} from '@/mocks/devDummyCredentials'
-import { useAuthStore } from '@/stores/authStore'
+} from '@/features/auth/mocks/devDummyCredentials'
+import { useAuthStore } from '@/features/auth/store/authStore'
 
 export function RegisterPage() {
   const token = useAuthStore((s) => s.token)

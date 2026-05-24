@@ -1,9 +1,9 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
-import { useAuth } from '@/hooks/useAuth'
-import { resolveLoginEventId } from '@/config/eventIds'
-import { resolveDevLoginEmail, resolveDevLoginPassword } from '@/mocks/devDummyCredentials'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuth } from '@/features/auth/hooks/useAuth'
+import { resolveLoginEventId } from '@/features/auth/config/eventIds'
+import { resolveDevLoginEmail, resolveDevLoginPassword } from '@/features/auth/mocks/devDummyCredentials'
+import { useAuthStore } from '@/features/auth/store/authStore'
 
 export function LoginPage() {
   const token = useAuthStore((s) => s.token)

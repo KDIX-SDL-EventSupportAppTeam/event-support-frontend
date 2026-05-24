@@ -1,9 +1,9 @@
-import { apiClient } from '@/api/client'
-import { unwrapApiData } from '@/api/unwrap'
-import { isMockAuthEnabled, mockLogin, mockRegister } from '@/mocks/authMock'
-import type { LoginResult } from '@/types/auth'
+import { apiClient } from '@/shared/api/client'
+import { unwrapApiData } from '@/shared/api/unwrap'
+import { isMockAuthEnabled, mockLogin, mockRegister } from '@/features/auth/mocks/authMock'
+import type { LoginResult } from '@/features/auth/types/auth'
 
-export type { LoginResult } from '@/types/auth'
+export type { LoginResult } from '@/features/auth/types/auth'
 
 export async function login(
   eventId: string,

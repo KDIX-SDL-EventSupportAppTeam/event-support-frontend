@@ -1,4 +1,4 @@
-import { isMockAuthEnabled } from '@/mocks/authMock'
+import { isMockAuthEnabled } from '@/features/auth/mocks/authMock'
 
 /** `server` の db:seed と同一（docs/tests/fixtures/dummy-login.md） */
 export const SEED_DEV_EVENT_ID = '20000000-0000-4000-8000-000000000001'

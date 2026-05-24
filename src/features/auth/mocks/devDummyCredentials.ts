@@ -11,7 +11,7 @@ export const DEV_API_EMAIL = 'dev@example.com'
 export const DEV_API_PASSWORD = 'password123'
 export const DEV_API_DISPLAY_NAME = '開発用参加者'
 
-export { DEV_DUMMY_EVENT_ID, SEED_DEV_EVENT_ID } from '@/config/eventIds'
+export { DEV_DUMMY_EVENT_ID, SEED_DEV_EVENT_ID } from '@/features/auth/config/eventIds'
 
 export function resolveDevLoginEmail(): string {
   const fromEnv = import.meta.env.VITE_DEV_LOGIN_EMAIL?.trim()
