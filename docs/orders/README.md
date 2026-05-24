@@ -17,4 +17,5 @@ YYYY-MM-DD-kebab-case-summary.md
 
 | 日付 | ファイル | 概要 | 状態 |
 |------|----------|------|------|
-| 2026-05-24 | [2026-05-24-claude-cursor-agent-docs.md](./2026-05-24-claude-cursor-agent-docs.md) | CLAUDE.md・Cursor rules 整備 | 完了 |
+| 2026-05-24 | [2026-05-24-claude-cursor-agent-docs.md](./2026-05-24-claude-cursor-agent-docs.md) | CLAUDE.md 整備 | 完了 |
+| 2026-05-24 | [2026-05-24-cursor-workflow-rules.md](./2026-05-24-cursor-workflow-rules.md) | Cursor workflow rules 整備 | 完了 |

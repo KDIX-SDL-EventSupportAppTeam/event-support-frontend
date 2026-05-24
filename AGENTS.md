@@ -133,12 +133,29 @@ README / 本ファイルを正とし、legacy は参照用のみ。
 
 ### AI エージェント向け
 
-| ファイル | 用途 |
-|----------|------|
-| [AGENTS.md](./AGENTS.md) | 詳細ガイド（正本） |
-| [CLAUDE.md](./CLAUDE.md) | Claude Code 向け要約 |
-| [.cursor/rules/](./.cursor/rules/) | Cursor Project Rules |
-| [docs/cursor/](./docs/cursor/) | テンプレート・更新用メモ |
+| ファイル | 用途 | 役割 |
+|----------|------|------|
+| [AGENTS.md](./AGENTS.md) | 詳細ガイド（正本） | 人間・全 AI |
+| [CLAUDE.md](./CLAUDE.md) | Claude Code 向け | 設計・要件定義（コードは書かない） |
+| [.cursor/rules/](./.cursor/rules/) | Cursor Project Rules | **実装**（指示に従いコードを書く） |
+| [docs/cursor/](./docs/cursor/) | テンプレート・更新用メモ | — |
+
+#### Cursor（実装担当）
+
+Cursor はユーザーの指示に従ってコードを書く。技術詳細は本ファイル（AGENTS.md）を参照すること。
+
+| 項目 | 方針 |
+|------|------|
+| コマンド | 必要なものは自由に実行可。重大なバグ・ユーザー介入が必要な場合は中止して報告 |
+| コミット | **日本語**、後から確認しやすい**細かい粒度**（1 意図 = 1 コミット）。明示的な依頼がない限り勝手にコミットしない |
+| PR | タイトル・本文・コメントは**日本語**。作成時は「次にやること」を更新 |
+| ドキュメント | 作業区切りごとに **AGENTS.md** と **docs/**（`adrs` / `tests` / `orders`）を**細かく頻繁に**更新 |
+
+詳細: [.cursor/rules/cursor-workflow.mdc](./.cursor/rules/cursor-workflow.mdc)
+
+#### Claude Code（設計担当）
+
+設計・要件定義が主務。明示的な指示がない限りコードを書かない。詳細: [CLAUDE.md](./CLAUDE.md)
 
 ### レガシー（参照のみ）
 

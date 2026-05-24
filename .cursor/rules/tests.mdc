@@ -1,0 +1,17 @@
+---
+description: Vitest テストコードの置き場所と記録
+globs: tests/**/*.ts
+alwaysApply: false
+---
+
+# tests
+
+- テストコードは **`tests/` にまとめる**。`src/` 内に `*.test.ts` を置かない
+- `unit/` — モジュール単位、`integration/` — ビルド・構成のスモーク
+- `@/` エイリアスは `src/` を指す（`tests/vitest.config.ts` 参照）
+
+## テスト追加後
+
+1. `cd tests && npm test` を実行
+2. `docs/tests/runs/` に実行記録を残す（対象 `src/` と `tests/**/*.test.ts` のパスを記載）
+3. [docs/tests/README.md](../../docs/tests/README.md) の一覧を更新
