@@ -100,6 +100,17 @@ Vite プロキシ（`vite.config.ts`）: `/api/v1` → `127.0.0.1:3000`、`/api`
 - スタイルは feature 固有を co-locate、共通は `src/styles/`
 - 本番ビルド（`npm run build`）ではモックをバンドルしない
 
+## テスト
+
+| 場所 | 役割 |
+|------|------|
+| [`tests/`](./tests/) | Vitest のテストコード（`unit/`・`integration/`）。**ここにまとめる** |
+| [`docs/tests/`](./docs/tests/) | 実行記録（`runs/`）・フィクスチャ（`fixtures/`） |
+
+- `src/` 内に `*.test.ts` を置かない
+- テスト追加・実行後は [docs/tests/runs/_template.md](./docs/tests/runs/_template.md) に沿って `docs/tests/runs/` に記録を残し、対象 `src/` ファイルと `tests/**/*.test.ts` のパスを書く
+- 詳細: [tests/README.md](./tests/README.md) · [docs/tests/README.md](./docs/tests/README.md)
+
 ## 関連リポジトリ
 
 | リポジトリ | 参照先 |
@@ -114,7 +125,7 @@ Vite プロキシ（`vite.config.ts`）: `/api/v1` → `127.0.0.1:3000`、`/api`
 | ディレクトリ | 用途 |
 |---|---|
 | [docs/adrs/](./docs/adrs/) | Architecture Decision Records（設計判断の記録） |
-| [docs/tests/](./docs/tests/) | テスト計画・実行記録・フィクスチャ |
+| [docs/tests/](./docs/tests/) | テスト計画・実行記録・フィクスチャ（コードは [`tests/`](./tests/)） |
 | [docs/orders/](./docs/orders/) | 作業指示・実装メモ |
 
 **新規の ADR・テスト記録・作業メモは `docs/legacy/` ではなく、上記ディレクトリに追加する。**
@@ -135,5 +146,4 @@ README / 本ファイルを正とし、legacy は参照用のみ。
 **PR を作成するたびに、このセクションを更新すること。** 完了した項目は削除し、次の PR で取り組む内容を書く。
 
 - [ ] `.env.example` をマルチレポ向けに更新（`VITE_API_URL`・`VITE_SOCKET_URL` 等）
-- [ ] `docs/tests/README.md` を作成し、テスト記録の書き方を定義
 - [ ] `src/` を `features/` + `shared/` 構成へ段階的に移行（feature 単位の PR）

@@ -8,7 +8,7 @@ import { describe, it, expect } from 'vitest'
  */
 describe('frontend package', () => {
   it('frontend/package.json に build スクリプトがある', () => {
-    const path = fileURLToPath(new URL('../../frontend/package.json', import.meta.url))
+    const path = fileURLToPath(new URL('../../package.json', import.meta.url))
     const pkg = JSON.parse(readFileSync(path, 'utf8')) as { scripts: { build?: string } }
     expect(pkg.scripts.build).toBeDefined()
   })
