@@ -1,4 +1,4 @@
-import type { LegacyBooth } from '@/types/legacyBooth'
+import type { LegacyBooth } from '@/shared/types/legacyBooth'
 
 /** サンプル用ブース一覧（ビンゴ・チェックイン・投票の共通マスタ） */
 export const SAMPLE_LEGACY_BOOTHS: LegacyBooth[] = [

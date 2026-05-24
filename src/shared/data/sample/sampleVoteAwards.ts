@@ -1,4 +1,4 @@
-import type { VoteAwardCategory } from '@/types/voteAward'
+import type { VoteAwardCategory } from '@/shared/types/voteAward'
 
 /** 旧 AwardVoteView のカラー帯に合わせたサンプル */
 export const SAMPLE_VOTE_AWARDS: VoteAwardCategory[] = [

@@ -1,8 +1,8 @@
-import { ApiEventDataSource } from '@/data/api/ApiEventDataSource'
-import type { EventDataSource, EventDataSourceMode } from '@/data/EventDataSource'
-import { SampleEventDataSource } from '@/data/sample/SampleEventDataSource'
+import { ApiEventDataSource } from '@/shared/data/api/ApiEventDataSource'
+import type { EventDataSource, EventDataSourceMode } from '@/shared/data/EventDataSource'
+import { SampleEventDataSource } from '@/shared/data/sample/SampleEventDataSource'
 
-export type { EventDataSource, EventDataSourceMode } from '@/data/EventDataSource'
+export type { EventDataSource, EventDataSourceMode } from '@/shared/data/EventDataSource'
 
 /**
  * - 開発: 既定 `sample`（`VITE_DATA_SOURCE=api` で Fastify `/api/v1`）

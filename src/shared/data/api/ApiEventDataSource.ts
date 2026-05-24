@@ -1,7 +1,7 @@
-import { fetchV1Booths, fetchV1Checkins } from '@/api/v1Participant'
-import { buildRandomBingoGrid, countCompletedBingoLines } from '@/data/sample/bingoRandom'
-import { mapV1BoothListItemToLegacy } from '@/data/api/mapV1Booth'
-import type { EventDataSource } from '@/data/EventDataSource'
+import { fetchV1Booths, fetchV1Checkins } from '@/shared/api/v1Participant'
+import { buildRandomBingoGrid, countCompletedBingoLines } from '@/shared/data/sample/bingoRandom'
+import { mapV1BoothListItemToLegacy } from '@/shared/data/api/mapV1Booth'
+import type { EventDataSource } from '@/shared/data/EventDataSource'
 
 /** Fastify `/api/v1` から参加者データを取得する（ビンゴは v1 未実装のためクライアント側で組み立て） */
 export class ApiEventDataSource implements EventDataSource {

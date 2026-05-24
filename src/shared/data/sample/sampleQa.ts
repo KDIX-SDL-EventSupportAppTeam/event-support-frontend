@@ -1,6 +1,6 @@
-import type { QaItem } from '@/types/eventContent'
+import type { QaItem } from '@/shared/types/eventContent'
 
-export type { QaItem } from '@/types/eventContent'
+export type { QaItem } from '@/shared/types/eventContent'
 export const SAMPLE_QA_ITEMS: QaItem[] = [
   {
     question: 'ガチャポンコインとは何ですか？',

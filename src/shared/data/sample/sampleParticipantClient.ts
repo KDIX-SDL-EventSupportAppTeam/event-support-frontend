@@ -1,9 +1,9 @@
-import { countCompletedBingoLines } from '@/data/sample/bingoRandom'
-import type { ParticipantClient } from '@/data/participantTypes'
-import { pickCheckedInBoothIds, SampleEventData } from '@/data/sample/SampleEventData'
-import { SAMPLE_LEGACY_BOOTHS } from '@/data/sample/sampleBooths'
-import { SAMPLE_QA_ITEMS } from '@/data/sample/sampleQa'
-import { SAMPLE_SCHEDULE } from '@/data/sample/sampleSchedule'
+import { countCompletedBingoLines } from '@/shared/data/sample/bingoRandom'
+import type { ParticipantClient } from '@/shared/data/participantTypes'
+import { pickCheckedInBoothIds, SampleEventData } from '@/shared/data/sample/SampleEventData'
+import { SAMPLE_LEGACY_BOOTHS } from '@/shared/data/sample/sampleBooths'
+import { SAMPLE_QA_ITEMS } from '@/shared/data/sample/sampleQa'
+import { SAMPLE_SCHEDULE } from '@/shared/data/sample/sampleSchedule'
 import {
   appendSampleCheckedId,
   incrementSampleGachaponExtraSpent,
@@ -11,9 +11,9 @@ import {
   readSampleVotes,
   startSampleCooldown,
   writeSampleVotes,
-} from '@/data/sample/sampleSession'
-import { SAMPLE_VOTE_AWARDS } from '@/data/sample/sampleVoteAwards'
-import type { CheckInResult } from '@/types/voteAward'
+} from '@/shared/data/sample/sampleSession'
+import { SAMPLE_VOTE_AWARDS } from '@/shared/data/sample/sampleVoteAwards'
+import type { CheckInResult } from '@/shared/types/voteAward'
 
 export class SampleParticipantClient implements ParticipantClient {
   private readonly sample = new SampleEventData()

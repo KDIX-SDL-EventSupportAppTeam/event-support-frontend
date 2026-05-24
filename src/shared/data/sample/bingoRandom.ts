@@ -1,4 +1,4 @@
-import type { BingoGridCell, LegacyBooth } from '@/types/legacyBooth'
+import type { BingoGridCell, LegacyBooth } from '@/shared/types/legacyBooth'
 
 /** 文字列から決定論的なシード（0..2^32-1） */
 export function hashSeed(s: string): number {

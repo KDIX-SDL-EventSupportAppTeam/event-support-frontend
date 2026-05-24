@@ -1,5 +1,5 @@
-import type { Award } from '@/types/award'
-import type { BingoGridCell, LegacyBooth } from '@/types/legacyBooth'
+import type { Award } from '@/shared/types/award'
+import type { BingoGridCell, LegacyBooth } from '@/shared/types/legacyBooth'
 
 export type EventDataSourceMode = 'sample' | 'api'
 

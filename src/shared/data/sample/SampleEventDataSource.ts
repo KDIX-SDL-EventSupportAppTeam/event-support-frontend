@@ -1,5 +1,5 @@
-import type { EventDataSource } from '@/data/EventDataSource'
-import { SampleEventData } from '@/data/sample/SampleEventData'
+import type { EventDataSource } from '@/shared/data/EventDataSource'
+import { SampleEventData } from '@/shared/data/sample/SampleEventData'
 
 /** `SampleEventData` のみ参照。HTTP やルーターに依存しない */
 export class SampleEventDataSource implements EventDataSource {

@@ -1,6 +1,6 @@
-import type { ScheduleDay } from '@/types/eventContent'
+import type { ScheduleDay } from '@/shared/types/eventContent'
 
-export type { ScheduleDay } from '@/types/eventContent'
+export type { ScheduleDay } from '@/shared/types/eventContent'
 export const SAMPLE_SCHEDULE: ScheduleDay[] = [
   {
     dayTitle: 'DAY1 10/10(Fri.)',

@@ -1,4 +1,4 @@
-import { postV1CheckIn } from '@/api/v1Participant'
+import { postV1CheckIn } from '@/shared/api/v1Participant'
 import {
   fetchBingoStatusFull,
   fetchUserCheckedInBoothDetails,
@@ -7,11 +7,11 @@ import {
   fetchVotingStatus,
   postUseGachaponCoin as postUseGachaponCoinRequest,
   postVotesUpdate,
-} from '@/api/legacyParticipant'
-import type { ParticipantClient } from '@/data/participantTypes'
-import { SAMPLE_QA_ITEMS } from '@/data/sample/sampleQa'
-import { SAMPLE_SCHEDULE } from '@/data/sample/sampleSchedule'
-import { SAMPLE_VOTE_AWARDS } from '@/data/sample/sampleVoteAwards'
+} from '@/shared/api/legacyParticipant'
+import type { ParticipantClient } from '@/shared/data/participantTypes'
+import { SAMPLE_QA_ITEMS } from '@/shared/data/sample/sampleQa'
+import { SAMPLE_SCHEDULE } from '@/shared/data/sample/sampleSchedule'
+import { SAMPLE_VOTE_AWARDS } from '@/shared/data/sample/sampleVoteAwards'
 
 const DEFAULT_CHECKIN_EMOJI = '🎪'
 

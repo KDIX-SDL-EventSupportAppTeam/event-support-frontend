@@ -1,13 +1,13 @@
-import type { Award } from '@/types/award'
-import type { BingoGridCell, LegacyBooth } from '@/types/legacyBooth'
+import type { Award } from '@/shared/types/award'
+import type { BingoGridCell, LegacyBooth } from '@/shared/types/legacyBooth'
 import {
   buildRandomBingoGrid,
   countCompletedBingoLines,
   hashSeed,
   mulberry32,
-} from '@/data/sample/bingoRandom'
-import { SAMPLE_LEGACY_BOOTHS } from '@/data/sample/sampleBooths'
-import { readSampleExtraCheckedIds, readSampleGachaponExtraSpent } from '@/data/sample/sampleSession'
+} from '@/shared/data/sample/bingoRandom'
+import { SAMPLE_LEGACY_BOOTHS } from '@/shared/data/sample/sampleBooths'
+import { readSampleExtraCheckedIds, readSampleGachaponExtraSpent } from '@/shared/data/sample/sampleSession'
 
 const SAMPLE_AWARDS: Award[] = [
   { id: 'award-1', name: '来場者投票', description: '当日投票で決定' },

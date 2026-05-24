@@ -1,5 +1,5 @@
-import type { V1BoothDetail, V1BoothListItem } from '@/api/v1Participant'
-import type { LegacyBooth } from '@/types/legacyBooth'
+import type { V1BoothDetail, V1BoothListItem } from '@/shared/api/v1Participant'
+import type { LegacyBooth } from '@/shared/types/legacyBooth'
 
 const DEFAULT_EMOJI = '🎪'
 

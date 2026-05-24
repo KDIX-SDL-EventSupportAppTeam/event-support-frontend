@@ -1,6 +1,6 @@
-import type { LegacyBooth } from '@/types/legacyBooth'
-import type { QaItem, ScheduleDay } from '@/types/eventContent'
-import type { CheckInResult, VoteAwardCategory } from '@/types/voteAward'
+import type { LegacyBooth } from '@/shared/types/legacyBooth'
+import type { QaItem, ScheduleDay } from '@/shared/types/eventContent'
+import type { CheckInResult, VoteAwardCategory } from '@/shared/types/voteAward'
 
 export type AwardVoteSnapshot = {
   votingOpen: boolean

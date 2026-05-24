@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { SampleEventData } from '@/data/sample/SampleEventData'
-import { resolveEventDataSourceMode } from '@/data/createEventDataSource'
+import { SampleEventData } from '@/shared/data/sample/SampleEventData'
+import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
 
 describe('SampleEventData', () => {
   it('旧 UI 用のブース・16 マスビンゴを返す（サーバー非依存）', () => {

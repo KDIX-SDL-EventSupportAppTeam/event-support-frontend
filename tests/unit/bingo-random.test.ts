@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import type { BingoGridCell, LegacyBooth } from '@/types/legacyBooth'
+import type { BingoGridCell, LegacyBooth } from '@/shared/types/legacyBooth'
 import {
   buildRandomBingoGrid,
   countCompletedBingoLines,
   hashSeed,
   mulberry32,
   shuffleWithRng,
-} from '@/data/sample/bingoRandom'
+} from '@/shared/data/sample/bingoRandom'
 
 const miniBooths: LegacyBooth[] = [
   {
