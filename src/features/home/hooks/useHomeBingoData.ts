@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { createEventDataSource, resolveEventDataSourceMode } from '@/data/createEventDataSource'
-import { countCompletedBingoLines } from '@/data/sample/bingoRandom'
-import { formatClientError } from '@/lib/formatClientError'
-import type { BingoGridCell } from '@/types/legacyBooth'
+import { createEventDataSource, resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
+import { countCompletedBingoLines } from '@/shared/data/sample/bingoRandom'
+import { formatClientError } from '@/shared/lib/formatClientError'
+import type { BingoGridCell } from '@/shared/types/legacyBooth'
 
 export function useHomeBingoData(eventId: string | undefined, userId: string | undefined) {
   const [grid, setGrid] = useState<BingoGridCell[]>([])

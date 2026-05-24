@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useLegacyBoothList } from '@/hooks/useLegacyBoothList'
-import { useAuthStore } from '@/stores/authStore'
-import '@/styles/legacy-booth-list.scss'
-import type { LegacyBooth } from '@/types/legacyBooth'
+import { useLegacyBoothList } from '@/shared/hooks/useLegacyBoothList'
+import { useAuthStore } from '@/features/auth/store/authStore'
+import '@/features/booth/styles/legacy-booth-list.scss'
+import type { LegacyBooth } from '@/shared/types/legacyBooth'
 
 export function BoothListPage() {
   const navigate = useNavigate()

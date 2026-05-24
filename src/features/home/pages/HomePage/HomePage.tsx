@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useHomeBingoData } from '@/hooks/useHomeBingoData'
-import { useAuthStore } from '@/stores/authStore'
-import type { LegacyBooth } from '@/types/legacyBooth'
-import { HomeTutorialModal } from '@/pages/HomePage/HomeTutorialModal'
-import '@/styles/legacy-home.scss'
+import { useHomeBingoData } from '@/features/home/hooks/useHomeBingoData'
+import { useAuthStore } from '@/features/auth/store/authStore'
+import type { LegacyBooth } from '@/shared/types/legacyBooth'
+import { HomeTutorialModal } from '@/features/home/pages/HomePage/HomeTutorialModal'
+import '@/features/home/styles/legacy-home.scss'
 
 const FEEDBACK_FORM_URL =
   (import.meta.env.VITE_FEEDBACK_FORM_URL as string | undefined) ?? 'https://forms.gle/7jf7E6DVHvBmLNKA6'
