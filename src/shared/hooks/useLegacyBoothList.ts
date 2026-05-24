@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { createEventDataSource } from '@/data/createEventDataSource'
-import { formatClientError } from '@/lib/formatClientError'
-import type { LegacyBooth } from '@/types/legacyBooth'
+import { createEventDataSource } from '@/shared/data/createEventDataSource'
+import { formatClientError } from '@/shared/lib/formatClientError'
+import type { LegacyBooth } from '@/shared/types/legacyBooth'
 
 export function useLegacyBoothList(eventId: string | undefined, userId: string | undefined) {
   const [booths, setBooths] = useState<LegacyBooth[]>([])
