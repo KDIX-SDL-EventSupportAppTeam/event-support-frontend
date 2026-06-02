@@ -128,14 +128,19 @@ npm run build
 
 ### デプロイ先
 
-App Engine standard（`app.yaml` がリポ直下に存在）。
+Firebase Hosting（`firebase.json` / `.firebaserc` がリポ直下に存在）。
 
 ```bash
+cp .env.production.example .env.production
+# VITE_API_BASE_URL を Cloud Run の URL に書き換える
 npm run build
-gcloud app deploy
+firebase deploy --only hosting --project event-support-app
 ```
 
+本番 URL 例: `https://event-support-app.web.app`
+
 サーバー側のデプロイ手順は [event-support-server/docs/deploy/cloud-run.md](../event-support-server/docs/deploy/cloud-run.md)。
+デプロイ後、Cloud Run の `CORS_ORIGIN` にフロント URL（`.web.app` と `.firebaseapp.com`）を設定する。
 
 ## コーディング規約
 
