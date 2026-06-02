@@ -7,6 +7,7 @@
 # --- Node / Vite ---
 node_modules/
 dist/
+.firebase/
 .vite/
 
 # Vitest (tests/)
