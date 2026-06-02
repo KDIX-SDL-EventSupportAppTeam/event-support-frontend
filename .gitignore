@@ -2,10 +2,12 @@
 .env
 .env.*
 !.env.example
+!.env.production.example
 
 # --- Node / Vite ---
 node_modules/
 dist/
+.firebase/
 .vite/
 
 # Vitest (tests/)
