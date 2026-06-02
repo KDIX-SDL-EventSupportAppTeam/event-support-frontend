@@ -105,6 +105,43 @@ Vite プロキシ（`vite.config.ts`）: `/api/v1` → `127.0.0.1:3000`、`/api`
 
 `event_id` の正: [docs/legacy/tests/fixtures/dummy-login.md](./docs/legacy/tests/fixtures/dummy-login.md)
 
+## 本番ビルド・デプロイ
+
+### `.env.production` の用意
+
+Vite は `npm run build` 時に **`.env.production`** を自動で読む。
+リポジトリには `.env.production.example` のみコミットしており、本番ビルド前に各環境でコピー・上書きする。
+
+```bash
+cp .env.production.example .env.production
+# VITE_API_BASE_URL を Cloud Run の URL に書き換える
+npm run build
+```
+
+| 変数 | 本番での想定値 |
+|---|---|
+| `VITE_DATA_SOURCE` | `api` |
+| `VITE_MOCK_API` | `false` |
+| `VITE_API_BASE_URL` | `https://event-support-server-xxxxxx-an.a.run.app/api/v1`（Cloud Run の URL） |
+
+> `VITE_` 接頭辞付きの値は **クライアントバンドルに埋め込まれて公開される**。秘密情報は絶対に置かない。
+
+### デプロイ先
+
+Firebase Hosting（`firebase.json` / `.firebaserc` がリポ直下に存在）。
+
+```bash
+cp .env.production.example .env.production
+# VITE_API_BASE_URL を Cloud Run の URL に書き換える
+npm run build
+firebase deploy --only hosting --project event-support-app
+```
+
+本番 URL 例: `https://event-support-app.web.app`
+
+サーバー側のデプロイ手順は [event-support-server/docs/deploy/cloud-run.md](../event-support-server/docs/deploy/cloud-run.md)。
+デプロイ後、Cloud Run の `CORS_ORIGIN` にフロント URL（`.web.app` と `.firebaseapp.com`）を設定する。
+
 ## コーディング規約
 
 - TypeScript strict。any は避ける
