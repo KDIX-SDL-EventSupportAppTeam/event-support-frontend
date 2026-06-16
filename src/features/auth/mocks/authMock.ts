@@ -28,6 +28,7 @@ export async function mockLogin(
         id: '00000000-0000-0000-0000-000000000001',
         display_name: 'ローカル（モック）',
         event_id: eventId,
+        role: 'participant',
       },
     }
   }
@@ -51,6 +52,7 @@ export async function mockRegister(
       id: '00000000-0000-0000-0000-000000000002',
       display_name: displayName || '新規（モック）',
       event_id: eventId,
+      role: 'participant',
     },
   }
 }
