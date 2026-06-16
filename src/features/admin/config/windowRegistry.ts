@@ -20,4 +20,5 @@ export const FULL_PAGE_NAV = [
   { to: '/admin/categories', label: 'カテゴリ', icon: 'bi-tags' },
   { to: '/admin/survey', label: 'アンケート', icon: 'bi-clipboard-check' },
   { to: '/admin/participants', label: '参加者管理', icon: 'bi-person-lines-fill' },
+  { to: '/admin/sample', label: 'サンプル', icon: 'bi-flask' },
 ] as const
