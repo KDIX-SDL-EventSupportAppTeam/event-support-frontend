@@ -36,7 +36,7 @@ src/
 │   ├── award/         # アワード投票
 │   ├── schedule/      # スケジュール
 │   ├── qa/            # Q&A
-│   └── admin/         # 運営（プレースホルダー）
+│   └── admin/         # 運営管理（ダッシュボード・CRUD）
 ├── shared/
 │   ├── api/           # v1 / legacy HTTP クライアント
 │   ├── data/          # EventDataSource / ParticipantClient（移行期）
@@ -61,7 +61,7 @@ src/
 | gachapon | `features/gachapon/pages` |
 | award | `features/award/{pages,hooks}` |
 | schedule / qa | `features/{schedule,qa}/pages` |
-| admin | `features/admin/pages` |
+| admin | `features/admin/{pages,components}` · API: `shared/api/v1Admin.ts` |
 
 ## データ層（移行期）
 
@@ -104,6 +104,37 @@ Vite プロキシ（`vite.config.ts`）: `/api/v1` → `127.0.0.1:3000`、`/api`
 3. `npm run dev` → ログイン（シード: `dev@example.com` / `password123`）
 
 `event_id` の正: [docs/legacy/tests/fixtures/dummy-login.md](./docs/legacy/tests/fixtures/dummy-login.md)
+
+### 運営画面（admin）
+
+| パス | 画面 |
+|---|---|
+| `/admin/login` | 運営ログイン（`role: admin` の JWT が必要） |
+| `/admin/menu` | 運営メニュー（各管理画面への入口） |
+| `/admin/dashboard` | 統計・ブース別チェックイン・WebSocket リアルタイム通知 |
+| `/admin/booths` | ブース CRUD |
+| `/admin/categories` | カテゴリ CRUD |
+| `/admin/survey` | アンケート設問 CRUD |
+| `/admin/participants` | 参加者一覧・削除 |
+
+共通レイアウト: `features/admin/components/AdminShell.tsx`（上部ナビ・ログアウト）。
+
+**ローカル確認手順**
+
+1. `event-support-server` で `npm run db:seed` 済みであること
+2. 運営ユーザーを API で作成（初回のみ）:
+
+```bash
+curl -s -X POST http://localhost:3000/api/v1/auth/register/admin \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-Key: change-admin-registration-key-in-dev" \
+  -d '{"event_id":"20000000-0000-4000-8000-000000000001","email":"admin@example.com","password":"admin1234","display_name":"運営担当"}'
+```
+
+3. フロント `.env` で `VITE_MOCK_API=false` / `VITE_DATA_SOURCE=api` / `VITE_API_BASE_URL=http://localhost:3000/api/v1`
+4. http://localhost:5173/admin/login から上記アカウントでログイン
+
+サーバー側の運営 API・WebSocket 仕様は [event-support-server/docs/orders/2026-06-16-依頼-運営CRUD-ダッシュボード-WebSocket実装.md](../event-support-server/docs/orders/2026-06-16-依頼-運営CRUD-ダッシュボード-WebSocket実装.md)。
 
 ## 本番ビルド・デプロイ
 
