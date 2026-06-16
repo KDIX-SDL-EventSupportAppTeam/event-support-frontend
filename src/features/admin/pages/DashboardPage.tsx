@@ -21,6 +21,10 @@ export function DashboardPage() {
     fetchAdminDashboard(eventId)
       .then(setData)
       .catch((e) => setError(formatClientError(e, 'ダッシュボードの取得に失敗しました')))
+    const timer = setInterval(() => {
+      fetchAdminDashboard(eventId).then(setData).catch(() => undefined)
+    }, 60_000)
+    return () => clearInterval(timer)
   }, [eventId])
 
   useEffect(() => {
