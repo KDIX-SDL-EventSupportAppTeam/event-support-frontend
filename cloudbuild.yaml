@@ -1,6 +1,7 @@
 # cloudbuild.yaml — Firebase Hosting へデプロイ
 substitutions:
   _API_BASE_URL: https://event-support-server-2vfu7wrxxa-an.a.run.app/api/v1
+  _DEV_EVENT_ID: 39563c5a-ddda-4bfb-88c7-6113ab24406f
   _CD_TEST: cd-20250601-trigger-1
 
 steps:
@@ -15,6 +16,7 @@ steps:
       - VITE_DATA_SOURCE=api
       - VITE_MOCK_API=false
       - VITE_API_BASE_URL=${_API_BASE_URL}
+      - VITE_DEV_EVENT_ID=${_DEV_EVENT_ID}
       - VITE_CD_TEST=${_CD_TEST}
 
   - name: us-docker.pkg.dev/firebase-cli/us/firebase

@@ -24,16 +24,16 @@ export function formatClientError(e: unknown, fallback: string): string {
     if (e.response?.status === 500 && bodyText.includes('ECONNREFUSED')) {
       return 'API サーバーに接続できません（:3000）。server/ で npm run dev を起動してください。'
     }
+    const msg = e.response?.data
+    if (msg && typeof msg === 'object' && 'error' in msg) {
+      const err = (msg as { error?: { message?: string } }).error
+      if (err?.message) return err.message
+    }
     if (e.response?.status === 401) {
       return '認証の有効期限が切れています。一度ログアウトしてから再ログインしてください。'
     }
     if (e.response?.status === 403) {
       return 'イベント ID が一致しません。ログアウト後、実 API 用に再ログインしてください。'
-    }
-    const msg = e.response?.data
-    if (msg && typeof msg === 'object' && 'error' in msg) {
-      const err = (msg as { error?: { message?: string } }).error
-      if (err?.message) return err.message
     }
     if (e.message) return e.message
   }
