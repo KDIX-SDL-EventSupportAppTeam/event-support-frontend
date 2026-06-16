@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { memo, useMemo } from 'react'
 import {
   Bar,
   BarChart,
@@ -8,33 +8,41 @@ import {
   YAxis,
 } from 'recharts'
 import { AnalyticsWindow } from '@/features/admin/components/AnalyticsWindow'
-import { fetchRecommendationAnalytics, type RecommendationAnalytics } from '@/shared/api/v1Admin'
-import { formatClientError } from '@/shared/lib/formatClientError'
+import { useAnalyticsData } from '@/features/admin/hooks/useAnalyticsData'
+import { CHART_ANIMATION_OFF } from '@/features/admin/lib/chartOptions'
+import { fetchRecommendationAnalytics } from '@/shared/api/v1Admin'
 
 type Props = {
   eventId: string
+  active: boolean
   minimized: boolean
   onToggleMinimize: () => void
 }
 
-export function RecommendationAnalyticsWindow({ eventId, minimized, onToggleMinimize }: Props) {
-  const [data, setData] = useState<RecommendationAnalytics | null>(null)
-  const [error, setError] = useState<string | null>(null)
+export const RecommendationAnalyticsWindow = memo(function RecommendationAnalyticsWindow({
+  eventId,
+  active,
+  minimized,
+  onToggleMinimize,
+}: Props) {
+  const { data, error } = useAnalyticsData(
+    active,
+    eventId,
+    fetchRecommendationAnalytics,
+    '推薦分析の取得に失敗しました',
+  )
 
-  useEffect(() => {
-    fetchRecommendationAnalytics(eventId)
-      .then(setData)
-      .catch((e) => setError(formatClientError(e, '推薦分析の取得に失敗しました')))
-  }, [eventId])
-
-  const chartData =
-    data?.by_booth
-      .filter((b) => b.offered_count > 0)
-      .slice(0, 8)
-      .map((b) => ({
-        name: b.booth_name.length > 8 ? `${b.booth_name.slice(0, 8)}…` : b.booth_name,
-        rate: b.acceptance_rate ?? 0,
-      })) ?? []
+  const chartData = useMemo(
+    () =>
+      data?.by_booth
+        .filter((b) => b.offered_count > 0)
+        .slice(0, 8)
+        .map((b) => ({
+          name: b.booth_name.length > 8 ? `${b.booth_name.slice(0, 8)}…` : b.booth_name,
+          rate: b.acceptance_rate ?? 0,
+        })) ?? [],
+    [data],
+  )
 
   return (
     <AnalyticsWindow
@@ -96,7 +104,7 @@ export function RecommendationAnalyticsWindow({ eventId, minimized, onToggleMini
                   <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10 }} />
                   <YAxis type="category" dataKey="name" width={48} tick={{ fontSize: 9 }} />
                   <Tooltip formatter={(v) => [`${v}%`, '採用率']} />
-                  <Bar dataKey="rate" fill="#6f42c1" name="採用率" />
+                  <Bar {...CHART_ANIMATION_OFF} dataKey="rate" fill="#6f42c1" name="採用率" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -142,4 +150,4 @@ export function RecommendationAnalyticsWindow({ eventId, minimized, onToggleMini
       )}
     </AnalyticsWindow>
   )
-}
+})

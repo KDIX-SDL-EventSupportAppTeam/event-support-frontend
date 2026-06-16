@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 type AnalyticsWindowProps = {
   title: string
   icon?: string
@@ -6,7 +8,7 @@ type AnalyticsWindowProps = {
   children: React.ReactNode
 }
 
-export function AnalyticsWindow({
+export const AnalyticsWindow = memo(function AnalyticsWindow({
   title,
   icon,
   minimized,
@@ -32,4 +34,4 @@ export function AnalyticsWindow({
       {!minimized ? <div className="card-body">{children}</div> : null}
     </div>
   )
-}
+})

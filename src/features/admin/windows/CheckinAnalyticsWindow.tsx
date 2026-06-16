@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import {
   Bar,
   CartesianGrid,
@@ -14,6 +14,8 @@ import {
   YAxis,
 } from 'recharts'
 import { AnalyticsWindow } from '@/features/admin/components/AnalyticsWindow'
+import { useAnalyticsData } from '@/features/admin/hooks/useAnalyticsData'
+import { CHART_ANIMATION_OFF } from '@/features/admin/lib/chartOptions'
 import {
   fetchCheckinAnalytics,
   type CheckinAnalytics,
@@ -21,33 +23,37 @@ import {
 } from '@/shared/api/v1Admin'
 import { connectSocket, disconnectSocket } from '@/shared/api/socket'
 import { useAuthStore } from '@/features/auth/store/authStore'
-import { formatClientError } from '@/shared/lib/formatClientError'
 
 const METHOD_COLORS = ['#0d6efd', '#fd7e14']
 
 type Props = {
   eventId: string
+  active: boolean
   minimized: boolean
   onToggleMinimize: () => void
 }
 
-export function CheckinAnalyticsWindow({ eventId, minimized, onToggleMinimize }: Props) {
+export const CheckinAnalyticsWindow = memo(function CheckinAnalyticsWindow({
+  eventId,
+  active,
+  minimized,
+  onToggleMinimize,
+}: Props) {
   const token = useAuthStore((s) => s.token)
-  const [data, setData] = useState<CheckinAnalytics | null>(null)
+  const { data, error } = useAnalyticsData(
+    active,
+    eventId,
+    fetchCheckinAnalytics,
+    'チェックイン分析の取得に失敗しました',
+  )
   const [recent, setRecent] = useState<CheckinAnalytics['recent']>([])
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchCheckinAnalytics(eventId)
-      .then((d) => {
-        setData(d)
-        setRecent(d.recent)
-      })
-      .catch((e) => setError(formatClientError(e, 'チェックイン分析の取得に失敗しました')))
-  }, [eventId])
+    if (data?.recent) setRecent(data.recent)
+  }, [data])
 
   useEffect(() => {
-    if (!token || !eventId) return
+    if (!active || !token || !eventId) return
     const apiBase = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
     const socket = connectSocket(token, apiBase)
     const onNew = (payload: CheckinNewEvent) => {
@@ -69,7 +75,7 @@ export function CheckinAnalyticsWindow({ eventId, minimized, onToggleMinimize }:
       socket.off('checkin:new', onNew)
       disconnectSocket()
     }
-  }, [token, eventId])
+  }, [active, token, eventId])
 
   const methodPie = data
     ? [
@@ -107,8 +113,9 @@ export function CheckinAnalyticsWindow({ eventId, minimized, onToggleMinimize }:
                   <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} />
                   <Tooltip />
                   <Legend />
-                  <Bar yAxisId="left" dataKey="count" fill="#0d6efd" name="新規CI" />
+                  <Bar {...CHART_ANIMATION_OFF} yAxisId="left" dataKey="count" fill="#0d6efd" name="新規CI" />
                   <Line
+                    {...CHART_ANIMATION_OFF}
                     yAxisId="right"
                     type="monotone"
                     dataKey="cumulative"
@@ -125,7 +132,16 @@ export function CheckinAnalyticsWindow({ eventId, minimized, onToggleMinimize }:
             <div style={{ height: 120 }} className="mb-3">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={methodPie} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={25} outerRadius={45}>
+                  <Pie
+                    {...CHART_ANIMATION_OFF}
+                    data={methodPie}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={25}
+                    outerRadius={45}
+                  >
                     {methodPie.map((_, i) => (
                       <Cell key={i} fill={METHOD_COLORS[i % METHOD_COLORS.length]} />
                     ))}
@@ -163,4 +179,4 @@ export function CheckinAnalyticsWindow({ eventId, minimized, onToggleMinimize }:
       )}
     </AnalyticsWindow>
   )
-}
+})

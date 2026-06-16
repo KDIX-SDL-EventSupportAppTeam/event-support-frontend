@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import {
   Bar,
   BarChart,
@@ -8,8 +8,9 @@ import {
   YAxis,
 } from 'recharts'
 import { AnalyticsWindow } from '@/features/admin/components/AnalyticsWindow'
+import { useAnalyticsData } from '@/features/admin/hooks/useAnalyticsData'
+import { CHART_ANIMATION_OFF } from '@/features/admin/lib/chartOptions'
 import { fetchBoothAnalytics, type BoothAnalytics } from '@/shared/api/v1Admin'
-import { formatClientError } from '@/shared/lib/formatClientError'
 
 type SortKey =
   | 'checkin_desc'
@@ -31,23 +32,71 @@ function boothStatus(b: BoothAnalytics['booths'][0], avgCheckins: number) {
 
 type Props = {
   eventId: string
+  active: boolean
   minimized: boolean
   onToggleMinimize: () => void
 }
 
-export function BoothAnalyticsWindow({ eventId, minimized, onToggleMinimize }: Props) {
-  const [data, setData] = useState<BoothAnalytics | null>(null)
-  const [error, setError] = useState<string | null>(null)
+const BoothCard = memo(function BoothCard({
+  booth: b,
+  maxCheckin,
+  avgCheckins,
+}: {
+  booth: BoothAnalytics['booths'][0]
+  maxCheckin: number
+  avgCheckins: number
+}) {
+  const status = boothStatus(b, avgCheckins)
+  return (
+    <div className="border rounded p-2 bg-white small" style={{ contentVisibility: 'auto' }}>
+      <div className="d-flex justify-content-between align-items-start mb-1">
+        <span className="fw-semibold text-truncate">{b.name}</span>
+        {status ? <span className={`badge ${status.className}`}>{status.label}</span> : null}
+      </div>
+      <div className="text-muted">{b.manual_code}</div>
+      {b.category ? <span className="badge bg-light text-dark border me-1">{b.category.name}</span> : null}
+      {b.tags.map((t) => (
+        <span key={t} className="badge bg-secondary me-1">
+          {t}
+        </span>
+      ))}
+      <div className="mt-2">
+        <div className="d-flex justify-content-between">
+          <span>チェックイン</span>
+          <strong>{b.checkin_count}</strong>
+        </div>
+        <div className="progress" style={{ height: 4 }}>
+          <div className="progress-bar" style={{ width: `${(b.checkin_count / maxCheckin) * 100}%` }} />
+        </div>
+      </div>
+      <div className="mt-1">
+        {b.avg_rating != null ? (
+          <span>{'★'.repeat(Math.round(b.avg_rating))} ({b.avg_rating.toFixed(1)})</span>
+        ) : (
+          <span className="text-muted">未評価</span>
+        )}
+      </div>
+      <div className="text-muted mt-1">
+        QR {b.checkin_by_method.qr} / 手動 {b.checkin_by_method.manual}
+      </div>
+      {b.recommendation_acceptance_rate != null ? (
+        <div className="text-muted">推薦採用 {b.recommendation_acceptance_rate}%</div>
+      ) : null}
+    </div>
+  )
+})
+
+export const BoothAnalyticsWindow = memo(function BoothAnalyticsWindow({
+  eventId,
+  active,
+  minimized,
+  onToggleMinimize,
+}: Props) {
+  const { data, error } = useAnalyticsData(active, eventId, fetchBoothAnalytics, 'ブース分析の取得に失敗しました')
   const [sort, setSort] = useState<SortKey>('checkin_desc')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [unvisitedOnly, setUnvisitedOnly] = useState(false)
   const [ratedFilter, setRatedFilter] = useState<'all' | 'rated' | 'unrated'>('all')
-
-  useEffect(() => {
-    fetchBoothAnalytics(eventId)
-      .then(setData)
-      .catch((e) => setError(formatClientError(e, 'ブース分析の取得に失敗しました')))
-  }, [eventId])
 
   const categories = useMemo(() => {
     if (!data) return []
@@ -172,7 +221,7 @@ export function BoothAnalyticsWindow({ eventId, minimized, onToggleMinimize }: P
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="category_name" width={55} tick={{ fontSize: 10 }} />
                   <Tooltip />
-                  <Bar dataKey="total_checkins" fill="#0d6efd" name="チェックイン" />
+                  <Bar {...CHART_ANIMATION_OFF} dataKey="total_checkins" fill="#0d6efd" name="チェックイン" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -185,54 +234,12 @@ export function BoothAnalyticsWindow({ eventId, minimized, onToggleMinimize }: P
               gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
             }}
           >
-            {filtered.map((b) => {
-              const status = boothStatus(b, avgCheckins)
-              return (
-                <div key={b.id} className="border rounded p-2 bg-white small">
-                  <div className="d-flex justify-content-between align-items-start mb-1">
-                    <span className="fw-semibold text-truncate">{b.name}</span>
-                    {status ? <span className={`badge ${status.className}`}>{status.label}</span> : null}
-                  </div>
-                  <div className="text-muted">{b.manual_code}</div>
-                  {b.category ? (
-                    <span className="badge bg-light text-dark border me-1">{b.category.name}</span>
-                  ) : null}
-                  {b.tags.map((t) => (
-                    <span key={t} className="badge bg-secondary me-1">
-                      {t}
-                    </span>
-                  ))}
-                  <div className="mt-2">
-                    <div className="d-flex justify-content-between">
-                      <span>チェックイン</span>
-                      <strong>{b.checkin_count}</strong>
-                    </div>
-                    <div className="progress" style={{ height: 4 }}>
-                      <div
-                        className="progress-bar"
-                        style={{ width: `${(b.checkin_count / maxCheckin) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-1">
-                    {b.avg_rating != null ? (
-                      <span>{'★'.repeat(Math.round(b.avg_rating))} ({b.avg_rating.toFixed(1)})</span>
-                    ) : (
-                      <span className="text-muted">未評価</span>
-                    )}
-                  </div>
-                  <div className="text-muted mt-1">
-                    QR {b.checkin_by_method.qr} / 手動 {b.checkin_by_method.manual}
-                  </div>
-                  {b.recommendation_acceptance_rate != null ? (
-                    <div className="text-muted">推薦採用 {b.recommendation_acceptance_rate}%</div>
-                  ) : null}
-                </div>
-              )
-            })}
+            {filtered.map((b) => (
+              <BoothCard key={b.id} booth={b} maxCheckin={maxCheckin} avgCheckins={avgCheckins} />
+            ))}
           </div>
         </>
       )}
     </AnalyticsWindow>
   )
-}
+})

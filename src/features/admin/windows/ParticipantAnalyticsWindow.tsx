@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import {
   Area,
   AreaChart,
@@ -15,28 +15,33 @@ import {
   YAxis,
 } from 'recharts'
 import { AnalyticsWindow } from '@/features/admin/components/AnalyticsWindow'
-import { fetchParticipantAnalytics, type ParticipantAnalytics } from '@/shared/api/v1Admin'
-import { formatClientError } from '@/shared/lib/formatClientError'
+import { useAnalyticsData } from '@/features/admin/hooks/useAnalyticsData'
+import { CHART_ANIMATION_OFF } from '@/features/admin/lib/chartOptions'
+import { fetchParticipantAnalytics } from '@/shared/api/v1Admin'
 
 const PIE_COLORS = ['#0d6efd', '#198754', '#fd7e14', '#6f42c1', '#0dcaf0', '#dc3545']
 
 type Props = {
   eventId: string
+  active: boolean
   minimized: boolean
   onToggleMinimize: () => void
 }
 
-export function ParticipantAnalyticsWindow({ eventId, minimized, onToggleMinimize }: Props) {
-  const [data, setData] = useState<ParticipantAnalytics | null>(null)
-  const [error, setError] = useState<string | null>(null)
+export const ParticipantAnalyticsWindow = memo(function ParticipantAnalyticsWindow({
+  eventId,
+  active,
+  minimized,
+  onToggleMinimize,
+}: Props) {
+  const { data, error } = useAnalyticsData(
+    active,
+    eventId,
+    fetchParticipantAnalytics,
+    '参加者分析の取得に失敗しました',
+  )
   const [roleFilter, setRoleFilter] = useState<'all' | 'participant' | 'admin'>('participant')
   const [checkinFilter, setCheckinFilter] = useState<'all' | 'checked' | 'none'>('all')
-
-  useEffect(() => {
-    fetchParticipantAnalytics(eventId)
-      .then(setData)
-      .catch((e) => setError(formatClientError(e, '参加者分析の取得に失敗しました')))
-  }, [eventId])
 
   const filteredParticipants = useMemo(() => {
     if (!data) return []
@@ -112,6 +117,7 @@ export function ParticipantAnalyticsWindow({ eventId, minimized, onToggleMinimiz
                   <Tooltip />
                   <Legend />
                   <Area
+                    {...CHART_ANIMATION_OFF}
                     type="monotone"
                     dataKey="new_participants"
                     stackId="1"
@@ -120,6 +126,7 @@ export function ParticipantAnalyticsWindow({ eventId, minimized, onToggleMinimiz
                     name="新規参加"
                   />
                   <Area
+                    {...CHART_ANIMATION_OFF}
                     type="monotone"
                     dataKey="cumulative"
                     stroke="#198754"
@@ -135,10 +142,10 @@ export function ParticipantAnalyticsWindow({ eventId, minimized, onToggleMinimiz
             <div style={{ height: 100 }} className="mb-3">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.checkin_distribution}>
-                  <XAxis dataKey="checkin_count" tick={{ fontSize: 10 }} label={{ value: '回', position: 'insideBottom' }} />
+                  <XAxis dataKey="checkin_count" tick={{ fontSize: 10 }} />
                   <YAxis tick={{ fontSize: 10 }} />
                   <Tooltip />
-                  <Bar dataKey="num_users" fill="#6f42c1" name="人数" />
+                  <Bar {...CHART_ANIMATION_OFF} dataKey="num_users" fill="#6f42c1" name="人数" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -156,7 +163,15 @@ export function ParticipantAnalyticsWindow({ eventId, minimized, onToggleMinimiz
                     <div style={{ height: 100 }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                          <Pie data={pie} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={40}>
+                          <Pie
+                            {...CHART_ANIMATION_OFF}
+                            data={pie}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={40}
+                          >
                             {pie.map((_, i) => (
                               <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                             ))}
@@ -224,4 +239,4 @@ export function ParticipantAnalyticsWindow({ eventId, minimized, onToggleMinimiz
       )}
     </AnalyticsWindow>
   )
-}
+})
