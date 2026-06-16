@@ -314,3 +314,39 @@ export async function fetchRecommendationAnalytics(eventId: string): Promise<Rec
   )
   return unwrapApiData(res)
 }
+
+export type SampleDataGenerateResult = {
+  categories: number
+  booths: number
+  participants: number
+  checkins: number
+  ratings: number
+  recommendations: number
+  survey_answers: number
+  survey_questions: number
+}
+
+export type SampleDataClearResult = {
+  users: number
+  booths: number
+  categories: number
+  survey_questions: number
+}
+
+export async function generateAdminSampleData(
+  eventId: string,
+  options: { force?: boolean } = {},
+): Promise<SampleDataGenerateResult> {
+  const res = await apiClient.post<ApiResponse<{ generated: SampleDataGenerateResult }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/sample-data/generate`,
+    options,
+  )
+  return unwrapApiData(res).generated
+}
+
+export async function clearAdminSampleData(eventId: string): Promise<SampleDataClearResult> {
+  const res = await apiClient.delete<ApiResponse<{ cleared: SampleDataClearResult }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/sample-data`,
+  )
+  return unwrapApiData(res).cleared
+}
