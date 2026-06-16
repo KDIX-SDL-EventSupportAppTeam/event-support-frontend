@@ -6,6 +6,7 @@ import { CategoryManagePage } from '@/features/admin/pages/CategoryManagePage'
 import { DashboardPage } from '@/features/admin/pages/DashboardPage'
 import { ParticipantsPage } from '@/features/admin/pages/ParticipantsPage'
 import { SurveyManagePage } from '@/features/admin/pages/SurveyManagePage'
+import { SampleDataPage } from '@/features/admin/pages/SampleDataPage'
 import { LegacyPlaceholderPage } from '@/features/admin/pages/LegacyPlaceholderPage'
 import { LandingPage } from '@/features/auth/pages/LandingPage/LandingPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage/LoginPage'
@@ -156,6 +157,14 @@ export function AppRoutes() {
         element={
           <RequireAdmin>
             <CategoryManagePage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/sample"
+        element={
+          <RequireAdmin>
+            <SampleDataPage />
           </RequireAdmin>
         }
       />

@@ -350,3 +350,24 @@ export async function clearAdminSampleData(eventId: string): Promise<SampleDataC
   )
   return unwrapApiData(res).cleared
 }
+
+export type EventDataClearResult = {
+  recommendations: number
+  survey_answers: number
+  ratings: number
+  checkins: number
+  booth_tags: number
+  booth_categories: number
+  booths: number
+  participants: number
+  survey_questions: number
+  categories: number
+}
+
+export async function clearAllAdminEventData(eventId: string): Promise<EventDataClearResult> {
+  const res = await apiClient.delete<ApiResponse<{ cleared: EventDataClearResult }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/event-data`,
+    { data: { confirm: 'DELETE_ALL_EVENT_DATA' } },
+  )
+  return unwrapApiData(res).cleared
+}
