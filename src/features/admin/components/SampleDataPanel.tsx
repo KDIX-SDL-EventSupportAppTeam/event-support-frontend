@@ -29,7 +29,12 @@ export function SampleDataPanel({ eventId }: SampleDataPanelProps) {
         `生成完了: カテゴリ ${result.categories} / ブース ${result.booths} / 参加者 ${result.participants} / チェックイン ${result.checkins}`,
       )
     } catch (e) {
-      setError(formatClientError(e, 'サンプルデータの生成に失敗しました'))
+      const msg = formatClientError(e, 'サンプルデータの生成に失敗しました')
+      if (msg.includes('[SAMPLE]') || msg.includes('既に')) {
+        setError(`${msg} 「再生成（上書き）」ボタンをお試しください。`)
+      } else {
+        setError(msg)
+      }
     } finally {
       setLoading(null)
     }
