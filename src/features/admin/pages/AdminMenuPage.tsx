@@ -1,73 +1,131 @@
-import { Link } from 'react-router-dom'
+import { lazy, Suspense, useMemo } from 'react'
+import { useShallow } from 'zustand/react/shallow'
+import { AnalyticsWindow } from '@/features/admin/components/AnalyticsWindow'
 import { AdminShell } from '@/features/admin/components/AdminShell'
+import { EventInfoPanel } from '@/features/admin/components/EventInfoPanel'
+import { WINDOW_REGISTRY, type WindowKey } from '@/features/admin/config/windowRegistry'
+import { useStagedWindowMount } from '@/features/admin/hooks/useStagedWindowMount'
+import { useAdminMenuStore } from '@/features/admin/store/adminMenuStore'
+import { useAuthStore } from '@/features/auth/store/authStore'
 
-const MENU_CARDS = [
-  {
-    to: '/admin/dashboard',
-    icon: 'bi-speedometer2',
-    label: 'ダッシュボード',
-    desc: 'リアルタイムのチェックイン状況・統計',
-    color: '#0d6efd',
-  },
-  {
-    to: '/admin/booths',
-    icon: 'bi-shop',
-    label: 'ブース管理',
-    desc: 'ブースの追加・編集・削除',
-    color: '#198754',
-  },
-  {
-    to: '/admin/categories',
-    icon: 'bi-tags',
-    label: 'カテゴリ管理',
-    desc: 'ブースのカテゴリを管理',
-    color: '#fd7e14',
-  },
-  {
-    to: '/admin/survey',
-    icon: 'bi-clipboard-check',
-    label: 'アンケート設問',
-    desc: 'アンケートの設問を作成・編集',
-    color: '#6f42c1',
-  },
-  {
-    to: '/admin/participants',
-    icon: 'bi-people',
-    label: '参加者一覧',
-    desc: '参加者のチェックイン状況を確認',
-    color: '#0dcaf0',
-  },
-]
+const LazyBoothAnalyticsWindow = lazy(() =>
+  import('@/features/admin/windows/BoothAnalyticsWindow').then((m) => ({
+    default: m.BoothAnalyticsWindow,
+  })),
+)
+const LazyParticipantAnalyticsWindow = lazy(() =>
+  import('@/features/admin/windows/ParticipantAnalyticsWindow').then((m) => ({
+    default: m.ParticipantAnalyticsWindow,
+  })),
+)
+const LazyCheckinAnalyticsWindow = lazy(() =>
+  import('@/features/admin/windows/CheckinAnalyticsWindow').then((m) => ({
+    default: m.CheckinAnalyticsWindow,
+  })),
+)
+const LazyRecommendationAnalyticsWindow = lazy(() =>
+  import('@/features/admin/windows/RecommendationAnalyticsWindow').then((m) => ({
+    default: m.RecommendationAnalyticsWindow,
+  })),
+)
+
+const LAZY_WINDOWS: Record<
+  WindowKey,
+  React.LazyExoticComponent<
+    React.ComponentType<{ eventId: string; active: boolean; minimized: boolean; onToggleMinimize: () => void }>
+  >
+> = {
+  booths: LazyBoothAnalyticsWindow,
+  participants: LazyParticipantAnalyticsWindow,
+  checkins: LazyCheckinAnalyticsWindow,
+  recommendations: LazyRecommendationAnalyticsWindow,
+}
+
+function WindowPlaceholder({ label, icon }: { label: string; icon: string }) {
+  return (
+    <AnalyticsWindow title={label} icon={icon} minimized={false} onToggleMinimize={() => undefined}>
+      <div className="text-muted small py-2">準備中…</div>
+    </AnalyticsWindow>
+  )
+}
 
 export function AdminMenuPage() {
+  const eventId = useAuthStore((s) => s.user?.event_id)
+  const { visibleWindows, minimizedWindows, toggleMinimized } = useAdminMenuStore(
+    useShallow((s) => ({
+      visibleWindows: s.visibleWindows,
+      minimizedWindows: s.minimizedWindows,
+      toggleMinimized: s.toggleMinimized,
+    })),
+  )
+
+  const activeWindows = useMemo(
+    () => WINDOW_REGISTRY.filter((w) => visibleWindows.includes(w.key)),
+    [visibleWindows],
+  )
+  const stagedKeys = useStagedWindowMount(activeWindows.map((w) => w.key))
+
+  const toggleHandlers = useMemo(() => {
+    const handlers = {} as Record<WindowKey, () => void>
+    for (const w of WINDOW_REGISTRY) {
+      handlers[w.key] = () => toggleMinimized(w.key)
+    }
+    return handlers
+  }, [toggleMinimized])
+
+  if (!eventId) {
+    return (
+      <AdminShell>
+        <p className="text-danger">イベント ID が取得できません</p>
+      </AdminShell>
+    )
+  }
+
   return (
-    <AdminShell title="運営メニュー">
-      <div className="row g-3">
-        {MENU_CARDS.map((card) => (
-          <div key={card.to} className="col-12 col-sm-6 col-lg-4">
-            <Link to={card.to} className="text-decoration-none">
-              <div
-                className="card h-100 border-0 shadow-sm"
-                style={{ transition: 'transform 0.15s', cursor: 'pointer' }}
-                onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-3px)')}
-                onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
-              >
-                <div className="card-body d-flex align-items-start gap-3 p-4">
-                  <div
-                    className="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
-                    style={{ width: 52, height: 52, backgroundColor: card.color + '18' }}
-                  >
-                    <i className={`bi ${card.icon} fs-4`} style={{ color: card.color }} />
-                  </div>
-                  <div>
-                    <div className="fw-semibold mb-1">{card.label}</div>
-                    <div className="text-muted small">{card.desc}</div>
-                  </div>
-                </div>
-              </div>
-            </Link>
+    <AdminShell>
+      <div className="d-flex flex-column gap-3">
+        <EventInfoPanel eventId={eventId} />
+
+        {activeWindows.length === 0 ? (
+          <div className="card border-0 shadow-sm">
+            <div className="card-body text-center text-muted py-5">
+              左サイドバーの「ウィンドウ」から分析パネルを ON にしてください
+            </div>
           </div>
-        ))}
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+              gap: '1rem',
+            }}
+          >
+            {activeWindows.map((def) => {
+              const minimized = minimizedWindows.includes(def.key)
+              const mounted = stagedKeys.has(def.key)
+              const active = mounted && !minimized
+              const LazyWindow = LAZY_WINDOWS[def.key]
+
+              if (!mounted) {
+                return <WindowPlaceholder key={def.key} label={def.label} icon={def.icon} />
+              }
+
+              return (
+                <Suspense
+                  key={def.key}
+                  fallback={<WindowPlaceholder label={def.label} icon={def.icon} />}
+                >
+                  <LazyWindow
+                    eventId={eventId}
+                    active={active}
+                    minimized={minimized}
+                    onToggleMinimize={toggleHandlers[def.key]}
+                  />
+                </Suspense>
+              )
+            })}
+          </div>
+        )}
       </div>
     </AdminShell>
   )
