@@ -45,7 +45,7 @@ export function buildRandomBingoGrid(booths: LegacyBooth[], seed: string): Bingo
     is_recommendation: false,
   }))
   const nulls: BingoGridCell[] = Array.from({ length: Math.max(0, 16 - boothCells.length) }, () => null)
-  const combined = shuffleWithRng([...boothCells, ...nulls], rng)
+  const combined = shuffleWithRng([...boothCells, ...nulls], rng).slice(0, 16)
   const filledIndices = combined
     .map((c, i) => (c !== null ? i : -1))
     .filter((i) => i >= 0) as number[]
