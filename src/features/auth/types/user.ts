@@ -3,4 +3,5 @@ export type AuthUser = {
   id: string
   display_name: string
   event_id: string
+  role: 'admin' | 'participant'
 }

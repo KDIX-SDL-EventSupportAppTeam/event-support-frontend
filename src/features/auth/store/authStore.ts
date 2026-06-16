@@ -6,6 +6,22 @@ import type { AuthUser } from '@/features/auth/types/user'
 const TOKEN_KEY = 'token'
 const USER_KEY = 'auth_user'
 
+function roleFromToken(token: string): AuthUser['role'] {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1] ?? '')) as { role?: string }
+    return payload.role === 'admin' ? 'admin' : 'participant'
+  } catch {
+    return 'participant'
+  }
+}
+
+function normalizeUser(user: AuthUser, token: string): AuthUser {
+  return {
+    ...user,
+    role: user.role ?? roleFromToken(token),
+  }
+}
+
 function readStoredToken(): string | null {
   try {
     return localStorage.getItem(TOKEN_KEY)
@@ -79,6 +95,7 @@ function readInitialSession(): { token: string | null; user: AuthUser | null } {
         id: '00000000-0000-0000-0000-000000000001',
         display_name: 'ローカル（モック）',
         event_id: DEV_DUMMY_EVENT_ID,
+        role: 'participant',
       }
       try {
         localStorage.setItem(USER_KEY, JSON.stringify(user))
@@ -96,6 +113,7 @@ function readInitialSession(): { token: string | null; user: AuthUser | null } {
     return { token: null, user: null }
   }
 
+  user = normalizeUser(user, token)
   return { token, user }
 }
 
@@ -114,13 +132,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: initial.user,
   isAuthenticated: !!(initial.token && initial.user),
   setSession: (token, user) => {
+    const normalized = normalizeUser(user, token)
     try {
       localStorage.setItem(TOKEN_KEY, token)
-      localStorage.setItem(USER_KEY, JSON.stringify(user))
+      localStorage.setItem(USER_KEY, JSON.stringify(normalized))
     } catch {
       /* ignore */
     }
-    set({ token, user, isAuthenticated: true })
+    set({ token, user: normalized, isAuthenticated: true })
   },
   clearSession: () => {
     try {
@@ -132,3 +151,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ token: null, user: null, isAuthenticated: false })
   },
 }))
+
+export function isAdminUser(user: AuthUser | null | undefined): boolean {
+  return user?.role === 'admin'
+}

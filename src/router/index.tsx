@@ -1,9 +1,16 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { AdminLoginPage } from '@/features/admin/pages/AdminLoginPage'
+import { AdminMenuPage } from '@/features/admin/pages/AdminMenuPage'
+import { BoothManagePage } from '@/features/admin/pages/BoothManagePage'
+import { CategoryManagePage } from '@/features/admin/pages/CategoryManagePage'
+import { DashboardPage } from '@/features/admin/pages/DashboardPage'
+import { ParticipantsPage } from '@/features/admin/pages/ParticipantsPage'
+import { SurveyManagePage } from '@/features/admin/pages/SurveyManagePage'
 import { LegacyPlaceholderPage } from '@/features/admin/pages/LegacyPlaceholderPage'
 import { LandingPage } from '@/features/auth/pages/LandingPage/LandingPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage/RegisterPage'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { isAdminUser, useAuthStore } from '@/features/auth/store/authStore'
 import { AwardVotePage } from '@/features/award/pages/AwardVotePage'
 import { BoothListPage } from '@/features/booth/pages/BoothListPage/BoothListPage'
 import { CheckInPage } from '@/features/checkin/pages/CheckInPage'
@@ -17,6 +24,14 @@ import { SchedulePage } from '@/features/schedule/pages/SchedulePage'
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token)
   if (!token) return <Navigate to="/login" replace />
+  return children
+}
+
+function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const token = useAuthStore((s) => s.token)
+  const user = useAuthStore((s) => s.user)
+  if (!token) return <Navigate to="/admin/login" replace />
+  if (!isAdminUser(user)) return <Navigate to="/home" replace />
   return children
 }
 
@@ -95,8 +110,55 @@ export function AppRoutes() {
         }
       />
       <Route path="/qa" element={<QaPage />} />
-      <Route path="/admin/login" element={<LegacyPlaceholderPage title="運営ログイン" />} />
-      <Route path="/admin/menu" element={<LegacyPlaceholderPage title="運営メニュー" />} />
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route
+        path="/admin/menu"
+        element={
+          <RequireAdmin>
+            <AdminMenuPage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <RequireAdmin>
+            <DashboardPage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/participants"
+        element={
+          <RequireAdmin>
+            <ParticipantsPage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/booths"
+        element={
+          <RequireAdmin>
+            <BoothManagePage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/survey"
+        element={
+          <RequireAdmin>
+            <SurveyManagePage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/categories"
+        element={
+          <RequireAdmin>
+            <CategoryManagePage />
+          </RequireAdmin>
+        }
+      />
       <Route path="/admin/awards" element={<LegacyPlaceholderPage title="アワード一覧" />} />
       <Route path="/admin/awards/:awardName" element={<LegacyPlaceholderPage title="アワード詳細" />} />
       <Route path="/admin/top3" element={<LegacyPlaceholderPage title="TOP3" />} />
@@ -105,11 +167,6 @@ export function AppRoutes() {
       <Route path="/booths/:id" element={<Navigate to="/booth-list" replace />} />
       <Route path="/survey" element={<Navigate to="/home" replace />} />
       <Route path="/scan" element={<Navigate to="/checkin" replace />} />
-      <Route path="/admin/dashboard" element={<Navigate to="/admin/menu" replace />} />
-      <Route path="/admin/participants" element={<Navigate to="/admin/menu" replace />} />
-      <Route path="/admin/booths" element={<Navigate to="/admin/menu" replace />} />
-      <Route path="/admin/survey" element={<Navigate to="/admin/menu" replace />} />
-      <Route path="/admin/categories" element={<Navigate to="/admin/menu" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
