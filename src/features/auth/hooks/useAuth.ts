@@ -17,7 +17,7 @@ export function useAuth() {
         const data = await authApi.login(eventId, email, password)
         setSession(data.token, data.user)
       } catch (e) {
-        setError(formatClientError(e, 'ログインに失敗しました'))
+        setError(formatClientError(e, 'ログインに失敗しました', 'login'))
         throw e
       } finally {
         setLoading(false)
@@ -34,7 +34,7 @@ export function useAuth() {
         const data = await authApi.register(eventId, email, password, displayName)
         setSession(data.token, data.user)
       } catch (e) {
-        setError(formatClientError(e, '登録に失敗しました'))
+        setError(formatClientError(e, '登録に失敗しました', 'register'))
         throw e
       } finally {
         setLoading(false)
