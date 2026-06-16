@@ -188,3 +188,129 @@ export type CheckinNewEvent = {
   user_display_name: string
   checked_in_at: string
 }
+
+export type BoothAnalytics = {
+  booths: {
+    id: string
+    name: string
+    manual_code: string
+    created_at: string
+    category: { id: string; name: string } | null
+    tags: string[]
+    checkin_count: number
+    checkin_by_method: { qr: number; manual: number }
+    avg_rating: number | null
+    rating_distribution: Record<number, number>
+    recommendation_offered_count: number
+    recommendation_selected_count: number
+    recommendation_acceptance_rate: number | null
+  }[]
+  category_summary: {
+    category_id: string | null
+    category_name: string
+    total_checkins: number
+    avg_rating: number | null
+    booth_count: number
+  }[]
+}
+
+export type ParticipantAnalytics = {
+  summary: {
+    total: number
+    checked_in: number
+    not_checked_in: number
+    rolling_30min: number
+    rolling_10min: number
+    rolling_30min_prev: number
+  }
+  joining_timeline: { time_slot: string; new_participants: number; cumulative: number }[]
+  checkin_distribution: { checkin_count: number; num_users: number }[]
+  participants: {
+    id: string
+    display_name: string
+    email: string
+    role: string
+    registered_at: string
+    first_checkin_at: string | null
+    total_checkins: number
+    visited_booths: { id: string; name: string }[]
+  }[]
+  survey_distribution: {
+    age_range: Record<string, number>
+    occupation: Record<string, number>
+    industry: Record<string, number>
+  } | null
+}
+
+export type CheckinAnalytics = {
+  timeline: { time_slot: string; count: number; cumulative: number }[]
+  by_method: { qr: number; manual: number }
+  peak_slot: string | null
+  peak_count: number
+  total: number
+  recent: {
+    id: string
+    booth_name: string
+    user_display_name: string
+    method: string
+    checked_in_at: string
+  }[]
+}
+
+export type RecommendationAnalytics = {
+  summary: {
+    total_recommendations: number
+    selected_count: number
+    acceptance_rate: number
+    open_count: number
+    algorithm: string
+  }
+  by_booth: {
+    booth_id: string
+    booth_name: string
+    offered_count: number
+    selected_count: number
+    acceptance_rate: number | null
+  }[]
+  transitions: {
+    from_booth_id: string
+    from_booth_name: string
+    to_booth_id: string
+    to_booth_name: string
+    count: number
+  }[]
+  conversion: {
+    selected_then_checkedin: number
+    selected_total: number
+    conversion_rate: number | null
+    avg_minutes_to_checkin: number | null
+  }
+}
+
+export async function fetchBoothAnalytics(eventId: string): Promise<BoothAnalytics> {
+  const res = await apiClient.get<ApiResponse<BoothAnalytics>>(
+    `/admin/events/${encodeURIComponent(eventId)}/analytics/booths`,
+  )
+  return unwrapApiData(res)
+}
+
+export async function fetchParticipantAnalytics(eventId: string): Promise<ParticipantAnalytics> {
+  const res = await apiClient.get<ApiResponse<ParticipantAnalytics>>(
+    `/admin/events/${encodeURIComponent(eventId)}/analytics/participants`,
+  )
+  return unwrapApiData(res)
+}
+
+export async function fetchCheckinAnalytics(eventId: string): Promise<CheckinAnalytics> {
+  const res = await apiClient.get<ApiResponse<CheckinAnalytics>>(
+    `/admin/events/${encodeURIComponent(eventId)}/analytics/checkins`,
+  )
+  return unwrapApiData(res)
+}
+
+export async function fetchRecommendationAnalytics(eventId: string): Promise<RecommendationAnalytics> {
+  const res = await apiClient.get<ApiResponse<RecommendationAnalytics>>(
+    `/admin/events/${encodeURIComponent(eventId)}/analytics/recommendations`,
+  )
+  return unwrapApiData(res)
+}
