@@ -13,6 +13,17 @@ function roleFromToken(token: string): AuthUser['role'] {
   }
 }
 
+/** JWT の exp を見て期限切れか判定する。壊れたトークンも無効扱い。 */
+export function isJwtExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1] ?? '')) as { exp?: number }
+    if (typeof payload.exp !== 'number') return false // exp が無ければ判定不能（保持）
+    return payload.exp * 1000 <= Date.now()
+  } catch {
+    return true // デコードできない壊れたトークンは無効
+  }
+}
+
 function normalizeUser(user: AuthUser, token: string): AuthUser {
   return {
     ...user,
@@ -74,6 +85,12 @@ function readInitialSession(): { token: string | null; user: AuthUser | null } {
   let user = readStoredUser()
 
   if (token && isStaleSessionForRealApi(token, user)) {
+    clearStoredSession()
+    return { token: null, user: null }
+  }
+
+  // 期限切れ・破損トークンは破棄（モックトークンは実 JWT でないため除外）
+  if (token && !isMockAuthEnabled() && isJwtExpired(token)) {
     clearStoredSession()
     return { token: null, user: null }
   }
