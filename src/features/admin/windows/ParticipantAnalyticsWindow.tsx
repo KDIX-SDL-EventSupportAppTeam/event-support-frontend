@@ -18,6 +18,7 @@ import { AnalyticsWindow } from '@/features/admin/components/AnalyticsWindow'
 import { useAnalyticsData } from '@/features/admin/hooks/useAnalyticsData'
 import { CHART_ANIMATION_OFF } from '@/features/admin/lib/chartOptions'
 import { fetchParticipantAnalytics } from '@/shared/api/v1Admin'
+import { useAuthStore } from '@/features/auth/store/authStore'
 
 const PIE_COLORS = ['#0d6efd', '#198754', '#fd7e14', '#6f42c1', '#0dcaf0', '#dc3545']
 
@@ -34,11 +35,13 @@ export const ParticipantAnalyticsWindow = memo(function ParticipantAnalyticsWind
   minimized,
   onToggleMinimize,
 }: Props) {
+  const token = useAuthStore((s) => s.token)
   const { data, error } = useAnalyticsData(
     active,
     eventId,
     fetchParticipantAnalytics,
     '参加者分析の取得に失敗しました',
+    { pollMs: 60_000, refetchEvents: ['checkin:new'], token },
   )
   const [roleFilter, setRoleFilter] = useState<'all' | 'participant' | 'admin'>('participant')
   const [checkinFilter, setCheckinFilter] = useState<'all' | 'checked' | 'none'>('all')

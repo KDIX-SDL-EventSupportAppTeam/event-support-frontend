@@ -45,6 +45,7 @@ export const CheckinAnalyticsWindow = memo(function CheckinAnalyticsWindow({
     eventId,
     fetchCheckinAnalytics,
     'チェックイン分析の取得に失敗しました',
+    { pollMs: 60_000, refetchEvents: ['checkin:new'], token },
   )
   const [recent, setRecent] = useState<CheckinAnalytics['recent']>([])
 
