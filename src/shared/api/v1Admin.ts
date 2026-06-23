@@ -189,6 +189,13 @@ export type CheckinNewEvent = {
   checked_in_at: string
 }
 
+export type RatingNewEvent = {
+  booth_id: string
+  booth_name: string
+  rating: number
+  user_display_name: string
+}
+
 export type BoothAnalytics = {
   booths: {
     id: string
