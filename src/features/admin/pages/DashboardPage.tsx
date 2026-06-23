@@ -50,9 +50,15 @@ export function DashboardPage() {
           : prev,
       )
     }
+    // 評価は集計（平均評価など）に影響するため、受信したら最新値を取り直す
+    const onRating = () => {
+      fetchAdminDashboard(eventId).then(setData).catch(() => undefined)
+    }
     socket.on('checkin:new', onNew)
+    socket.on('rating:new', onRating)
     return () => {
       socket.off('checkin:new', onNew)
+      socket.off('rating:new', onRating)
       disconnectSocket()
     }
   }, [token, eventId])

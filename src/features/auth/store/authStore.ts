@@ -2,9 +2,7 @@ import { create } from 'zustand'
 import { DEV_DUMMY_EVENT_ID } from '@/features/auth/config/eventIds'
 import { isMockAuthEnabled, MOCK_DEV_JWT } from '@/features/auth/mocks/authMock'
 import type { AuthUser } from '@/features/auth/types/user'
-
-const TOKEN_KEY = 'token'
-const USER_KEY = 'auth_user'
+import { TOKEN_KEY, USER_KEY } from '@/shared/config/storageKeys'
 
 function roleFromToken(token: string): AuthUser['role'] {
   try {
