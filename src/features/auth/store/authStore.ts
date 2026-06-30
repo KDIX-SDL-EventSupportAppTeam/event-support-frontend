@@ -7,7 +7,9 @@ import { TOKEN_KEY, USER_KEY } from '@/shared/config/storageKeys'
 function roleFromToken(token: string): AuthUser['role'] {
   try {
     const payload = JSON.parse(atob(token.split('.')[1] ?? '')) as { role?: string }
-    return payload.role === 'admin' ? 'admin' : 'participant'
+    const r = payload.role
+    if (r === 'manager' || r === 'viewer' || r === 'admin') return r
+    return 'participant'
   } catch {
     return 'participant'
   }
@@ -167,6 +169,20 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 }))
 
+/**
+ * スタッフ権限（manager / viewer / 旧 admin）を持つか判定する。
+ * admin ルートへのアクセス可否に使う。
+ */
 export function isAdminUser(user: AuthUser | null | undefined): boolean {
-  return user?.role === 'admin'
+  const role = user?.role
+  return role === 'manager' || role === 'viewer' || role === 'admin'
+}
+
+/**
+ * manager 権限（編集・削除権限あり）を持つか判定する。
+ * 旧 admin ロールも manager として扱う。
+ */
+export function isManagerUser(user: AuthUser | null | undefined): boolean {
+  const role = user?.role
+  return role === 'manager' || role === 'admin'
 }
