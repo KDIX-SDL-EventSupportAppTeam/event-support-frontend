@@ -11,6 +11,8 @@ import { formatClientError } from '@/shared/lib/formatClientError'
 
 export function SurveyManagePage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
+  const userRole = useAuthStore((s) => s.user?.role)
+  const canEdit = userRole === 'manager' || userRole === 'admin'
   const [items, setItems] = useState<AdminSurveyQuestion[]>([])
   const [questionText, setQuestionText] = useState('')
   const [options, setOptions] = useState('はい,いいえ')
@@ -57,7 +59,7 @@ export function SurveyManagePage() {
   return (
     <AdminShell title="アンケート設問">
       {error ? <p className="text-danger">{error}</p> : null}
-      <form className="row g-2 mb-4" onSubmit={onCreate}>
+      {canEdit && <form className="row g-2 mb-4" onSubmit={onCreate}>
         <div className="col-md-5">
           <input
             className="form-control"
@@ -79,7 +81,7 @@ export function SurveyManagePage() {
             追加
           </button>
         </div>
-      </form>
+      </form>}
       <ul className="list-group">
         {items.map((item) => (
           <li key={item.id} className="list-group-item">
@@ -88,9 +90,11 @@ export function SurveyManagePage() {
                 <div className="fw-semibold">{item.question_text}</div>
                 <div className="small text-muted">{item.options.join(' / ')}</div>
               </div>
-              <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => onDelete(item.id)}>
-                削除
-              </button>
+              {canEdit && (
+                <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => onDelete(item.id)}>
+                  削除
+                </button>
+              )}
             </div>
           </li>
         ))}
