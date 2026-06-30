@@ -54,6 +54,9 @@ function BoothFormFields({
 
 export function BoothManagePage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
+  const userRole = useAuthStore((s) => s.user?.role)
+  // manager と旧 admin のみ編集・削除操作を許可する
+  const canEdit = userRole === 'manager' || userRole === 'admin'
   const [booths, setBooths] = useState<V1BoothListItem[]>([])
   const [categories, setCategories] = useState<AdminCategory[]>([])
   const [newForm, setNewForm] = useState<BoothForm>(EMPTY_FORM)
@@ -141,8 +144,8 @@ export function BoothManagePage() {
         </div>
       )}
 
-      {/* 追加フォーム */}
-      <div className="card border-0 shadow-sm mb-4">
+      {/* 追加フォーム（管理者のみ表示） */}
+      {canEdit && <div className="card border-0 shadow-sm mb-4">
         <div
           className="card-header bg-white d-flex justify-content-between align-items-center"
           style={{ cursor: 'pointer' }}
@@ -169,7 +172,7 @@ export function BoothManagePage() {
             </form>
           </div>
         )}
-      </div>
+      </div>}
 
       {/* ブース一覧 */}
       <div className="card border-0 shadow-sm">
@@ -223,14 +226,16 @@ export function BoothManagePage() {
                     <i className="bi bi-qr-code-scan d-block" />
                     {b.checkin_count}
                   </div>
-                  <div className="d-flex gap-1 flex-shrink-0">
-                    <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => startEdit(b)}>
-                      <i className="bi bi-pencil" />
-                    </button>
-                    <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => onDelete(b.id)}>
-                      <i className="bi bi-trash" />
-                    </button>
-                  </div>
+                  {canEdit && (
+                    <div className="d-flex gap-1 flex-shrink-0">
+                      <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => startEdit(b)}>
+                        <i className="bi bi-pencil" />
+                      </button>
+                      <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => onDelete(b.id)}>
+                        <i className="bi bi-trash" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )
             )}
