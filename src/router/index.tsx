@@ -8,7 +8,6 @@ import { ParticipantsPage } from '@/features/admin/pages/ParticipantsPage'
 import { SurveyManagePage } from '@/features/admin/pages/SurveyManagePage'
 import { SampleDataPage } from '@/features/admin/pages/SampleDataPage'
 import { LegacyPlaceholderPage } from '@/features/admin/pages/LegacyPlaceholderPage'
-import { LandingPage } from '@/features/auth/pages/LandingPage/LandingPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage/RegisterPage'
 import { JoinPage } from '@/features/auth/pages/JoinPage/JoinPage'
@@ -44,7 +43,7 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
+      <Route path="/" element={<Navigate to="/organizer/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/join/:eventId" element={<JoinPage />} />
