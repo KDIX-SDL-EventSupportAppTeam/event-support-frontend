@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { resolveLoginEventId } from '@/features/auth/config/eventIds'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { isAdminUser, useAuthStore } from '@/features/auth/store/authStore'
@@ -9,6 +9,11 @@ export function AdminLoginPage() {
   const user = useAuthStore((s) => s.user)
   const { login, loading, error } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+
+  // ?event= クエリパラメータからイベント ID を取得（存在すればフォームに表示）
+  const queryEventId = searchParams.get('event') ?? ''
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -36,6 +41,12 @@ export function AdminLoginPage() {
         <div className="col-md-6">
           <div className="card p-4">
             <h1 className="h4 mb-3">運営ログイン</h1>
+            {queryEventId && (
+              <div className="alert alert-info small mb-3">
+                <i className="bi bi-info-circle me-1" />
+                イベント: <strong>{queryEventId}</strong>
+              </div>
+            )}
             <form onSubmit={onSubmit}>
               <div className="mb-3">
                 <label className="form-label">メールアドレス</label>
