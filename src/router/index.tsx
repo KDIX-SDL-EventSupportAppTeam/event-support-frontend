@@ -11,7 +11,11 @@ import { LegacyPlaceholderPage } from '@/features/admin/pages/LegacyPlaceholderP
 import { LandingPage } from '@/features/auth/pages/LandingPage/LandingPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage/RegisterPage'
+import { JoinPage } from '@/features/auth/pages/JoinPage/JoinPage'
 import { isAdminUser, useAuthStore } from '@/features/auth/store/authStore'
+import { OrganizerLoginPage } from '@/features/organizer/pages/OrganizerLoginPage'
+import { OrganizerEventCreatePage } from '@/features/organizer/pages/OrganizerEventCreatePage'
+import { RequireOrganizer } from '@/features/organizer/guards/RequireOrganizer'
 import { AwardVotePage } from '@/features/award/pages/AwardVotePage'
 import { BoothListPage } from '@/features/booth/pages/BoothListPage/BoothListPage'
 import { CheckInPage } from '@/features/checkin/pages/CheckInPage'
@@ -43,6 +47,7 @@ export function AppRoutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/join/:eventId" element={<JoinPage />} />
       <Route path="/pre-register" element={<LegacyPlaceholderPage title="プレ登録" />} />
       <Route path="/forgot-password" element={<LegacyPlaceholderPage title="パスワードを忘れた場合" />} />
       <Route path="/reset-password/:token" element={<LegacyPlaceholderPage title="パスワード再設定" />} />
@@ -111,6 +116,15 @@ export function AppRoutes() {
         }
       />
       <Route path="/qa" element={<QaPage />} />
+      <Route path="/organizer/login" element={<OrganizerLoginPage />} />
+      <Route
+        path="/organizer/events/new"
+        element={
+          <RequireOrganizer>
+            <OrganizerEventCreatePage />
+          </RequireOrganizer>
+        }
+      />
       <Route path="/admin/login" element={<AdminLoginPage />} />
       <Route
         path="/admin/menu"
