@@ -61,15 +61,25 @@ export type CreateEventBody = {
   }
 }
 
+// サーバー(03-api.md)のレスポンス契約に合わせたネスト構造
 export type CreatedEvent = {
-  id: string
-  name: string
-  date_start: string
-  date_end: string
-  venue: string | null
-  participant_url: string
-  admin_url: string
-  initial_manager_email: string
+  event: {
+    id: string
+    name: string
+    date_start: string
+    date_end: string
+    venue: string | null
+  }
+  initial_manager: {
+    id: string
+    email: string
+    display_name: string
+    token: string
+  }
+  urls: {
+    participant: string
+    admin: string
+  }
 }
 
 export type InviteStaffBody = {
@@ -89,11 +99,12 @@ export type InvitedStaff = {
 // --- API 関数 ---
 
 export async function organizerLogin(body: OrganizerLoginBody): Promise<OrganizerLoginResponse> {
-  const res = await organizerApiClient.post<OrganizerLoginResponse>(
+  const res = await organizerApiClient.post<{ data: OrganizerLoginResponse }>(
     '/organizer/auth/login',
     body,
   )
-  return res.data
+  // サーバーは sendOk で { success, data } にラップするため data を取り出す
+  return res.data.data
 }
 
 export async function createOrganizerEvent(body: CreateEventBody): Promise<CreatedEvent> {
@@ -108,9 +119,10 @@ export async function inviteOrganizerStaff(
   eventId: string,
   body: InviteStaffBody,
 ): Promise<InvitedStaff> {
-  const res = await organizerApiClient.post<{ data: InvitedStaff }>(
+  const res = await organizerApiClient.post<{ data: { staff: InvitedStaff } }>(
     `/organizer/events/${encodeURIComponent(eventId)}/staff`,
     body,
   )
-  return res.data.data
+  // サーバーは { staff: {...} } を data 内に返すため staff を取り出す
+  return res.data.data.staff
 }

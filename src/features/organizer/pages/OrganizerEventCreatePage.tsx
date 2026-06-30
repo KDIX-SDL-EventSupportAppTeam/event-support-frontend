@@ -94,9 +94,9 @@ export function OrganizerEventCreatePage() {
         <div className="row justify-content-center">
           <div className="col-12 col-md-8 col-lg-7">
             <IssuedUrlCard
-              participantUrl={createdEvent.participant_url}
-              adminUrl={createdEvent.admin_url}
-              initialManagerEmail={createdEvent.initial_manager_email}
+              participantUrl={createdEvent.urls.participant}
+              adminUrl={createdEvent.urls.admin}
+              initialManagerEmail={createdEvent.initial_manager.email}
             />
 
             <div className="mt-4">
@@ -111,7 +111,7 @@ export function OrganizerEventCreatePage() {
                 </button>
               ) : (
                 <div className="card border-0 shadow-sm p-3 mb-3">
-                  <StaffInviteForm eventId={createdEvent.id} />
+                  <StaffInviteForm eventId={createdEvent.event.id} />
                 </div>
               )}
               <button type="button" className="btn btn-outline-secondary" onClick={resetForm}>
