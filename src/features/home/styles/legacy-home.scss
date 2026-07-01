@@ -19,12 +19,13 @@
 
   .bingo-cell {
     aspect-ratio: 1 / 1;
+    margin-bottom: 6px;
     border-radius: 0.375rem;
     border: 2px solid #000;
     cursor: pointer;
     transition:
-      transform 0.2s,
-      box-shadow 0.2s;
+      transform 0.1s,
+      box-shadow 0.1s;
     background-color: #fff;
     font-weight: 500;
     overflow: hidden;
@@ -141,6 +142,18 @@
 
   .bingo-cell[role='button'] {
     cursor: pointer;
+    /* タップできると一目で分かる立体感（3D影）。押せるマス（role=button）だけに付与し、空マスには付けない */
+    box-shadow:
+      0 5px 0 0 #969ba3,
+      0 7px 10px rgba(16, 24, 40, 0.18);
+  }
+
+  /* 押した瞬間に沈み込む（押し込みフィードバック） */
+  .bingo-cell[role='button']:active {
+    transform: translateY(5px);
+    box-shadow:
+      0 0 0 0 #969ba3,
+      0 2px 3px rgba(16, 24, 40, 0.14);
   }
 
   .sub-actions {

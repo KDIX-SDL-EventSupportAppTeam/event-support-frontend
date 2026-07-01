@@ -105,6 +105,17 @@ Vite プロキシ（`vite.config.ts`）: `/api/v1` → `127.0.0.1:3000`、`/api`
 
 `event_id` の正: [docs/legacy/tests/fixtures/dummy-login.md](./docs/legacy/tests/fixtures/dummy-login.md)
 
+### エントリポイント（トップ `/`）
+
+| パス | 着地先 / 画面 |
+|---|---|
+| `/` | `/organizer/login` へリダイレクト（オーガナイザーが主たる入口） |
+| `/organizer/login` | オーガナイザーログイン |
+| `/join/:eventId` | 参加者の入口。イベント個別の QR / リンクから登録 → `/home` |
+| `/login`・`/register` | 参加者ログイン / 登録（トップからは導線なし。直接 URL でのみ到達） |
+
+経緯・判断は [docs/adrs/0002-top-redirects-to-organizer-login.md](./docs/adrs/0002-top-redirects-to-organizer-login.md)。
+
 ### 運営画面（admin）
 
 | パス | 画面 |

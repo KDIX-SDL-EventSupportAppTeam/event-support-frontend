@@ -20,6 +20,7 @@ NNNN-kebab-case-title.md
 | 番号 | ファイル | 概要 | ステータス |
 |------|----------|------|------------|
 | 0001 | [0001-features-shared-directory.md](./0001-features-shared-directory.md) | features + shared ディレクトリ移行 | 採用 |
+| 0002 | [0002-top-redirects-to-organizer-login.md](./0002-top-redirects-to-organizer-login.md) | トップ `/` をオーガナイザーログインにリダイレクト | 採用 |
 
 ## レガシー
 
