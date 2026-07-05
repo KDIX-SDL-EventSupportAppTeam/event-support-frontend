@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import * as authApi from '@/features/auth/api/auth'
 import { formatClientError } from '@/shared/lib/formatClientError'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 
 export function useAuth() {
   const setSession = useAuthStore((s) => s.setSession)

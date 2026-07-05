@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AdminShell } from '@/features/admin/components/AdminShell'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 import { deleteAdminParticipant, fetchAdminParticipants, type AdminParticipant } from '@/shared/api/v1Admin'
 import { formatClientError } from '@/shared/lib/formatClientError'
 

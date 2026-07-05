@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 import {
   DEV_API_DISPLAY_NAME,
   resolveDevLoginEmail,
@@ -19,10 +19,12 @@ export function JoinPage() {
   const { register, loading, error } = useAuth()
   const navigate = useNavigate()
 
-  const [email, setEmail] = useState(resolveDevLoginEmail)
-  const [password, setPassword] = useState(resolveDevLoginPassword)
-  const [displayName, setDisplayName] = useState(
-    () => import.meta.env.VITE_DEV_DISPLAY_NAME?.trim() || DEV_API_DISPLAY_NAME,
+  const [email, setEmail] = useState(() => (import.meta.env.DEV ? resolveDevLoginEmail() : ''))
+  const [password, setPassword] = useState(() =>
+    import.meta.env.DEV ? resolveDevLoginPassword() : '',
+  )
+  const [displayName, setDisplayName] = useState(() =>
+    import.meta.env.DEV ? import.meta.env.VITE_DEV_DISPLAY_NAME?.trim() || DEV_API_DISPLAY_NAME : '',
   )
 
   // イベント名は現時点では公開エンドポイントが未定義のため eventId をそのまま表示する

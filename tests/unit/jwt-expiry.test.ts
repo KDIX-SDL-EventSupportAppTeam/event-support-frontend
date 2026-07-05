@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isJwtExpired } from '@/features/auth/store/authStore'
+import { isJwtExpired } from '@/shared/auth/authStore'
 
 /** テスト用に payload だけ正しい JWT 形式の文字列を作る（署名はダミー） */
 function makeToken(payload: Record<string, unknown>): string {
