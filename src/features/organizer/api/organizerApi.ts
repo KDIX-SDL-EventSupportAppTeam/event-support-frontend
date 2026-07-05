@@ -61,7 +61,7 @@ export type CreateEventBody = {
   }
 }
 
-// サーバー(03-api.md)のレスポンス契約に合わせたネスト構造
+// event-support-server/.sdd/03-api.md のレスポンス契約に合わせたネスト構造
 export type CreatedEvent = {
   event: {
     id: string

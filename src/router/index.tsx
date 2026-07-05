@@ -11,7 +11,7 @@ import { LegacyPlaceholderPage } from '@/features/admin/pages/LegacyPlaceholderP
 import { LoginPage } from '@/features/auth/pages/LoginPage/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage/RegisterPage'
 import { JoinPage } from '@/features/auth/pages/JoinPage/JoinPage'
-import { isAdminUser, useAuthStore } from '@/features/auth/store/authStore'
+import { isAdminUser, useAuthStore } from '@/shared/auth/authStore'
 import { OrganizerLoginPage } from '@/features/organizer/pages/OrganizerLoginPage'
 import { OrganizerEventCreatePage } from '@/features/organizer/pages/OrganizerEventCreatePage'
 import { RequireOrganizer } from '@/features/organizer/guards/RequireOrganizer'

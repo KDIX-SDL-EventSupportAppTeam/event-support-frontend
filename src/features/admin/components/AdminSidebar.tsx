@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
 import { FULL_PAGE_NAV, WINDOW_REGISTRY } from '@/features/admin/config/windowRegistry'
 import { useAdminMenuStore } from '@/features/admin/store/adminMenuStore'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 
 type AdminSidebarProps = {
   onLogout: () => void

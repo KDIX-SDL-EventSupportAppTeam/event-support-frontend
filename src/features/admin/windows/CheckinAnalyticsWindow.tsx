@@ -22,7 +22,7 @@ import {
   type CheckinNewEvent,
 } from '@/shared/api/v1Admin'
 import { connectSocket, disconnectSocket } from '@/shared/api/socket'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 
 const METHOD_COLORS = ['#0d6efd', '#fd7e14']
 

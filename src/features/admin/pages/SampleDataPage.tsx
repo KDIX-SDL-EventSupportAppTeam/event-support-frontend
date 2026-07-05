@@ -1,7 +1,7 @@
 import { AdminShell } from '@/features/admin/components/AdminShell'
 import { EventDataClearPanel } from '@/features/admin/components/EventDataClearPanel'
 import { SampleDataPanel } from '@/features/admin/components/SampleDataPanel'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 
 export function SampleDataPage() {
   const eventId = useAuthStore((s) => s.user?.event_id)

@@ -2,7 +2,7 @@ import { FormEvent, useState } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { resolveLoginEventId } from '@/features/auth/config/eventIds'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { isAdminUser, useAuthStore } from '@/features/auth/store/authStore'
+import { isAdminUser, useAuthStore } from '@/shared/auth/authStore'
 
 export function AdminLoginPage() {
   const token = useAuthStore((s) => s.token)

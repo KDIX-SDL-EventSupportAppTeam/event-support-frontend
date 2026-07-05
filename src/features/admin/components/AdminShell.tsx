@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
 import { AdminSidebar } from '@/features/admin/components/AdminSidebar'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 
 type AdminShellProps = {
   title?: string

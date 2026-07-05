@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { TOKEN_KEY } from '@/shared/config/storageKeys'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
 

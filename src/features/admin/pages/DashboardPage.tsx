@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AdminShell } from '@/features/admin/components/AdminShell'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 import {
   fetchAdminDashboard,
   type AdminDashboard,

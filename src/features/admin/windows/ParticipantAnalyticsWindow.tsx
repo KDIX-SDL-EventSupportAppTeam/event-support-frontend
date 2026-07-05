@@ -18,7 +18,7 @@ import { AnalyticsWindow } from '@/features/admin/components/AnalyticsWindow'
 import { useAnalyticsData } from '@/features/admin/hooks/useAnalyticsData'
 import { CHART_ANIMATION_OFF } from '@/features/admin/lib/chartOptions'
 import { fetchParticipantAnalytics } from '@/shared/api/v1Admin'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 
 const PIE_COLORS = ['#0d6efd', '#198754', '#fd7e14', '#6f42c1', '#0dcaf0', '#dc3545']
 

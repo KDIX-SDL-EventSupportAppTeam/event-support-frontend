@@ -7,16 +7,18 @@ import {
   resolveDevLoginEmail,
   resolveDevLoginPassword,
 } from '@/features/auth/mocks/devDummyCredentials'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 
 export function RegisterPage() {
   const token = useAuthStore((s) => s.token)
   const { register, loading, error } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState(resolveDevLoginEmail)
-  const [password, setPassword] = useState(resolveDevLoginPassword)
-  const [displayName, setDisplayName] = useState(
-    () => import.meta.env.VITE_DEV_DISPLAY_NAME?.trim() || DEV_API_DISPLAY_NAME,
+  const [email, setEmail] = useState(() => (import.meta.env.DEV ? resolveDevLoginEmail() : ''))
+  const [password, setPassword] = useState(() =>
+    import.meta.env.DEV ? resolveDevLoginPassword() : '',
+  )
+  const [displayName, setDisplayName] = useState(() =>
+    import.meta.env.DEV ? import.meta.env.VITE_DEV_DISPLAY_NAME?.trim() || DEV_API_DISPLAY_NAME : '',
   )
 
   if (token) return <Navigate to="/home" replace />
