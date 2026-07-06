@@ -1,10 +1,11 @@
 import { AdminShell } from '@/features/admin/components/AdminShell'
 import { EventDataClearPanel } from '@/features/admin/components/EventDataClearPanel'
 import { SampleDataPanel } from '@/features/admin/components/SampleDataPanel'
-import { useAuthStore } from '@/shared/auth/authStore'
+import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
 
 export function SampleDataPage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
+  const canEdit = isManagerUser(useAuthStore((s) => s.user))
 
   if (!eventId) {
     return (
@@ -26,8 +27,17 @@ export function SampleDataPage() {
             テスト用サンプルの生成・削除、手動テストデータを含むイベント全データのリセット
           </p>
         </div>
-        <SampleDataPanel eventId={eventId} />
-        <EventDataClearPanel eventId={eventId} />
+        {canEdit ? (
+          <>
+            <SampleDataPanel eventId={eventId} />
+            <EventDataClearPanel eventId={eventId} />
+          </>
+        ) : (
+          <div className="alert alert-secondary mb-0">
+            <i className="bi bi-lock me-1" />
+            この操作には管理者権限が必要です。
+          </div>
+        )}
       </div>
     </AdminShell>
   )

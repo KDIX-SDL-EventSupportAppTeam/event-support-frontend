@@ -96,6 +96,35 @@ export type InvitedStaff = {
   role: 'manager' | 'viewer'
 }
 
+export type StaffRole = 'manager' | 'viewer'
+
+// サーバー .sdd 2026-07-05-organizer-portal-phase2/01-api.md のレスポンス契約と 1:1
+export type OrganizerEvent = {
+  id: string
+  name: string
+  date_start: string
+  date_end: string
+  venue: string | null
+  created_at: string
+  stats: {
+    participants: number
+    booths: number
+    checkins: number
+  }
+  urls: {
+    participant: string
+    admin: string
+  }
+}
+
+export type Staff = {
+  id: string
+  email: string
+  display_name: string
+  role: StaffRole
+  created_at: string
+}
+
 // --- API 関数 ---
 
 export async function organizerLogin(body: OrganizerLoginBody): Promise<OrganizerLoginResponse> {
@@ -125,4 +154,43 @@ export async function inviteOrganizerStaff(
   )
   // サーバーは { staff: {...} } を data 内に返すため staff を取り出す
   return res.data.data.staff
+}
+
+export async function listOrganizerEvents(): Promise<OrganizerEvent[]> {
+  const res = await organizerApiClient.get<{ data: { events: OrganizerEvent[] } }>(
+    '/organizer/events',
+  )
+  return res.data.data.events
+}
+
+export async function getOrganizerEvent(eventId: string): Promise<OrganizerEvent> {
+  const res = await organizerApiClient.get<{ data: { event: OrganizerEvent } }>(
+    `/organizer/events/${encodeURIComponent(eventId)}`,
+  )
+  return res.data.data.event
+}
+
+export async function listOrganizerStaff(eventId: string): Promise<Staff[]> {
+  const res = await organizerApiClient.get<{ data: { staff: Staff[] } }>(
+    `/organizer/events/${encodeURIComponent(eventId)}/staff`,
+  )
+  return res.data.data.staff
+}
+
+export async function updateOrganizerStaffRole(
+  eventId: string,
+  userId: string,
+  role: StaffRole,
+): Promise<Staff> {
+  const res = await organizerApiClient.patch<{ data: { staff: Staff } }>(
+    `/organizer/events/${encodeURIComponent(eventId)}/staff/${encodeURIComponent(userId)}`,
+    { role },
+  )
+  return res.data.data.staff
+}
+
+export async function removeOrganizerStaff(eventId: string, userId: string): Promise<void> {
+  await organizerApiClient.delete(
+    `/organizer/events/${encodeURIComponent(eventId)}/staff/${encodeURIComponent(userId)}`,
+  )
 }

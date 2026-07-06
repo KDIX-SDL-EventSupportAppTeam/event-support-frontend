@@ -19,9 +19,9 @@ export function OrganizerLoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // すでにログイン済みなら作成ページへ
+  // すでにログイン済みならイベント一覧へ
   if (token && organizer) {
-    return <Navigate to="/organizer/events/new" replace />
+    return <Navigate to="/organizer/events" replace />
   }
 
   async function onSubmit(e: FormEvent) {
@@ -31,7 +31,7 @@ export function OrganizerLoginPage() {
     try {
       const res = await organizerLogin({ email, password })
       setSession(res.token, res.organizer)
-      navigate('/organizer/events/new', { replace: true })
+      navigate('/organizer/events', { replace: true })
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } }
       setError(axiosErr?.response?.data?.message ?? 'ログインに失敗しました')

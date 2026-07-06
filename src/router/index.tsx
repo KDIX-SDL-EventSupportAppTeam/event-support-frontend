@@ -7,6 +7,7 @@ import { DashboardPage } from '@/features/admin/pages/DashboardPage'
 import { ParticipantsPage } from '@/features/admin/pages/ParticipantsPage'
 import { SurveyManagePage } from '@/features/admin/pages/SurveyManagePage'
 import { SampleDataPage } from '@/features/admin/pages/SampleDataPage'
+import { AuditLogPage } from '@/features/admin/pages/AuditLogPage'
 import { LegacyPlaceholderPage } from '@/features/admin/pages/LegacyPlaceholderPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage/RegisterPage'
@@ -14,6 +15,8 @@ import { JoinPage } from '@/features/auth/pages/JoinPage/JoinPage'
 import { isAdminUser, useAuthStore } from '@/shared/auth/authStore'
 import { OrganizerLoginPage } from '@/features/organizer/pages/OrganizerLoginPage'
 import { OrganizerEventCreatePage } from '@/features/organizer/pages/OrganizerEventCreatePage'
+import { OrganizerEventListPage } from '@/features/organizer/pages/OrganizerEventListPage'
+import { OrganizerEventDetailPage } from '@/features/organizer/pages/OrganizerEventDetailPage'
 import { RequireOrganizer } from '@/features/organizer/guards/RequireOrganizer'
 import { AwardVotePage } from '@/features/award/pages/AwardVotePage'
 import { BoothListPage } from '@/features/booth/pages/BoothListPage/BoothListPage'
@@ -117,10 +120,26 @@ export function AppRoutes() {
       <Route path="/qa" element={<QaPage />} />
       <Route path="/organizer/login" element={<OrganizerLoginPage />} />
       <Route
+        path="/organizer/events"
+        element={
+          <RequireOrganizer>
+            <OrganizerEventListPage />
+          </RequireOrganizer>
+        }
+      />
+      <Route
         path="/organizer/events/new"
         element={
           <RequireOrganizer>
             <OrganizerEventCreatePage />
+          </RequireOrganizer>
+        }
+      />
+      <Route
+        path="/organizer/events/:eventId"
+        element={
+          <RequireOrganizer>
+            <OrganizerEventDetailPage />
           </RequireOrganizer>
         }
       />
@@ -178,6 +197,14 @@ export function AppRoutes() {
         element={
           <RequireAdmin>
             <SampleDataPage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/audit-logs"
+        element={
+          <RequireAdmin>
+            <AuditLogPage />
           </RequireAdmin>
         }
       />
