@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { AdminSidebar } from '@/features/admin/components/AdminSidebar'
 import { useAuthStore } from '@/shared/auth/authStore'
-import { fetchAdminEvent } from '@/shared/api/v1Admin'
-import { eventStatus, type EventStatus } from '@/shared/lib/eventStatus'
+import { fetchAdminEventCached, useAdminMenuStore } from '@/features/admin/store/adminMenuStore'
+import { eventStatus } from '@/shared/lib/eventStatus'
 
 type AdminShellProps = {
   title?: string
@@ -17,30 +17,24 @@ export function AdminShell({ title, children }: AdminShellProps) {
   const isMenu = pathname === '/admin/menu'
   const onLogout = useCallback(() => clearSession(), [clearSession])
 
-  // イベント名・開催ステータスはサイドバー常時表示のため、ここで 1 回だけ取得する
-  const [eventName, setEventName] = useState<string | undefined>(undefined)
-  const [status, setStatus] = useState<EventStatus | null>(null)
+  // イベント名・開催ステータスはサイドバー常時表示のため adminMenuStore のキャッシュを使う。
+  // 同一 eventId の間はページを行き来しても再フェッチしない（FE-R2）
+  const cachedEvent = useAdminMenuStore((s) => s.cachedEvent)
 
   useEffect(() => {
     if (!eventId) return
-    let active = true
-    fetchAdminEvent(eventId)
-      .then((e) => {
-        if (!active) return
-        setEventName(e.name)
-        setStatus(eventStatus(e.date_start, e.date_end))
-      })
-      .catch(() => {
-        /* 取得失敗時はイベント名なしで運用（サイドバーは表示され続ける） */
-      })
-    return () => {
-      active = false
-    }
+    fetchAdminEventCached(eventId).catch(() => {
+      /* 取得失敗時はイベント名なしで運用（サイドバーは表示され続ける） */
+    })
   }, [eventId])
+
+  const current = cachedEvent && cachedEvent.id === eventId ? cachedEvent : null
+  // 開催ステータスはキャッシュした日時から表示のたびに導出する
+  const status = current ? eventStatus(current.date_start, current.date_end) : null
 
   return (
     <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
-      <AdminSidebar onLogout={onLogout} eventName={eventName} status={status} />
+      <AdminSidebar onLogout={onLogout} eventName={current?.name} status={status} />
       <main className="flex-grow-1 overflow-auto">
         <div className="p-4">
           {title && !isMenu ? <h1 className="h4 mb-4 fw-bold">{title}</h1> : null}
