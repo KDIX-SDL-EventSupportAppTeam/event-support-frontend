@@ -1,6 +1,4 @@
-function isMockAuthEnabled(): boolean {
-  return import.meta.env.DEV && import.meta.env.VITE_MOCK_API !== 'false'
-}
+import { isMockAuthEnabled } from '@/shared/auth/mockSession'
 
 /** モック認証用（Zod の email 検証を通らないため実 API では不可） */
 export const DEV_DUMMY_EMAIL = 'a@a'
@@ -14,12 +12,14 @@ export const DEV_API_DISPLAY_NAME = '開発用参加者'
 export { DEV_DUMMY_EVENT_ID, SEED_DEV_EVENT_ID } from '@/features/auth/config/eventIds'
 
 export function resolveDevLoginEmail(): string {
+  if (!import.meta.env.DEV) return ''
   const fromEnv = import.meta.env.VITE_DEV_LOGIN_EMAIL?.trim()
   if (fromEnv) return fromEnv
   return isMockAuthEnabled() ? DEV_DUMMY_EMAIL : DEV_API_EMAIL
 }
 
 export function resolveDevLoginPassword(): string {
+  if (!import.meta.env.DEV) return ''
   const fromEnv = import.meta.env.VITE_DEV_LOGIN_PASSWORD?.trim()
   if (fromEnv) return fromEnv
   return isMockAuthEnabled() ? DEV_DUMMY_PASSWORD : DEV_API_PASSWORD

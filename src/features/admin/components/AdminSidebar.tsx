@@ -3,18 +3,31 @@ import { Link, useLocation } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
 import { FULL_PAGE_NAV, WINDOW_REGISTRY } from '@/features/admin/config/windowRegistry'
 import { useAdminMenuStore } from '@/features/admin/store/adminMenuStore'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
+import type { EventStatus } from '@/shared/lib/eventStatus'
 
 type AdminSidebarProps = {
   onLogout: () => void
+  /** 現在のイベント名（AdminShell が 1 回だけ取得して渡す） */
+  eventName?: string
+  /** 現在のイベントの開催ステータス */
+  status?: EventStatus | null
 }
 
-export const AdminSidebar = memo(function AdminSidebar({ onLogout }: AdminSidebarProps) {
-  const eventName = useAuthStore((s) => s.user?.display_name)
+export const AdminSidebar = memo(function AdminSidebar({
+  onLogout,
+  eventName,
+  status,
+}: AdminSidebarProps) {
+  const user = useAuthStore((s) => s.user)
+  const loginName = user?.display_name
+  const canManage = isManagerUser(user)
   const { pathname } = useLocation()
   const { visibleWindows, toggleWindow } = useAdminMenuStore(
     useShallow((s) => ({ visibleWindows: s.visibleWindows, toggleWindow: s.toggleWindow })),
   )
+
+  const navItems = FULL_PAGE_NAV.filter((item) => !item.managerOnly || canManage)
 
   return (
     <aside
@@ -27,13 +40,23 @@ export const AdminSidebar = memo(function AdminSidebar({ onLogout }: AdminSideba
           運営管理
         </Link>
         {eventName ? (
-          <div className="text-white-50 small mt-1 text-truncate">{eventName}</div>
+          <div className="mt-2">
+            <div className="text-white small text-truncate">{eventName}</div>
+            {status ? (
+              <span className={`badge ${status.className} mt-1`}>{status.label}</span>
+            ) : null}
+          </div>
+        ) : null}
+        {loginName ? (
+          <div className="text-white-50 mt-2 text-truncate" style={{ fontSize: '0.75rem' }}>
+            ログイン中: {loginName}
+          </div>
         ) : null}
       </div>
 
       <nav className="flex-grow-1 overflow-auto py-2">
         <div className="px-3 py-1 text-white-50 small text-uppercase">フルページ</div>
-        {FULL_PAGE_NAV.map((item) => (
+        {navItems.map((item) => (
           <Link
             key={item.to}
             to={item.to}

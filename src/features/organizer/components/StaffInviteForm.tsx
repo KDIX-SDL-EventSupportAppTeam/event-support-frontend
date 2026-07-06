@@ -3,6 +3,8 @@ import { inviteOrganizerStaff, type InvitedStaff } from '@/features/organizer/ap
 
 type Props = {
   eventId: string
+  /** 招待成功時に呼ばれる。詳細画面ではスタッフ一覧の再取得に使う。 */
+  onInvited?: () => void
 }
 
 const ROLE_LABELS: Record<'manager' | 'viewer', string> = {
@@ -14,7 +16,7 @@ const ROLE_LABELS: Record<'manager' | 'viewer', string> = {
  * スタッフ招待フォーム。
  * 送信のたびに招待済みスタッフ一覧に追加する。
  */
-export function StaffInviteForm({ eventId }: Props) {
+export function StaffInviteForm({ eventId, onInvited }: Props) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -39,6 +41,7 @@ export function StaffInviteForm({ eventId }: Props) {
       setPassword('')
       setDisplayName('')
       setRole('viewer')
+      onInvited?.()
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } }
       setError(axiosErr?.response?.data?.message ?? 'スタッフの追加に失敗しました')

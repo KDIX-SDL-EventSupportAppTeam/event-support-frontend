@@ -1,73 +1,75 @@
 import { useEffect, useState } from 'react'
-import { fetchAdminEvent, updateAdminEvent, type AdminEvent } from '@/shared/api/v1Admin'
+import { updateAdminEvent, type AdminEvent } from '@/shared/api/v1Admin'
 import { formatClientError } from '@/shared/lib/formatClientError'
-
-function eventStatus(event: AdminEvent): { label: string; className: string } {
-  const now = Date.now()
-  const start = new Date(event.date_start).getTime()
-  const end = new Date(event.date_end).getTime()
-  if (now < start) return { label: '準備中', className: 'bg-secondary' }
-  if (now <= end) return { label: '開催中', className: 'bg-success' }
-  return { label: '終了', className: 'bg-dark' }
-}
-
-function formatRemaining(event: AdminEvent): string | null {
-  const now = Date.now()
-  const start = new Date(event.date_start).getTime()
-  const end = new Date(event.date_end).getTime()
-  if (now < start) {
-    const mins = Math.floor((start - now) / 60000)
-    const h = Math.floor(mins / 60)
-    const m = mins % 60
-    return `開始まで ${h}時間${m}分`
-  }
-  if (now <= end) {
-    const mins = Math.floor((end - now) / 60000)
-    const h = Math.floor(mins / 60)
-    const m = mins % 60
-    return `終了まで ${h}時間${m}分`
-  }
-  return null
-}
+import { eventStatus, formatRemaining } from '@/shared/lib/eventStatus'
+import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
+import { fetchAdminEventCached, useAdminMenuStore } from '@/features/admin/store/adminMenuStore'
 
 type EventInfoPanelProps = {
   eventId: string
 }
 
+type EditField = 'name' | 'venue'
+
 export function EventInfoPanel({ eventId }: EventInfoPanelProps) {
+  const canEdit = isManagerUser(useAuthStore((s) => s.user))
+  const setCachedEvent = useAdminMenuStore((s) => s.setCachedEvent)
+
   const [event, setEvent] = useState<AdminEvent | null>(null)
-  const [editName, setEditName] = useState('')
-  const [editVenue, setEditVenue] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  // 初回読み込みの失敗のみパネル全体をエラー表示にする。保存エラーはインライン表示にする（02-D-1）
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
+  // 明示的な編集モード（鉛筆 → 入力 → 保存/キャンセル）。blur 即保存はやめる（02-D-2）
+  const [editing, setEditing] = useState<EditField | null>(null)
+  const [draft, setDraft] = useState('')
+
   useEffect(() => {
-    fetchAdminEvent(eventId)
-      .then((e) => {
-        setEvent(e)
-        setEditName(e.name)
-        setEditVenue(e.venue ?? '')
-      })
-      .catch((e) => setError(formatClientError(e, 'イベント情報の取得に失敗しました')))
+    // AdminShell（サイドバー）と同じキャッシュを共有し、GET を 1 回に抑える（FE-R2）
+    fetchAdminEventCached(eventId)
+      .then((e) => setEvent(e))
+      .catch((e) => setLoadError(formatClientError(e, 'イベント情報の取得に失敗しました')))
   }, [eventId])
 
-  async function saveField(field: 'name' | 'venue', value: string) {
+  function startEdit(field: EditField) {
     if (!event) return
+    setSaveError(null)
+    setEditing(field)
+    setDraft(field === 'name' ? event.name : (event.venue ?? ''))
+  }
+
+  function cancelEdit() {
+    setEditing(null)
+    setSaveError(null)
+  }
+
+  async function saveField(field: EditField) {
+    if (!event) return
+    const value = draft.trim()
+    // イベント名は必須。null を送るとサーバーの zod で 422 の汎用エラーになるため
+    // 送信前に弾く（FE-R1）。venue は空 → null で「会場未設定」に戻すのが正しい挙動
+    if (field === 'name' && !value) {
+      setSaveError('イベント名は必須です')
+      return
+    }
     setSaving(true)
     try {
       const updated = await updateAdminEvent(eventId, { [field]: value || null })
       setEvent(updated)
-      setEditName(updated.name)
-      setEditVenue(updated.venue ?? '')
+      // サイドバーの表示名が古いままにならないようキャッシュも更新する（FE-R2）
+      setCachedEvent(updated)
+      setSaveError(null)
+      setEditing(null)
     } catch (e) {
-      setError(formatClientError(e, '更新に失敗しました'))
+      setSaveError(formatClientError(e, '更新に失敗しました'))
     } finally {
       setSaving(false)
     }
   }
 
-  if (error) {
-    return <div className="alert alert-danger mb-0">{error}</div>
+  if (loadError) {
+    return <div className="alert alert-danger mb-0">{loadError}</div>
   }
 
   if (!event) {
@@ -78,46 +80,104 @@ export function EventInfoPanel({ eventId }: EventInfoPanelProps) {
     )
   }
 
-  const status = eventStatus(event)
-  const remaining = formatRemaining(event)
+  const status = eventStatus(event.date_start, event.date_end)
+  const remaining = formatRemaining(event.date_start, event.date_end)
 
   return (
     <div className="card border-0 shadow-sm">
       <div className="card-body">
-        <div className="d-flex flex-wrap align-items-start gap-3 justify-content-between">
-          <div className="flex-grow-1">
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <span className={`badge ${status.className}`}>{status.label}</span>
-              {remaining ? <span className="text-muted small">{remaining}</span> : null}
-              {saving ? <span className="text-muted small">保存中…</span> : null}
-            </div>
-            <input
-              className="form-control form-control-lg border-0 fw-bold px-0 mb-2"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              onBlur={() => {
-                if (event && editName !== event.name) void saveField('name', editName)
-              }}
-            />
-            <div className="text-muted small mb-1">
-              <i className="bi bi-calendar-event me-1" />
-              {new Date(event.date_start).toLocaleString('ja-JP')} 〜{' '}
-              {new Date(event.date_end).toLocaleString('ja-JP')}
-            </div>
-            <div className="d-flex align-items-center gap-1">
-              <i className="bi bi-geo-alt text-muted" />
-              <input
-                className="form-control form-control-sm border-0 bg-transparent px-0"
-                placeholder="会場を入力"
-                value={editVenue}
-                onChange={(e) => setEditVenue(e.target.value)}
-                onBlur={() => {
-                  if (event && editVenue !== (event.venue ?? '')) void saveField('venue', editVenue)
-                }}
-              />
-            </div>
-          </div>
+        <div className="d-flex align-items-center gap-2 mb-2">
+          <span className={`badge ${status.className}`}>{status.label}</span>
+          {remaining ? <span className="text-muted small">{remaining}</span> : null}
+          {saving ? <span className="text-muted small">保存中…</span> : null}
         </div>
+
+        {saveError ? (
+          <div className="alert alert-danger alert-dismissible py-2 small" role="alert">
+            {saveError}
+            <button
+              type="button"
+              className="btn-close"
+              aria-label="閉じる"
+              onClick={() => setSaveError(null)}
+            />
+          </div>
+        ) : null}
+
+        {/* イベント名 */}
+        {editing === 'name' ? (
+          <div className="input-group mb-2">
+            <input
+              className="form-control form-control-lg fw-bold"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              autoFocus
+            />
+            <button className="btn btn-primary" onClick={() => void saveField('name')} disabled={saving}>
+              保存
+            </button>
+            <button className="btn btn-outline-secondary" onClick={cancelEdit} disabled={saving}>
+              キャンセル
+            </button>
+          </div>
+        ) : (
+          <div className="d-flex align-items-center gap-2 mb-2">
+            <h2 className="h4 fw-bold mb-0">{event.name}</h2>
+            {canEdit ? (
+              <button
+                type="button"
+                className="btn btn-sm btn-link text-muted p-0"
+                onClick={() => startEdit('name')}
+                aria-label="イベント名を編集"
+              >
+                <i className="bi bi-pencil" />
+              </button>
+            ) : null}
+          </div>
+        )}
+
+        <div className="text-muted small mb-1">
+          <i className="bi bi-calendar-event me-1" />
+          {new Date(event.date_start).toLocaleString('ja-JP')} 〜{' '}
+          {new Date(event.date_end).toLocaleString('ja-JP')}
+        </div>
+
+        {/* 会場 */}
+        {editing === 'venue' ? (
+          <div className="input-group input-group-sm">
+            <span className="input-group-text">
+              <i className="bi bi-geo-alt" />
+            </span>
+            <input
+              className="form-control"
+              placeholder="会場を入力"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              autoFocus
+            />
+            <button className="btn btn-primary" onClick={() => void saveField('venue')} disabled={saving}>
+              保存
+            </button>
+            <button className="btn btn-outline-secondary" onClick={cancelEdit} disabled={saving}>
+              キャンセル
+            </button>
+          </div>
+        ) : (
+          <div className="d-flex align-items-center gap-2">
+            <i className="bi bi-geo-alt text-muted" />
+            <span className={event.venue ? '' : 'text-muted'}>{event.venue || '会場未設定'}</span>
+            {canEdit ? (
+              <button
+                type="button"
+                className="btn btn-sm btn-link text-muted p-0"
+                onClick={() => startEdit('venue')}
+                aria-label="会場を編集"
+              >
+                <i className="bi bi-pencil" />
+              </button>
+            ) : null}
+          </div>
+        )}
       </div>
     </div>
   )

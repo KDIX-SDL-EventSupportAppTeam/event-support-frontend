@@ -14,7 +14,7 @@ import { useLegacyBoothList } from '@/shared/hooks/useLegacyBoothList'
 import { formatClientError } from '@/shared/lib/formatClientError'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
 import { CheckInRecommendView } from '@/features/checkin/pages/CheckInRecommendView'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
 import type { CheckInResult } from '@/shared/types/checkin'
 

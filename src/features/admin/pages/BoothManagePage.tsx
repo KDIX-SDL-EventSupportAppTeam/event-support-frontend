@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { AdminShell } from '@/features/admin/components/AdminShell'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
 import {
   createAdminBooth,
   deleteAdminBooth,
@@ -54,9 +54,8 @@ function BoothFormFields({
 
 export function BoothManagePage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
-  const userRole = useAuthStore((s) => s.user?.role)
   // manager と旧 admin のみ編集・削除操作を許可する
-  const canEdit = userRole === 'manager' || userRole === 'admin'
+  const canEdit = isManagerUser(useAuthStore((s) => s.user))
   const [booths, setBooths] = useState<V1BoothListItem[]>([])
   const [categories, setCategories] = useState<AdminCategory[]>([])
   const [newForm, setNewForm] = useState<BoothForm>(EMPTY_FORM)

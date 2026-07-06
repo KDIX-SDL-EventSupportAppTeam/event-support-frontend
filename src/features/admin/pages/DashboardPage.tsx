@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AdminShell } from '@/features/admin/components/AdminShell'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 import {
   fetchAdminDashboard,
   type AdminDashboard,
@@ -15,6 +15,8 @@ export function DashboardPage() {
   const [data, setData] = useState<AdminDashboard | null>(null)
   const [recent, setRecent] = useState<CheckinNewEvent[]>([])
   const [error, setError] = useState<string | null>(null)
+  // rating:new は集計に影響するため再取得するが、評価ラッシュ時の連発を防ぐため 5 秒 trailing デバウンス
+  const ratingDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (!eventId) return
@@ -50,15 +52,24 @@ export function DashboardPage() {
           : prev,
       )
     }
-    // 評価は集計（平均評価など）に影響するため、受信したら最新値を取り直す
+    // 評価は集計（平均評価など）に影響するため取り直すが、5 秒の trailing デバウンスで
+    // 受信のたびの全再取得を 1 回にまとめる（最後の受信から 5 秒後に取得）
     const onRating = () => {
-      fetchAdminDashboard(eventId).then(setData).catch(() => undefined)
+      if (ratingDebounce.current) clearTimeout(ratingDebounce.current)
+      ratingDebounce.current = setTimeout(() => {
+        ratingDebounce.current = null
+        fetchAdminDashboard(eventId).then(setData).catch(() => undefined)
+      }, 5_000)
     }
     socket.on('checkin:new', onNew)
     socket.on('rating:new', onRating)
     return () => {
       socket.off('checkin:new', onNew)
       socket.off('rating:new', onRating)
+      if (ratingDebounce.current) {
+        clearTimeout(ratingDebounce.current)
+        ratingDebounce.current = null
+      }
       disconnectSocket()
     }
   }, [token, eventId])

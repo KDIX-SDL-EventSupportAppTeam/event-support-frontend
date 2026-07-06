@@ -11,7 +11,7 @@ import { AnalyticsWindow } from '@/features/admin/components/AnalyticsWindow'
 import { useAnalyticsData } from '@/features/admin/hooks/useAnalyticsData'
 import { CHART_ANIMATION_OFF } from '@/features/admin/lib/chartOptions'
 import { fetchRecommendationAnalytics } from '@/shared/api/v1Admin'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 
 type Props = {
   eventId: string
