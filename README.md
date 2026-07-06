@@ -54,9 +54,11 @@ src/
 │   ├── award/         # アワード投票
 │   ├── schedule/      # スケジュール
 │   ├── qa/            # Q&A
-│   └── admin/         # 運営ダッシュボード（Issue #8）
+│   ├── admin/         # 運営ダッシュボード・CRUD
+│   └── organizer/     # 主催者ポータル（guards / pages / store / api / components）
 ├── shared/            # 複数 feature をまたいで使うもの
 │   ├── api/           # axios クライアント・共通エラー処理
+│   ├── auth/          # 認証セッション（authStore・AuthUser 型・モック判定）
 │   ├── data/          # EventDataSource / ParticipantClient（移行期）
 │   ├── hooks/         # 共通 hooks
 │   ├── types/         # 共通型
@@ -76,12 +78,14 @@ feature 間で共有が必要なものは `shared/` に置く。**
 ## ローカル開発
 
 ```bash
-cp .env.example .env   # VITE_API_URL・VITE_SOCKET_URL を設定
+cp .env.example .env   # VITE_API_BASE_URL・VITE_MOCK_API・VITE_DATA_SOURCE を設定
 npm install
 npm run dev            # http://localhost:5173
 ```
 
-実 API に接続する場合は `.env` に `VITE_DATA_SOURCE=api` を指定する。
+実 API に接続する場合は `.env` に `VITE_DATA_SOURCE=api` を指定する。  
+WebSocket の接続先は独立した環境変数を持たず、`VITE_API_BASE_URL` から自動導出される
+（`src/shared/api/socket.ts` の `resolveSocketBaseUrl`）。
 
 ```bash
 npm run build          # 本番ビルド

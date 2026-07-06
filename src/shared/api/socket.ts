@@ -9,7 +9,7 @@ function resolveSocketBaseUrl(baseUrl: string): string {
 }
 
 export function connectSocket(token: string, apiBaseUrl: string): Socket {
-  if (socket?.connected && connectedToken === token) {
+  if (socket && connectedToken === token) {
     socketRefCount += 1
     return socket
   }

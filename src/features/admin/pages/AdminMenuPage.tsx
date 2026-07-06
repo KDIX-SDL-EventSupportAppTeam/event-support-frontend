@@ -6,7 +6,7 @@ import { EventInfoPanel } from '@/features/admin/components/EventInfoPanel'
 import { WINDOW_REGISTRY, type WindowKey } from '@/features/admin/config/windowRegistry'
 import { useStagedWindowMount } from '@/features/admin/hooks/useStagedWindowMount'
 import { useAdminMenuStore } from '@/features/admin/store/adminMenuStore'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 
 const LazyBoothAnalyticsWindow = lazy(() =>
   import('@/features/admin/windows/BoothAnalyticsWindow').then((m) => ({

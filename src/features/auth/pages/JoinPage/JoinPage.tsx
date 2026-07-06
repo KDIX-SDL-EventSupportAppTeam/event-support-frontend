@@ -1,7 +1,8 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
+import { fetchPublicEvent, type PublicEvent } from '@/shared/api/publicEvent'
 import {
   DEV_API_DISPLAY_NAME,
   resolveDevLoginEmail,
@@ -19,20 +20,29 @@ export function JoinPage() {
   const { register, loading, error } = useAuth()
   const navigate = useNavigate()
 
-  const [email, setEmail] = useState(resolveDevLoginEmail)
-  const [password, setPassword] = useState(resolveDevLoginPassword)
-  const [displayName, setDisplayName] = useState(
-    () => import.meta.env.VITE_DEV_DISPLAY_NAME?.trim() || DEV_API_DISPLAY_NAME,
+  const [email, setEmail] = useState(() => (import.meta.env.DEV ? resolveDevLoginEmail() : ''))
+  const [password, setPassword] = useState(() =>
+    import.meta.env.DEV ? resolveDevLoginPassword() : '',
+  )
+  const [displayName, setDisplayName] = useState(() =>
+    import.meta.env.DEV ? import.meta.env.VITE_DEV_DISPLAY_NAME?.trim() || DEV_API_DISPLAY_NAME : '',
   )
 
-  // イベント名は現時点では公開エンドポイントが未定義のため eventId をそのまま表示する
-  const [eventLabel, setEventLabel] = useState<string | null>(null)
+  // 公開イベント情報でイベント名・日程・会場を表示する。取得失敗時は eventId を表示する
+  const [publicEvent, setPublicEvent] = useState<PublicEvent | null>(null)
 
   useEffect(() => {
-    // 将来的に GET /api/v1/events/:eventId などが実装された場合はここでフェッチする
-    // 現時点では eventId を表示名として使用
-    if (eventId) {
-      setEventLabel(eventId)
+    if (!eventId) return
+    let active = true
+    fetchPublicEvent(eventId)
+      .then((e) => {
+        if (active) setPublicEvent(e)
+      })
+      .catch(() => {
+        /* 取得失敗時は ID 表示にフォールバック（導線は止めない） */
+      })
+    return () => {
+      active = false
     }
   }, [eventId])
 
@@ -62,11 +72,29 @@ export function JoinPage() {
     <div className="container mt-5">
       <div className="row justify-content-center">
         <div className="col-12 col-sm-10 col-md-8 col-lg-6">
-          {/* イベントバナー */}
-          {eventLabel && (
+          {/* イベントバナー（公開情報が取れればイベント名・日程・会場を表示） */}
+          {publicEvent ? (
+            <div className="alert alert-primary mb-3">
+              <div className="fw-bold">
+                <i className="bi bi-calendar-event me-2" />
+                {publicEvent.name}
+              </div>
+              <div className="small mt-1">
+                {new Date(publicEvent.date_start).toLocaleString('ja-JP')} 〜{' '}
+                {new Date(publicEvent.date_end).toLocaleString('ja-JP')}
+              </div>
+              {publicEvent.venue ? (
+                <div className="small">
+                  <i className="bi bi-geo-alt me-1" />
+                  {publicEvent.venue}
+                </div>
+              ) : null}
+              <div className="small text-muted mt-1">このイベントに参加登録します</div>
+            </div>
+          ) : (
             <div className="alert alert-primary text-center mb-3">
               <i className="bi bi-calendar-event me-2" />
-              <strong>{eventLabel}</strong> イベントに参加登録します
+              <strong>{eventId}</strong> イベントに参加登録します
             </div>
           )}
 

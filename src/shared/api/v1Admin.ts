@@ -371,6 +371,39 @@ export type EventDataClearResult = {
   categories: number
 }
 
+export type AdminAuditLog = {
+  id: string
+  actor_id: string
+  actor_role: string
+  actor_display_name: string | null
+  action: string
+  target_type: string
+  target_id: string | null
+  detail: unknown
+  created_at: string
+}
+
+export type AdminAuditLogPage = {
+  audit_logs: AdminAuditLog[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    total_pages: number
+  }
+}
+
+export async function fetchAdminAuditLogs(
+  eventId: string,
+  params: { page?: number; limit?: number } = {},
+): Promise<AdminAuditLogPage> {
+  const res = await apiClient.get<ApiResponse<AdminAuditLogPage>>(
+    `/admin/events/${encodeURIComponent(eventId)}/audit-logs`,
+    { params: { page: params.page ?? 1, limit: params.limit ?? 50 } },
+  )
+  return unwrapApiData(res)
+}
+
 export async function clearAllAdminEventData(eventId: string): Promise<EventDataClearResult> {
   const res = await apiClient.delete<ApiResponse<{ cleared: EventDataClearResult }>>(
     `/admin/events/${encodeURIComponent(eventId)}/event-data`,

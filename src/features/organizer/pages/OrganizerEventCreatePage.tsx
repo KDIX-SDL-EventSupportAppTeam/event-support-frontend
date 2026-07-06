@@ -1,6 +1,8 @@
 import { FormEvent, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { IssuedUrlCard } from '@/features/organizer/components/IssuedUrlCard'
 import { StaffInviteForm } from '@/features/organizer/components/StaffInviteForm'
+import { OrganizerShell } from '@/features/organizer/components/OrganizerShell'
 import { createOrganizerEvent, type CreatedEvent } from '@/features/organizer/api/organizerApi'
 
 type FormData = {
@@ -90,7 +92,7 @@ export function OrganizerEventCreatePage() {
   // --- Step B: 作成完了 ---
   if (createdEvent) {
     return (
-      <div className="container mt-5">
+      <OrganizerShell>
         <div className="row justify-content-center">
           <div className="col-12 col-md-8 col-lg-7">
             <IssuedUrlCard
@@ -99,35 +101,41 @@ export function OrganizerEventCreatePage() {
               initialManagerEmail={createdEvent.initial_manager.email}
             />
 
-            <div className="mt-4">
+            <div className="mt-4 d-flex flex-wrap gap-3">
               {!showStaffForm ? (
                 <button
                   type="button"
-                  className="btn btn-outline-primary me-3"
+                  className="btn btn-outline-primary"
                   onClick={() => setShowStaffForm(true)}
                 >
                   <i className="bi bi-person-plus me-1" />
                   スタッフを追加する
                 </button>
-              ) : (
-                <div className="card border-0 shadow-sm p-3 mb-3">
-                  <StaffInviteForm eventId={createdEvent.event.id} />
-                </div>
-              )}
+              ) : null}
               <button type="button" className="btn btn-outline-secondary" onClick={resetForm}>
                 <i className="bi bi-plus-circle me-1" />
                 別のイベントを作成
               </button>
+              <Link to="/organizer/events" className="btn btn-primary">
+                <i className="bi bi-list-ul me-1" />
+                イベント一覧へ戻る
+              </Link>
             </div>
+
+            {showStaffForm ? (
+              <div className="card border-0 shadow-sm p-3 mt-3">
+                <StaffInviteForm eventId={createdEvent.event.id} />
+              </div>
+            ) : null}
           </div>
         </div>
-      </div>
+      </OrganizerShell>
     )
   }
 
   // --- Step A: フォーム ---
   return (
-    <div className="container mt-5">
+    <OrganizerShell>
       <div className="row justify-content-center">
         <div className="col-12 col-md-8 col-lg-7">
           <div className="card border-0 shadow-sm">
@@ -241,6 +249,6 @@ export function OrganizerEventCreatePage() {
           </div>
         </div>
       </div>
-    </div>
+    </OrganizerShell>
   )
 }

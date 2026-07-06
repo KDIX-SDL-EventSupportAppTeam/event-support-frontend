@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useHomeBingoData } from '@/features/home/hooks/useHomeBingoData'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
 import { HomeTutorialModal } from '@/features/home/pages/HomePage/HomeTutorialModal'
 import '@/features/home/styles/legacy-home.scss'

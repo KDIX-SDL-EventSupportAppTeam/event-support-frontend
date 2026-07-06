@@ -10,7 +10,7 @@ export class ApiError extends Error {
   }
 }
 
-/** 設計ドキュメント `docs/designs/api.md` の共通レスポンス形式に従う */
+/** 設計ドキュメント `event-support-server/docs/legacy/designs/api.md` の共通レスポンス形式に従う */
 export function unwrapApiData<T>(axiosResponse: { data: ApiResponse<T> }): T {
   const body = axiosResponse.data
   if (!body.success) {

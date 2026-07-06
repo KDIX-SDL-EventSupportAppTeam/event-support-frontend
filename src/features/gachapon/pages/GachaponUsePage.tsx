@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createParticipantClient } from '@/shared/data/createParticipantClient'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 
 export function GachaponUsePage() {
   const navigate = useNavigate()
