@@ -117,9 +117,14 @@ Vite プロキシ（`vite.config.ts`）: `/api/v1` → `127.0.0.1:3000`、`/api`
 | パス | 着地先 / 画面 |
 |---|---|
 | `/` | `/organizer/login` へリダイレクト（オーガナイザーが主たる入口） |
-| `/organizer/login` | オーガナイザーログイン |
-| `/join/:eventId` | 参加者の入口。イベント個別の QR / リンクから登録 → `/home` |
+| `/organizer/login` | オーガナイザーログイン（ログイン後は `/organizer/events` へ） |
+| `/organizer/events` | 主催者イベント一覧（ログイン後の着地先。ステータスバッジ・統計・URL コピー） |
+| `/organizer/events/new` | イベント作成 |
+| `/organizer/events/:eventId` | イベント詳細（URL 再表示・スタッフ一覧/ロール変更/削除） |
+| `/join/:eventId` | 参加者の入口。イベント個別の QR / リンクから登録 → `/home`。公開イベント情報でイベント名を表示 |
 | `/login`・`/register` | 参加者ログイン / 登録（トップからは導線なし。直接 URL でのみ到達） |
+
+主催者ポータルの共通レイアウト: `features/organizer/components/OrganizerShell.tsx`（ヘッダー・ログアウト）。
 
 経緯・判断は [docs/adrs/0002-top-redirects-to-organizer-login.md](./docs/adrs/0002-top-redirects-to-organizer-login.md)。
 
@@ -128,13 +133,14 @@ Vite プロキシ（`vite.config.ts`）: `/api/v1` → `127.0.0.1:3000`、`/api`
 | パス | 画面 | 権限 |
 |---|---|---|
 | `/admin/login` | 運営ログイン（manager または viewer の JWT が必要。旧 admin は互換扱い） | — |
-| `/admin/menu` | 運営メニュー（各管理画面への入口） | 閲覧: viewer 可 |
-| `/admin/dashboard` | 統計・ブース別チェックイン・WebSocket リアルタイム通知 | 閲覧: viewer 可 |
+| `/admin/menu` | 運営メニュー（分析ウィンドウ群。サイドバー表示は「分析ボード」） | 閲覧: viewer 可 |
+| `/admin/dashboard` | リアルタイム統計・WebSocket 通知（サイドバー表示は「リアルタイム」） | 閲覧: viewer 可 |
 | `/admin/booths` | ブース CRUD | 閲覧: viewer 可 / 編集・削除: manager のみ |
 | `/admin/categories` | カテゴリ CRUD | 閲覧: viewer 可 / 編集・削除: manager のみ |
 | `/admin/survey` | アンケート設問 CRUD | 閲覧: viewer 可 / 編集・削除: manager のみ |
-| `/admin/participants` | 参加者一覧・削除 | 閲覧: viewer 可 / 削除: manager のみ |
-| `/admin/sample` | サンプルデータ生成・削除 | manager のみ |
+| `/admin/participants` | 参加者一覧・検索・削除 | 閲覧: viewer 可 / 削除: manager のみ |
+| `/admin/audit-logs` | 操作履歴（監査ログ）閲覧 | 閲覧: viewer 可 |
+| `/admin/sample` | サンプル生成・イベント全データ削除（サイドバー表示は「データ編集」） | manager のみ（viewer はサイドバー非表示） |
 
 共通レイアウト: `features/admin/components/AdminShell.tsx`（上部ナビ・ログアウト）。
 
