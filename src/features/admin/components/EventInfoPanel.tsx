@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { fetchAdminEvent, updateAdminEvent, type AdminEvent } from '@/shared/api/v1Admin'
+import { updateAdminEvent, type AdminEvent } from '@/shared/api/v1Admin'
 import { formatClientError } from '@/shared/lib/formatClientError'
 import { eventStatus, formatRemaining } from '@/shared/lib/eventStatus'
 import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
+import { fetchAdminEventCached, useAdminMenuStore } from '@/features/admin/store/adminMenuStore'
 
 type EventInfoPanelProps = {
   eventId: string
@@ -12,6 +13,7 @@ type EditField = 'name' | 'venue'
 
 export function EventInfoPanel({ eventId }: EventInfoPanelProps) {
   const canEdit = isManagerUser(useAuthStore((s) => s.user))
+  const setCachedEvent = useAdminMenuStore((s) => s.setCachedEvent)
 
   const [event, setEvent] = useState<AdminEvent | null>(null)
   // 初回読み込みの失敗のみパネル全体をエラー表示にする。保存エラーはインライン表示にする（02-D-1）
@@ -24,7 +26,8 @@ export function EventInfoPanel({ eventId }: EventInfoPanelProps) {
   const [draft, setDraft] = useState('')
 
   useEffect(() => {
-    fetchAdminEvent(eventId)
+    // AdminShell（サイドバー）と同じキャッシュを共有し、GET を 1 回に抑える（FE-R2）
+    fetchAdminEventCached(eventId)
       .then((e) => setEvent(e))
       .catch((e) => setLoadError(formatClientError(e, 'イベント情報の取得に失敗しました')))
   }, [eventId])
@@ -43,10 +46,19 @@ export function EventInfoPanel({ eventId }: EventInfoPanelProps) {
 
   async function saveField(field: EditField) {
     if (!event) return
+    const value = draft.trim()
+    // イベント名は必須。null を送るとサーバーの zod で 422 の汎用エラーになるため
+    // 送信前に弾く（FE-R1）。venue は空 → null で「会場未設定」に戻すのが正しい挙動
+    if (field === 'name' && !value) {
+      setSaveError('イベント名は必須です')
+      return
+    }
     setSaving(true)
     try {
-      const updated = await updateAdminEvent(eventId, { [field]: draft || null })
+      const updated = await updateAdminEvent(eventId, { [field]: value || null })
       setEvent(updated)
+      // サイドバーの表示名が古いままにならないようキャッシュも更新する（FE-R2）
+      setCachedEvent(updated)
       setSaveError(null)
       setEditing(null)
     } catch (e) {
