@@ -182,6 +182,37 @@ export async function fetchAdminDashboard(eventId: string): Promise<AdminDashboa
   return unwrapApiData(res)
 }
 
+/** 監査ログ 1 件（誰がいつ何をしたか） */
+export type AdminAuditLog = {
+  id: string
+  event_id: string
+  actor_id: string
+  actor_role: string
+  actor_display_name: string | null
+  actor_email: string | null
+  action: string
+  target_type: string
+  target_id: string | null
+  detail: unknown
+  created_at: string
+}
+
+export type AdminAuditLogPage = {
+  audit_logs: AdminAuditLog[]
+  pagination: { page: number; limit: number; total: number; total_pages: number }
+}
+
+export async function fetchAdminAuditLogs(
+  eventId: string,
+  page = 1,
+  limit = 50,
+): Promise<AdminAuditLogPage> {
+  const res = await apiClient.get<ApiResponse<AdminAuditLogPage>>(
+    `/admin/events/${encodeURIComponent(eventId)}/audit-logs?page=${page}&limit=${limit}`,
+  )
+  return unwrapApiData(res)
+}
+
 export type CheckinNewEvent = {
   booth_id: string
   booth_name: string
@@ -354,27 +385,6 @@ export async function generateAdminSampleData(
 export async function clearAdminSampleData(eventId: string): Promise<SampleDataClearResult> {
   const res = await apiClient.delete<ApiResponse<{ cleared: SampleDataClearResult }>>(
     `/admin/events/${encodeURIComponent(eventId)}/sample-data`,
-  )
-  return unwrapApiData(res).cleared
-}
-
-export type EventDataClearResult = {
-  recommendations: number
-  survey_answers: number
-  ratings: number
-  checkins: number
-  booth_tags: number
-  booth_categories: number
-  booths: number
-  participants: number
-  survey_questions: number
-  categories: number
-}
-
-export async function clearAllAdminEventData(eventId: string): Promise<EventDataClearResult> {
-  const res = await apiClient.delete<ApiResponse<{ cleared: EventDataClearResult }>>(
-    `/admin/events/${encodeURIComponent(eventId)}/event-data`,
-    { data: { confirm: 'DELETE_ALL_EVENT_DATA' } },
   )
   return unwrapApiData(res).cleared
 }

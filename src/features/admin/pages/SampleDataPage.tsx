@@ -1,5 +1,4 @@
 import { AdminShell } from '@/features/admin/components/AdminShell'
-import { EventDataClearPanel } from '@/features/admin/components/EventDataClearPanel'
 import { SampleDataPanel } from '@/features/admin/components/SampleDataPanel'
 import { useAuthStore } from '@/features/auth/store/authStore'
 
@@ -23,11 +22,10 @@ export function SampleDataPage() {
             データ編集
           </h1>
           <p className="text-muted small mb-0">
-            テスト用サンプルの生成・削除、手動テストデータを含むイベント全データのリセット
+            テスト用サンプルデータの生成・削除
           </p>
         </div>
         <SampleDataPanel eventId={eventId} />
-        <EventDataClearPanel eventId={eventId} />
       </div>
     </AdminShell>
   )

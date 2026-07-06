@@ -19,3 +19,5 @@ YYYY-MM-DD-kebab-case-summary.md
 |------|----------|------|------|
 | 2026-05-24 | [2026-05-24-claude-cursor-agent-docs.md](./2026-05-24-claude-cursor-agent-docs.md) | CLAUDE.md 整備 | 完了 |
 | 2026-05-24 | [2026-05-24-features-shared-refactor.md](./2026-05-24-features-shared-refactor.md) | features/shared リファクタリング | 完了 |
+| 2026-07-01 | [2026-07-01-完了-変更履歴（監査ログ）admin表示.md](./2026-07-01-完了-変更履歴（監査ログ）admin表示.md) | admin に変更履歴（監査ログ）ページを追加 | 完了 |
+| 2026-07-01 | [2026-07-01-完了-運営ロール権限方針とデータ全削除の封印.md](./2026-07-01-完了-運営ロール権限方針とデータ全削除の封印.md) | 運営ロール権限方針の確定・全削除パネル撤去 | 完了 |

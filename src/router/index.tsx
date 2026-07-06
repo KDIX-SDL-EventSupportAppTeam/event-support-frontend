@@ -4,6 +4,7 @@ import { AdminMenuPage } from '@/features/admin/pages/AdminMenuPage'
 import { BoothManagePage } from '@/features/admin/pages/BoothManagePage'
 import { CategoryManagePage } from '@/features/admin/pages/CategoryManagePage'
 import { DashboardPage } from '@/features/admin/pages/DashboardPage'
+import { AuditLogsPage } from '@/features/admin/pages/AuditLogsPage'
 import { ParticipantsPage } from '@/features/admin/pages/ParticipantsPage'
 import { SurveyManagePage } from '@/features/admin/pages/SurveyManagePage'
 import { SampleDataPage } from '@/features/admin/pages/SampleDataPage'
@@ -178,6 +179,14 @@ export function AppRoutes() {
         element={
           <RequireAdmin>
             <SampleDataPage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/audit-logs"
+        element={
+          <RequireAdmin>
+            <AuditLogsPage />
           </RequireAdmin>
         }
       />
