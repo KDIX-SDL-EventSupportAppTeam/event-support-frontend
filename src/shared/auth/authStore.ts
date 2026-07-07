@@ -7,7 +7,7 @@ function roleFromToken(token: string): AuthUser['role'] {
   try {
     const payload = JSON.parse(atob(token.split('.')[1] ?? '')) as { role?: string }
     const r = payload.role
-    if (r === 'manager' || r === 'viewer' || r === 'admin') return r
+    if (r === 'manager' || r === 'viewer' || r === 'exhibitor' || r === 'admin') return r
     return 'participant'
   } catch {
     return 'participant'

@@ -411,3 +411,28 @@ export async function clearAllAdminEventData(eventId: string): Promise<EventData
   )
   return unwrapApiData(res).cleared
 }
+
+export type ExhibitorBulkAccount = { email: string; password: string; booth_id: string }
+export type ExhibitorBulkRowResult = {
+  index: number
+  email: string
+  booth_id: string
+  status: 'created' | 'updated' | 'skipped' | 'error'
+  user_id?: string
+  error?: { code: string; message: string }
+}
+export type ExhibitorBulkResult = {
+  summary: { total: number; created: number; updated: number; skipped: number; failed: number }
+  results: ExhibitorBulkRowResult[]
+}
+
+export async function bulkRegisterExhibitors(
+  eventId: string,
+  accounts: ExhibitorBulkAccount[],
+): Promise<ExhibitorBulkResult> {
+  const res = await apiClient.post<ApiResponse<ExhibitorBulkResult>>(
+    `/admin/events/${encodeURIComponent(eventId)}/exhibitors/bulk`,
+    { accounts },
+  )
+  return unwrapApiData(res)
+}
