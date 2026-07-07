@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AdminShell } from '@/features/admin/components/AdminShell'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
 import { deleteAdminParticipant, fetchAdminParticipants, type AdminParticipant } from '@/shared/api/v1Admin'
 import { formatClientError } from '@/shared/lib/formatClientError'
 
 export function ParticipantsPage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
+  const canEdit = isManagerUser(useAuthStore((s) => s.user))
   const [items, setItems] = useState<AdminParticipant[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [query, setQuery] = useState('')
 
   async function reload() {
     if (!eventId) return
@@ -19,7 +21,14 @@ export function ParticipantsPage() {
   }, [eventId])
 
   async function onDelete(userId: string) {
-    if (!eventId || !confirm('参加者を削除しますか？')) return
+    if (
+      !eventId ||
+      !confirm(
+        'この参加者のチェックイン・評価・アンケート回答もすべて削除されます。元に戻せません。',
+      )
+    ) {
+      return
+    }
     try {
       await deleteAdminParticipant(eventId, userId)
       await reload()
@@ -27,6 +36,16 @@ export function ParticipantsPage() {
       setError(formatClientError(err, '削除に失敗しました'))
     }
   }
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return items
+    return items.filter(
+      (p) =>
+        (p.display_name ?? '').toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q),
+    )
+  }, [items, query])
 
   const maxCheckin = Math.max(...items.map((p) => p.checkin_count), 1)
 
@@ -52,15 +71,37 @@ export function ParticipantsPage() {
         </div>
       </div>
 
+      {items.length > 0 ? (
+        <div className="mb-3">
+          <div className="input-group input-group-sm" style={{ maxWidth: 320 }}>
+            <span className="input-group-text">
+              <i className="bi bi-search" />
+            </span>
+            <input
+              type="search"
+              className="form-control"
+              placeholder="表示名・メールで絞り込み"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+        </div>
+      ) : null}
+
       <div className="card border-0 shadow-sm">
         {items.length === 0 ? (
           <div className="card-body text-center text-muted py-5">
             <i className="bi bi-people fs-1 d-block mb-2" />
             参加者がまだいません
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="card-body text-center text-muted py-5">
+            <i className="bi bi-search fs-1 d-block mb-2" />
+            「{query}」に一致する参加者がいません
+          </div>
         ) : (
           <div className="list-group list-group-flush">
-            {items.map((p) => (
+            {filtered.map((p) => (
               <div key={p.id} className="list-group-item d-flex align-items-center gap-3 p-3">
                 <div
                   className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
@@ -87,9 +128,11 @@ export function ParticipantsPage() {
                 <div className="text-muted flex-shrink-0 d-none d-md-block" style={{ fontSize: '0.75rem' }}>
                   {p.created_at?.slice(0, 10)}
                 </div>
-                <button type="button" className="btn btn-sm btn-outline-danger flex-shrink-0" onClick={() => onDelete(p.id)}>
-                  <i className="bi bi-trash" />
-                </button>
+                {canEdit ? (
+                  <button type="button" className="btn btn-sm btn-outline-danger flex-shrink-0" onClick={() => onDelete(p.id)}>
+                    <i className="bi bi-trash" />
+                  </button>
+                ) : null}
               </div>
             ))}
           </div>

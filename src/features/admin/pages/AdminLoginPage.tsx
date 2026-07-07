@@ -1,8 +1,9 @@
-import { FormEvent, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { resolveLoginEventId } from '@/features/auth/config/eventIds'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { isAdminUser, useAuthStore } from '@/features/auth/store/authStore'
+import { isAdminUser, useAuthStore } from '@/shared/auth/authStore'
+import { fetchPublicEvent, type PublicEvent } from '@/shared/api/publicEvent'
 
 export function AdminLoginPage() {
   const token = useAuthStore((s) => s.token)
@@ -17,6 +18,23 @@ export function AdminLoginPage() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  // 公開イベント情報でイベント名・日程を表示。取得失敗時は UUID 表示にフォールバック
+  const [publicEvent, setPublicEvent] = useState<PublicEvent | null>(null)
+
+  useEffect(() => {
+    if (!queryEventId) return
+    let active = true
+    fetchPublicEvent(queryEventId)
+      .then((e) => {
+        if (active) setPublicEvent(e)
+      })
+      .catch(() => {
+        /* 失敗時は UUID 表示のまま（導線は止めない） */
+      })
+    return () => {
+      active = false
+    }
+  }, [queryEventId])
 
   if (token && isAdminUser(user)) return <Navigate to="/admin/menu" replace />
 
@@ -45,7 +63,18 @@ export function AdminLoginPage() {
             {queryEventId && (
               <div className="alert alert-info small mb-3">
                 <i className="bi bi-info-circle me-1" />
-                イベント: <strong>{queryEventId}</strong>
+                {publicEvent ? (
+                  <>
+                    イベント: <strong>{publicEvent.name}</strong>
+                    <span className="text-muted ms-1">
+                      （{new Date(publicEvent.date_start).toLocaleDateString('ja-JP')}）
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    イベント: <strong>{queryEventId}</strong>
+                  </>
+                )}
               </div>
             )}
             <form onSubmit={onSubmit}>

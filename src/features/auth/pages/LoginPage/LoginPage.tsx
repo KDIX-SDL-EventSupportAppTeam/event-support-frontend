@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { resolveLoginEventId } from '@/features/auth/config/eventIds'
 import { resolveDevLoginEmail, resolveDevLoginPassword } from '@/features/auth/mocks/devDummyCredentials'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 
 export function LoginPage() {
   const token = useAuthStore((s) => s.token)

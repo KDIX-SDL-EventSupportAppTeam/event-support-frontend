@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { AdminShell } from '@/features/admin/components/AdminShell'
-import { useAuthStore } from '@/features/auth/store/authStore'
+import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
 import {
   createAdminSurveyQuestion,
   deleteAdminSurveyQuestion,
@@ -11,8 +11,7 @@ import { formatClientError } from '@/shared/lib/formatClientError'
 
 export function SurveyManagePage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
-  const userRole = useAuthStore((s) => s.user?.role)
-  const canEdit = userRole === 'manager' || userRole === 'admin'
+  const canEdit = isManagerUser(useAuthStore((s) => s.user))
   const [items, setItems] = useState<AdminSurveyQuestion[]>([])
   const [questionText, setQuestionText] = useState('')
   const [options, setOptions] = useState('はい,いいえ')
