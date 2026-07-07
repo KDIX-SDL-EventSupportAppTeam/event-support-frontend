@@ -43,13 +43,15 @@ export const ParticipantAnalyticsWindow = memo(function ParticipantAnalyticsWind
     '参加者分析の取得に失敗しました',
     { pollMs: 60_000, refetchEvents: ['checkin:new'], token },
   )
-  const [roleFilter, setRoleFilter] = useState<'all' | 'participant' | 'admin'>('participant')
+  // 運営ロールは manager / viewer（旧 admin も互換のため含む）。「運営のみ」は participant 以外で判定する
+  const [roleFilter, setRoleFilter] = useState<'all' | 'participant' | 'staff'>('participant')
   const [checkinFilter, setCheckinFilter] = useState<'all' | 'checked' | 'none'>('all')
 
   const filteredParticipants = useMemo(() => {
     if (!data) return []
     return data.participants.filter((p) => {
-      if (roleFilter !== 'all' && p.role !== roleFilter) return false
+      if (roleFilter === 'participant' && p.role !== 'participant') return false
+      if (roleFilter === 'staff' && p.role === 'participant') return false
       if (checkinFilter === 'checked' && p.total_checkins === 0) return false
       if (checkinFilter === 'none' && p.total_checkins > 0) return false
       return true
@@ -200,7 +202,7 @@ export const ParticipantAnalyticsWindow = memo(function ParticipantAnalyticsWind
             >
               <option value="all">全ロール</option>
               <option value="participant">参加者のみ</option>
-              <option value="admin">運営のみ</option>
+              <option value="staff">運営のみ</option>
             </select>
             <select
               className="form-select form-select-sm"
