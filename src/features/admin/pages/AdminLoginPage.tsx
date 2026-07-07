@@ -12,7 +12,8 @@ export function AdminLoginPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  // ?event= クエリパラメータからイベント ID を取得（存在すればフォームに表示）
+  // ?event= クエリパラメータからイベント ID を取得（主催者ポータル発行の URL。
+  // 存在すればそのイベント宛てにログインし、無ければ既定イベントにフォールバック）
   const queryEventId = searchParams.get('event') ?? ''
 
   const [email, setEmail] = useState('')
@@ -40,7 +41,7 @@ export function AdminLoginPage() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     try {
-      await login(resolveLoginEventId(), email, password)
+      await login(queryEventId || resolveLoginEventId(), email, password)
       const current = useAuthStore.getState().user
       if (isAdminUser(current)) {
         navigate('/admin/menu', { replace: true })
