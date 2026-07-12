@@ -102,6 +102,10 @@ function EventOverview({ event }: { event: OrganizerEvent }) {
           <i className="bi bi-geo-alt me-1" />
           {event.venue || '会場未設定'}
         </div>
+        <div className="text-muted small mb-1">
+          <i className="bi bi-link-45deg me-1" />
+          {event.survey_url ?? 'アンケート未設定'}
+        </div>
         <div className="text-muted small mb-3">
           <i className="bi bi-clock me-1" />
           作成日: {new Date(event.created_at).toLocaleString('ja-JP')}
