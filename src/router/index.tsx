@@ -8,6 +8,7 @@ import { ParticipantsPage } from '@/features/admin/pages/ParticipantsPage'
 import { SurveyManagePage } from '@/features/admin/pages/SurveyManagePage'
 import { SampleDataPage } from '@/features/admin/pages/SampleDataPage'
 import { AuditLogPage } from '@/features/admin/pages/AuditLogPage'
+import { BoothCommentsPage } from '@/features/admin/pages/BoothCommentsPage'
 import { ExhibitorBulkRegisterPage } from '@/features/admin/pages/ExhibitorBulkRegisterPage'
 import { LegacyPlaceholderPage } from '@/features/admin/pages/LegacyPlaceholderPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage/LoginPage'
@@ -215,6 +216,14 @@ export function AppRoutes() {
         element={
           <RequireAdmin>
             <AuditLogPage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/comments"
+        element={
+          <RequireAdmin>
+            <BoothCommentsPage />
           </RequireAdmin>
         }
       />
