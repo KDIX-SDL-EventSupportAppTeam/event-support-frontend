@@ -9,7 +9,7 @@ type EventInfoPanelProps = {
   eventId: string
 }
 
-type EditField = 'name' | 'venue'
+type EditField = 'name' | 'venue' | 'survey_url'
 
 export function EventInfoPanel({ eventId }: EventInfoPanelProps) {
   const canEdit = isManagerUser(useAuthStore((s) => s.user))
@@ -36,7 +36,7 @@ export function EventInfoPanel({ eventId }: EventInfoPanelProps) {
     if (!event) return
     setSaveError(null)
     setEditing(field)
-    setDraft(field === 'name' ? event.name : (event.venue ?? ''))
+    setDraft(field === 'name' ? event.name : field === 'venue' ? (event.venue ?? '') : (event.survey_url ?? ''))
   }
 
   function cancelEdit() {
@@ -51,6 +51,10 @@ export function EventInfoPanel({ eventId }: EventInfoPanelProps) {
     // 送信前に弾く（FE-R1）。venue は空 → null で「会場未設定」に戻すのが正しい挙動
     if (field === 'name' && !value) {
       setSaveError('イベント名は必須です')
+      return
+    }
+    if (field === 'survey_url' && value && !/^https?:\/\//.test(value)) {
+      setSaveError('アンケートURLは http(s):// で始めてください')
       return
     }
     setSaving(true)
@@ -172,6 +176,45 @@ export function EventInfoPanel({ eventId }: EventInfoPanelProps) {
                 className="btn btn-sm btn-link text-muted p-0"
                 onClick={() => startEdit('venue')}
                 aria-label="会場を編集"
+              >
+                <i className="bi bi-pencil" />
+              </button>
+            ) : null}
+          </div>
+        )}
+
+        {/* アンケートURL */}
+        {editing === 'survey_url' ? (
+          <div className="input-group input-group-sm mt-2">
+            <span className="input-group-text">
+              <i className="bi bi-link-45deg" />
+            </span>
+            <input
+              className="form-control"
+              placeholder="https://forms.gle/xxxx"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              autoFocus
+            />
+            <button className="btn btn-primary" onClick={() => void saveField('survey_url')} disabled={saving}>
+              保存
+            </button>
+            <button className="btn btn-outline-secondary" onClick={cancelEdit} disabled={saving}>
+              キャンセル
+            </button>
+          </div>
+        ) : (
+          <div className="d-flex align-items-center gap-2 mt-2">
+            <i className="bi bi-link-45deg text-muted" />
+            <span className={event.survey_url ? '' : 'text-muted'}>
+              {event.survey_url || 'アンケート未設定'}
+            </span>
+            {canEdit ? (
+              <button
+                type="button"
+                className="btn btn-sm btn-link text-muted p-0"
+                onClick={() => startEdit('survey_url')}
+                aria-label="アンケートURLを編集"
               >
                 <i className="bi bi-pencil" />
               </button>

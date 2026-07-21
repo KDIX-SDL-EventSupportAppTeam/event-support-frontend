@@ -8,6 +8,7 @@ export type AdminEvent = {
   date_start: string
   date_end: string
   venue: string | null
+  survey_url: string | null
   created_at: string
 }
 
@@ -61,7 +62,7 @@ export async function fetchAdminEvent(eventId: string): Promise<AdminEvent> {
 
 export async function updateAdminEvent(
   eventId: string,
-  body: Partial<Pick<AdminEvent, 'name' | 'date_start' | 'date_end' | 'venue'>>,
+  body: Partial<Pick<AdminEvent, 'name' | 'date_start' | 'date_end' | 'venue' | 'survey_url'>>,
 ): Promise<AdminEvent> {
   const res = await apiClient.patch<ApiResponse<{ event: AdminEvent }>>(
     `/admin/events/${encodeURIComponent(eventId)}`,

@@ -21,6 +21,7 @@ export type PublicEvent = {
   date_start: string
   date_end: string
   venue: string | null
+  survey_url: string | null
 }
 
 export async function fetchPublicEvent(eventId: string): Promise<PublicEvent> {

@@ -10,6 +10,7 @@ type FormData = {
   dateStart: string
   dateEnd: string
   venue: string
+  surveyUrl: string
   managerEmail: string
   managerPassword: string
   managerDisplayName: string
@@ -20,6 +21,7 @@ const EMPTY_FORM: FormData = {
   dateStart: '',
   dateEnd: '',
   venue: '',
+  surveyUrl: '',
   managerEmail: '',
   managerPassword: '',
   managerDisplayName: '',
@@ -49,6 +51,9 @@ export function OrganizerEventCreatePage() {
     if (form.dateEnd <= form.dateStart) return '終了日時は開始日時より後にしてください'
     if (!form.managerEmail.trim()) return '初期マネージャーのメールアドレスは必須です'
     if (form.managerPassword.length < 8) return 'パスワードは8文字以上にしてください'
+    if (form.surveyUrl.trim() && !/^https?:\/\//.test(form.surveyUrl.trim())) {
+      return 'アンケートURLは http(s):// で始めてください'
+    }
     return null
   }
 
@@ -67,6 +72,7 @@ export function OrganizerEventCreatePage() {
         date_start: form.dateStart,
         date_end: form.dateEnd,
         venue: form.venue.trim() || undefined,
+        survey_url: form.surveyUrl.trim() || undefined,
         initial_manager: {
           email: form.managerEmail.trim(),
           password: form.managerPassword,
@@ -195,6 +201,17 @@ export function OrganizerEventCreatePage() {
                     onChange={(e) => handleChange('venue', e.target.value)}
                     placeholder="例: 東京ビッグサイト"
                   />
+                </div>
+                <div className="mb-4">
+                  <label className="form-label">アンケートURL（任意）</label>
+                  <input
+                    type="url"
+                    className="form-control"
+                    value={form.surveyUrl}
+                    onChange={(e) => handleChange('surveyUrl', e.target.value)}
+                    placeholder="例: https://forms.gle/xxxx"
+                  />
+                  <div className="form-text">参加者ホームに表示するアンケートフォームのURL。空欄なら参加者にボタンは表示されません。</div>
                 </div>
 
                 {/* 初期マネージャー */}
