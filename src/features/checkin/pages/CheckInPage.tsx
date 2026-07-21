@@ -14,11 +14,12 @@ import { useLegacyBoothList } from '@/shared/hooks/useLegacyBoothList'
 import { formatClientError } from '@/shared/lib/formatClientError'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
 import { CheckInRecommendView } from '@/features/checkin/pages/CheckInRecommendView'
+import { CheckInQrScanView } from '@/features/checkin/pages/CheckInQrScanView'
 import { useAuthStore } from '@/shared/auth/authStore'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
 import type { CheckInResult } from '@/shared/types/checkin'
 
-type Step = 'booth' | 'rating' | 'recommend' | 'done'
+type Step = 'scan' | 'booth' | 'rating' | 'recommend' | 'done'
 
 export function CheckInPage() {
   const navigate = useNavigate()
@@ -31,7 +32,7 @@ export function CheckInPage() {
 
   const { booths, checkedInBoothIds, loading: boothsLoading } = useLegacyBoothList(eventId, userId)
 
-  const [step, setStep] = useState<Step>('booth')
+  const [step, setStep] = useState<Step>(boothIdParam ? 'booth' : 'scan')
   const [selectedBoothId, setSelectedBoothId] = useState(boothIdParam)
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -141,6 +142,20 @@ export function CheckInPage() {
         <button type="button" className="checkin-home-button" onClick={() => navigate('/login')}>
           ログインへ
         </button>
+      </div>
+    )
+  }
+
+  if (step === 'scan') {
+    return (
+      <div className="reader-container container py-3">
+        <CheckInQrScanView
+          onDetected={(id) => {
+            setSelectedBoothId(id)
+            setStep('booth')
+          }}
+          onFallback={() => setStep('booth')}
+        />
       </div>
     )
   }
