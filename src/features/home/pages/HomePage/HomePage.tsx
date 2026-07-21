@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useHomeBingoData } from '@/features/home/hooks/useHomeBingoData'
+import { useExhibitorStore } from '@/features/exhibitor/store/exhibitorStore'
 import { useAuthStore } from '@/shared/auth/authStore'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
 import { HomeTutorialModal } from '@/features/home/pages/HomePage/HomeTutorialModal'
@@ -17,6 +18,14 @@ export function HomePage() {
   const { grid, bingoCount, gachaponCoinsSpent, checkedInBoothIds, loading, error } = useHomeBingoData(eventId, userId)
   const missingUserContext = !eventId || !userId
   const hasBoothCells = grid.some((c) => c !== null)
+
+  const isExhibitor = useExhibitorStore((s) => s.isExhibitor)
+  const ensureExhibitorLoaded = useExhibitorStore((s) => s.ensureLoaded)
+
+  useEffect(() => {
+    if (!eventId || !userId) return
+    ensureExhibitorLoaded(eventId, userId)
+  }, [eventId, userId, ensureExhibitorLoaded])
 
   const [selectedBooth, setSelectedBooth] = useState<LegacyBooth | null>(null)
   const [tutorialOpen, setTutorialOpen] = useState(false)
@@ -305,6 +314,21 @@ export function HomePage() {
           </div>
         </div>
       </div>
+
+      {isExhibitor ? (
+        <div className="row g-2 mt-2">
+          <div className="col-12">
+            <button
+              type="button"
+              className="btn btn-sub-action w-100"
+              onClick={() => navigate('/exhibitor')}
+            >
+              <i className="bi bi-shop me-1" />
+              出展者画面へ
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <div className="row g-2 mt-2 sub-actions">
         <div className="col-4">

@@ -74,6 +74,9 @@ YYYY-MM-DD-kebab-case-summary.md
 | [tests/unit/auth-mock.test.ts](../../tests/unit/auth-mock.test.ts) | unit | `src/features/auth/mocks/authMock.ts`, `devDummyCredentials.ts` |
 | [tests/unit/bingo-random.test.ts](../../tests/unit/bingo-random.test.ts) | unit | `src/shared/data/sample/bingoRandom.ts` |
 | [tests/unit/sample-event-data.test.ts](../../tests/unit/sample-event-data.test.ts) | unit | `src/shared/data/sample/SampleEventData.ts`, `createEventDataSource.ts` |
+| [tests/unit/resolve-landing-path.test.ts](../../tests/unit/resolve-landing-path.test.ts) | unit | `src/features/auth/lib/resolveLandingPath.ts` |
+| [tests/unit/auth-role-helpers.test.ts](../../tests/unit/auth-role-helpers.test.ts) | unit | `src/shared/auth/authStore.ts`（`isAdminUser` / `isManagerUser`） |
+| [tests/unit/exhibitor-store.test.ts](../../tests/unit/exhibitor-store.test.ts) | unit | `src/features/exhibitor/store/exhibitorStore.ts` |
 | [tests/integration/frontend-package.test.ts](../../tests/integration/frontend-package.test.ts) | integration | ルート `package.json`（build スクリプト） |
 
 新規テストを追加したら、この表も更新する。
@@ -85,6 +88,7 @@ YYYY-MM-DD-kebab-case-summary.md
 | 日付 | ファイル | 概要 | テストコード |
 |------|----------|------|--------------|
 | 2026-05-24 | [runs/2026-05-24-features-shared-refactor.md](./runs/2026-05-24-features-shared-refactor.md) | features/shared 移行後の lint/build/test | 全 unit + integration |
+| 2026-07-11 | [runs/2026-07-11-auth-exhibitor-unit-tests-restore.md](./runs/2026-07-11-auth-exhibitor-unit-tests-restore.md) | tests/ 実行復旧＋出展者・ログイン分岐の単体テスト追加 | resolve-landing-path, auth-role-helpers, exhibitor-store（新規）＋既存8ファイル |
 
 ---
 

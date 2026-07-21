@@ -31,9 +31,11 @@ export const FULL_PAGE_NAV: FullPageNavItem[] = [
   { to: '/admin/menu', label: '分析ボード', icon: 'bi-grid-1x2' },
   { to: '/admin/dashboard', label: 'リアルタイム', icon: 'bi-speedometer2' },
   { to: '/admin/booths', label: 'ブース管理', icon: 'bi-shop' },
+  { to: '/admin/comments', label: '評価・コメント', icon: 'bi-chat-left-text' },
   { to: '/admin/categories', label: 'カテゴリ', icon: 'bi-tags' },
   { to: '/admin/survey', label: 'アンケート', icon: 'bi-clipboard-check' },
   { to: '/admin/participants', label: '参加者管理', icon: 'bi-person-lines-fill' },
+  { to: '/admin/exhibitors', label: '出展者登録', icon: 'bi-person-badge', managerOnly: true },
   { to: '/admin/audit-logs', label: '操作履歴', icon: 'bi-clock-history' },
   { to: '/admin/sample', label: 'データ編集', icon: 'bi-database-gear', managerOnly: true },
 ]

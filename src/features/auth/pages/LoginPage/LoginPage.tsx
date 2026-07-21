@@ -3,10 +3,12 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { resolveLoginEventId } from '@/features/auth/config/eventIds'
 import { resolveDevLoginEmail, resolveDevLoginPassword } from '@/features/auth/mocks/devDummyCredentials'
+import { resolveLandingPath } from '@/features/auth/lib/resolveLandingPath'
 import { useAuthStore } from '@/shared/auth/authStore'
 
 export function LoginPage() {
   const token = useAuthStore((s) => s.token)
+  const user = useAuthStore((s) => s.user)
   const { login, loading, error } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState(() => (import.meta.env.DEV ? resolveDevLoginEmail() : ''))
@@ -16,16 +18,17 @@ export function LoginPage() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 
   useEffect(() => {
-    if (token) navigate('/home', { replace: true })
-  }, [token, navigate])
+    if (token) navigate(resolveLandingPath(user?.role), { replace: true })
+  }, [token, user, navigate])
 
-  if (token) return <Navigate to="/home" replace />
+  if (token) return <Navigate to={resolveLandingPath(user?.role)} replace />
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     try {
       await login(resolveLoginEventId(), email, password)
-      navigate('/home', { replace: true })
+      const role = useAuthStore.getState().user?.role
+      navigate(resolveLandingPath(role), { replace: true })
     } catch {
       /* useAuth が error をセット */
     }

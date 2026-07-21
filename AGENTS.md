@@ -37,6 +37,7 @@ src/
 │   ├── schedule/      # スケジュール
 │   ├── qa/            # Q&A
 │   ├── admin/         # 運営管理（ダッシュボード・CRUD）
+│   ├── exhibitor/     # 出展者ダッシュボード・出展者ロール判定（store, hooks, pages）
 │   └── organizer/     # 主催者ポータル（guards / pages / store / api / components）
 ├── shared/
 │   ├── api/           # v1 / legacy HTTP クライアント
@@ -64,6 +65,7 @@ src/
 | award | `features/award/{pages,hooks}` |
 | schedule / qa | `features/{schedule,qa}/pages` |
 | admin | `features/admin/{pages,components}` · API: `shared/api/v1Admin.ts` |
+| exhibitor | `features/exhibitor/{pages,hooks,store}` · API: `shared/api/v1Exhibitor.ts` |
 | organizer | `features/organizer/{pages,store,api,guards,components}` |
 
 ## データ層（移行期）
@@ -141,6 +143,7 @@ Vite プロキシ（`vite.config.ts`）: `/api/v1` → `127.0.0.1:3000`、`/api`
 | `/admin/participants` | 参加者一覧・検索・削除 | 閲覧: viewer 可 / 削除: manager のみ |
 | `/admin/audit-logs` | 操作履歴（監査ログ）閲覧 | 閲覧: viewer 可 |
 | `/admin/sample` | サンプル生成・削除（サイドバー表示は「データ編集」）。イベントデータ全削除は organizer ポータルの `/organizer/events/:eventId` に移設 | manager のみ（viewer はサイドバー非表示） |
+| `/admin/exhibitors` | 出展者アカウント一括登録（貼り付け→プレビュー→確定。サイドバー表示は「出展者登録」） | manager のみ（viewer はサイドバー非表示・ページ内でも二重にガード） |
 
 共通レイアウト: `features/admin/components/AdminShell.tsx`（上部ナビ・ログアウト）。
 
@@ -160,6 +163,18 @@ curl -s -X POST http://localhost:3000/api/v1/auth/register/admin \
 4. http://localhost:5173/admin/login から上記アカウントでログイン
 
 サーバー側の運営 API・WebSocket 仕様は [event-support-server/docs/orders/2026-06-16-完了-運営CRUD-ダッシュボード-WebSocket実装.md](../event-support-server/docs/orders/2026-06-16-完了-運営CRUD-ダッシュボード-WebSocket実装.md)。
+
+### 出展者ダッシュボード（/exhibitor）
+
+| パス | 画面 | 権限 |
+|---|---|---|
+| `/exhibitor` | 出展者ダッシュボード（担当ブースのチェックイン総数・時間帯別グラフ・コメント一覧。60秒ポーリング） | `RequireAuth`（ログイン済みなら誰でも到達可）。出展者かどうかの判定は非同期 API 依存のためガードでは行わず、ページ内で「ロード中→権限なし→担当ブース0→通常表示」の順に分岐する |
+
+- 参加者ホーム（`/home`）は `useExhibitorStore` の `isExhibitor`（`GET /events/:event_id/exhibitor/booths` をセッション中1回だけ取得してキャッシュ）が true のときだけ「出展者画面へ」ボタンを表示する。`user.role` の OR は取らない（localStorage の role はログイン時点のスナップショットで、一括登録による後付けロール付与が反映されないため）。
+- 一括登録（`/admin/exhibitors`）は既存参加者にも出展者ロールを後付けできる。反映確認は再ログイン不要（`/home` のリロードで `ensureLoaded` が再取得する）。
+- 実装: `features/exhibitor/store/exhibitorStore.ts`（is_exhibitor・担当ブースのキャッシュ）、`features/exhibitor/hooks/useExhibitorStats.ts`（stats 取得＋60秒ポーリング。admin フィーチャーからは越境 import しない）、`features/exhibitor/pages/ExhibitorDashboardPage.tsx`。API 型・fetch 関数は `shared/api/v1Exhibitor.ts`、一括登録は `shared/api/v1Admin.ts` の `bulkRegisterExhibitors`。
+- モック/サンプルモード（`VITE_MOCK_API=true` / `VITE_DATA_SOURCE=sample`）に出展者 API のモックは無い（`exhibitorStore` が常に非出展者を返す）。出展者画面の動作確認は実 API モード必須。
+- 設計書: [改修プラン/三上issue_2026-07/frontend_43_出展者管理画面.md](../改修プラン/三上issue_2026-07/frontend_43_出展者管理画面.md)（サーバー側 API 契約は `server_53_出展者ロール集計API.md` が正）。
 
 ## 本番ビルド・デプロイ
 
