@@ -3,12 +3,8 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { resolveLoginEventId } from '@/features/auth/config/eventIds'
 import { resolveDevLoginEmail, resolveDevLoginPassword } from '@/features/auth/mocks/devDummyCredentials'
+import { resolveLandingPath } from '@/features/auth/lib/resolveLandingPath'
 import { useAuthStore } from '@/shared/auth/authStore'
-
-/** ログイン後の着地先。出展者だけ出展者ボードへ、それ以外は従来どおりホームへ。 */
-function resolveLandingPath(role: string | undefined): string {
-  return role === 'exhibitor' ? '/exhibitor' : '/home'
-}
 
 export function LoginPage() {
   const token = useAuthStore((s) => s.token)
