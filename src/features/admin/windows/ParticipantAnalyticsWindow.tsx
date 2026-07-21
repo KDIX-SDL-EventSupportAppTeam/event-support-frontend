@@ -50,8 +50,9 @@ export const ParticipantAnalyticsWindow = memo(function ParticipantAnalyticsWind
   const filteredParticipants = useMemo(() => {
     if (!data) return []
     return data.participants.filter((p) => {
-      if (roleFilter === 'participant' && p.role !== 'participant') return false
-      if (roleFilter === 'staff' && p.role === 'participant') return false
+      // 出展者は参加者としても行動するため「参加者」側に分類する（frontend #43 F9）
+      if (roleFilter === 'participant' && p.role !== 'participant' && p.role !== 'exhibitor') return false
+      if (roleFilter === 'staff' && (p.role === 'participant' || p.role === 'exhibitor')) return false
       if (checkinFilter === 'checked' && p.total_checkins === 0) return false
       if (checkinFilter === 'none' && p.total_checkins > 0) return false
       return true

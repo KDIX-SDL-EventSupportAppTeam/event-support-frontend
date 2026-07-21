@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "npm --prefix tests run test"
   },
   "dependencies": {
     "axios": "^1.7.9",

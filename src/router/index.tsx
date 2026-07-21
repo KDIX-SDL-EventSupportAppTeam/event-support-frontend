@@ -8,6 +8,8 @@ import { ParticipantsPage } from '@/features/admin/pages/ParticipantsPage'
 import { SurveyManagePage } from '@/features/admin/pages/SurveyManagePage'
 import { SampleDataPage } from '@/features/admin/pages/SampleDataPage'
 import { AuditLogPage } from '@/features/admin/pages/AuditLogPage'
+import { BoothCommentsPage } from '@/features/admin/pages/BoothCommentsPage'
+import { ExhibitorBulkRegisterPage } from '@/features/admin/pages/ExhibitorBulkRegisterPage'
 import { LegacyPlaceholderPage } from '@/features/admin/pages/LegacyPlaceholderPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage/RegisterPage'
@@ -26,6 +28,7 @@ import { CheckInPage } from '@/features/checkin/pages/CheckInPage'
 import { GachaponCompletePage } from '@/features/gachapon/pages/GachaponCompletePage'
 import { GachaponIntroPage } from '@/features/gachapon/pages/GachaponIntroPage'
 import { GachaponUsePage } from '@/features/gachapon/pages/GachaponUsePage'
+import { ExhibitorDashboardPage } from '@/features/exhibitor/pages/ExhibitorDashboardPage'
 import { HomePage } from '@/features/home/pages/HomePage/HomePage'
 import { QaPage } from '@/features/qa/pages/QaPage'
 import { SchedulePage } from '@/features/schedule/pages/SchedulePage'
@@ -62,6 +65,14 @@ export function AppRoutes() {
         element={
           <RequireAuth>
             <HomePage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/exhibitor"
+        element={
+          <RequireAuth>
+            <ExhibitorDashboardPage />
           </RequireAuth>
         }
       />
@@ -209,6 +220,22 @@ export function AppRoutes() {
         element={
           <RequireAdmin>
             <AuditLogPage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/comments"
+        element={
+          <RequireAdmin>
+            <BoothCommentsPage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/exhibitors"
+        element={
+          <RequireAdmin>
+            <ExhibitorBulkRegisterPage />
           </RequireAdmin>
         }
       />

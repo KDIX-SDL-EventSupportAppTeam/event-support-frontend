@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useHomeBingoData } from '@/features/home/hooks/useHomeBingoData'
+import { useExhibitorStore } from '@/features/exhibitor/store/exhibitorStore'
 import { useAuthStore } from '@/shared/auth/authStore'
+import { fetchPublicEvent } from '@/shared/api/publicEvent'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
 import { HomeTutorialModal } from '@/features/home/pages/HomePage/HomeTutorialModal'
 import '@/features/home/styles/legacy-home.scss'
@@ -18,12 +20,36 @@ export function HomePage() {
   const missingUserContext = !eventId || !userId
   const hasBoothCells = grid.some((c) => c !== null)
 
+  const isExhibitor = useExhibitorStore((s) => s.isExhibitor)
+  const ensureExhibitorLoaded = useExhibitorStore((s) => s.ensureLoaded)
+
+  useEffect(() => {
+    if (!eventId || !userId) return
+    ensureExhibitorLoaded(eventId, userId)
+  }, [eventId, userId, ensureExhibitorLoaded])
+
   const [selectedBooth, setSelectedBooth] = useState<LegacyBooth | null>(null)
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [feedbackConfirmOpen, setFeedbackConfirmOpen] = useState(false)
   const [bingoModalOpen, setBingoModalOpen] = useState(false)
   const [coinLimitModalOpen, setCoinLimitModalOpen] = useState(false)
   const [newCoinsWon, setNewCoinsWon] = useState(0)
+  const [surveyUrl, setSurveyUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!eventId) return
+    let active = true
+    fetchPublicEvent(eventId)
+      .then((e) => {
+        if (active) setSurveyUrl(e.survey_url)
+      })
+      .catch(() => {
+        /* 未設定扱いで非表示（モック/サンプルモード・通信失敗時も壊さない） */
+      })
+    return () => {
+      active = false
+    }
+  }, [eventId])
 
   useEffect(() => {
     const newlyCompletedLines = Number.parseInt(sessionStorage.getItem('newlyCompletedLines') ?? '0', 10)
@@ -305,6 +331,38 @@ export function HomePage() {
           </div>
         </div>
       </div>
+
+      {isExhibitor ? (
+        <div className="row g-2 mt-2">
+          <div className="col-12">
+            <button
+              type="button"
+              className="btn btn-sub-action w-100"
+              onClick={() => navigate('/exhibitor')}
+            >
+              <i className="bi bi-shop me-1" />
+              出展者画面へ
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {/* 暫定UI: デザイン更新issueで差し替え予定（#48 暫定・survey_url 設定時のみ表示） */}
+      {surveyUrl ? (
+        <div className="row g-3 mt-0">
+          <div className="col-12">
+            <div className="d-grid">
+              <button
+                type="button"
+                className="btn btn-light action-button"
+                onClick={() => window.open(surveyUrl, '_blank', 'noopener,noreferrer')}
+              >
+                <span>イベントアンケートに回答する</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="row g-2 mt-2 sub-actions">
         <div className="col-4">
