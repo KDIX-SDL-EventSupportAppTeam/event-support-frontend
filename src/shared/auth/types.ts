@@ -12,4 +12,6 @@ export type AuthUser = {
    *   - 'admin'    : 旧値。後方互換のため 'manager' として扱う
    */
   role: 'manager' | 'viewer' | 'participant' | 'exhibitor' | 'admin'
+  /** メールアドレス確認済みか（server #57）。表示ヒントに留め、真実はサーバ側で毎回検査する */
+  email_verified?: boolean
 }

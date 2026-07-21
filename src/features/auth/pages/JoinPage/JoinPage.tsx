@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useAuthStore } from '@/shared/auth/authStore'
 import { fetchPublicEvent, type PublicEvent } from '@/shared/api/publicEvent'
@@ -18,7 +18,7 @@ export function JoinPage() {
   const { eventId } = useParams<{ eventId: string }>()
   const token = useAuthStore((s) => s.token)
   const { register, loading, error } = useAuth()
-  const navigate = useNavigate()
+  const [registered, setRegistered] = useState(false)
 
   const [email, setEmail] = useState(() => (import.meta.env.DEV ? resolveDevLoginEmail() : ''))
   const [password, setPassword] = useState(() =>
@@ -46,6 +46,9 @@ export function JoinPage() {
     }
   }, [eventId])
 
+  // 冒頭ガードより前に置く（順序が本質。setSession による再レンダーが token ガードを
+  // 先に発火させて /home に飛ばすレースを防ぐ）
+  if (registered) return <Navigate to="/verify-email/sent" replace />
   if (token) return <Navigate to="/home" replace />
 
   if (!eventId) {
@@ -62,7 +65,7 @@ export function JoinPage() {
     if (!eventId) return
     try {
       await register(eventId, email, password, displayName)
-      navigate('/home', { replace: true })
+      setRegistered(true)
     } catch {
       /* useAuth が error をセット */
     }

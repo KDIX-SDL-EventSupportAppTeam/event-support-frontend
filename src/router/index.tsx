@@ -14,6 +14,8 @@ import { LegacyPlaceholderPage } from '@/features/admin/pages/LegacyPlaceholderP
 import { LoginPage } from '@/features/auth/pages/LoginPage/LoginPage'
 import { RegisterPage } from '@/features/auth/pages/RegisterPage/RegisterPage'
 import { JoinPage } from '@/features/auth/pages/JoinPage/JoinPage'
+import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage/VerifyEmailPage'
+import { VerifyEmailSentPage } from '@/features/auth/pages/VerifyEmailSentPage/VerifyEmailSentPage'
 import { isAdminUser, useAuthStore } from '@/shared/auth/authStore'
 import { OrganizerLoginPage } from '@/features/organizer/pages/OrganizerLoginPage'
 import { OrganizerEventCreatePage } from '@/features/organizer/pages/OrganizerEventCreatePage'
@@ -56,6 +58,8 @@ export function AppRoutes() {
       <Route path="/pre-register" element={<LegacyPlaceholderPage title="プレ登録" />} />
       <Route path="/forgot-password" element={<LegacyPlaceholderPage title="パスワードを忘れた場合" />} />
       <Route path="/reset-password/:token" element={<LegacyPlaceholderPage title="パスワード再設定" />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/verify-email/sent" element={<VerifyEmailSentPage />} />
       <Route
         path="/home"
         element={
