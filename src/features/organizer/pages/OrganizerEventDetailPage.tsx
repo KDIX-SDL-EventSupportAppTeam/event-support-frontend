@@ -1,12 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
+  clearOrganizerEventData,
   getOrganizerEvent,
   type OrganizerEvent,
 } from '@/features/organizer/api/organizerApi'
 import { OrganizerShell } from '@/features/organizer/components/OrganizerShell'
 import { IssuedUrlCard } from '@/features/organizer/components/IssuedUrlCard'
 import { StaffList } from '@/features/organizer/components/StaffList'
+import { EventDataClearSection } from '@/features/organizer/components/EventDataClearSection'
 import { eventStatus, formatRemaining } from '@/shared/lib/eventStatus'
 import { formatClientError } from '@/shared/lib/formatClientError'
 
@@ -15,19 +17,20 @@ export function OrganizerEventDetailPage() {
   const [event, setEvent] = useState<OrganizerEvent | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [forbidden, setForbidden] = useState(false)
+  const requestIdRef = useRef(0)
 
-  useEffect(() => {
-    if (!eventId) return
-    let active = true
-    setEvent(null)
+  const reload = useCallback(() => {
+    if (!eventId) return Promise.resolve()
+    const requestId = ++requestIdRef.current
     setError(null)
     setForbidden(false)
-    getOrganizerEvent(eventId)
+    return getOrganizerEvent(eventId)
       .then((e) => {
-        if (active) setEvent(e)
+        if (requestIdRef.current !== requestId) return
+        setEvent(e)
       })
       .catch((e: unknown) => {
-        if (!active) return
+        if (requestIdRef.current !== requestId) return
         const status = (e as { response?: { status?: number } })?.response?.status
         if (status === 403) {
           setForbidden(true)
@@ -35,10 +38,13 @@ export function OrganizerEventDetailPage() {
           setError(formatClientError(e, 'イベントの取得に失敗しました'))
         }
       })
-    return () => {
-      active = false
-    }
   }, [eventId])
+
+  useEffect(() => {
+    if (!eventId) return
+    setEvent(null)
+    void reload()
+  }, [eventId, reload])
 
   return (
     <OrganizerShell>
@@ -75,6 +81,12 @@ export function OrganizerEventDetailPage() {
               <StaffList eventId={event.id} />
             </div>
           </div>
+          <EventDataClearSection
+            onClear={() => clearOrganizerEventData(event.id)}
+            onCleared={() => {
+              void reload()
+            }}
+          />
         </div>
       ) : null}
     </OrganizerShell>

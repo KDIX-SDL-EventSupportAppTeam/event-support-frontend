@@ -194,7 +194,54 @@ export type RatingNewEvent = {
   booth_id: string
   booth_name: string
   rating: number
+  comment: string | null
   user_display_name: string
+}
+
+// ---- ブース一覧（server #55: GET /admin/events/:event_id/booths） ----
+export type AdminBoothSort = 'checkin_count' | 'avg_rating' | 'name'
+export type AdminBoothSummary = {
+  id: string
+  name: string
+  checkin_count: number
+  avg_rating: number | null
+  comment_count: number
+}
+export async function fetchAdminBoothSummaries(
+  eventId: string,
+  params: { sort: AdminBoothSort; order: 'asc' | 'desc' },
+): Promise<AdminBoothSummary[]> {
+  const res = await apiClient.get<ApiResponse<{ booths: AdminBoothSummary[] }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/booths`,
+    { params },
+  )
+  return unwrapApiData(res).booths
+}
+
+// ---- ブース別コメント（server #54: GET /admin/events/:event_id/booths/:booth_id/comments） ----
+export type AdminBoothComment = {
+  id: string
+  rating: number
+  comment: string
+  user_display_name: string | null
+  rated_at: string // ISO8601（注意: created_at ではない）
+  is_hidden: boolean // 今回はUI未使用（表示制御は未実装）
+}
+export type AdminBoothCommentsPage = {
+  booth: { id: string; name: string }
+  comments: AdminBoothComment[]
+  pagination: { limit: number; offset: number; total: number; has_more: boolean }
+}
+export async function fetchAdminBoothComments(
+  eventId: string,
+  boothId: string,
+  params: { limit?: number; offset?: number } = {},
+): Promise<AdminBoothCommentsPage> {
+  const res = await apiClient.get<ApiResponse<AdminBoothCommentsPage>>(
+    `/admin/events/${encodeURIComponent(eventId)}/booths/${encodeURIComponent(boothId)}/comments`,
+    { params: { limit: params.limit ?? 20, offset: params.offset ?? 0 } },
+  )
+  return unwrapApiData(res)
 }
 
 export type BoothAnalytics = {
@@ -359,19 +406,6 @@ export async function clearAdminSampleData(eventId: string): Promise<SampleDataC
   return unwrapApiData(res).cleared
 }
 
-export type EventDataClearResult = {
-  recommendations: number
-  survey_answers: number
-  ratings: number
-  checkins: number
-  booth_tags: number
-  booth_categories: number
-  booths: number
-  participants: number
-  survey_questions: number
-  categories: number
-}
-
 export type AdminAuditLog = {
   id: string
   actor_id: string
@@ -404,11 +438,27 @@ export async function fetchAdminAuditLogs(
   )
   return unwrapApiData(res)
 }
+export type ExhibitorBulkAccount = { email: string; password: string; booth_id: string }
+export type ExhibitorBulkRowResult = {
+  index: number
+  email: string
+  booth_id: string
+  status: 'created' | 'updated' | 'skipped' | 'error'
+  user_id?: string
+  error?: { code: string; message: string }
+}
+export type ExhibitorBulkResult = {
+  summary: { total: number; created: number; updated: number; skipped: number; failed: number }
+  results: ExhibitorBulkRowResult[]
+}
 
-export async function clearAllAdminEventData(eventId: string): Promise<EventDataClearResult> {
-  const res = await apiClient.delete<ApiResponse<{ cleared: EventDataClearResult }>>(
-    `/admin/events/${encodeURIComponent(eventId)}/event-data`,
-    { data: { confirm: 'DELETE_ALL_EVENT_DATA' } },
+export async function bulkRegisterExhibitors(
+  eventId: string,
+  accounts: ExhibitorBulkAccount[],
+): Promise<ExhibitorBulkResult> {
+  const res = await apiClient.post<ApiResponse<ExhibitorBulkResult>>(
+    `/admin/events/${encodeURIComponent(eventId)}/exhibitors/bulk`,
+    { accounts },
   )
-  return unwrapApiData(res).cleared
+  return unwrapApiData(res)
 }
