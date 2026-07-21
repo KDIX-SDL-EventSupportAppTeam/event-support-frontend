@@ -83,10 +83,12 @@ export async function postV1CheckInRating(
   eventId: string,
   checkinId: string,
   rating: number,
+  comment?: string,
 ): Promise<void> {
+  const trimmed = comment?.trim()
   const res = await apiClient.post<ApiResponse<{ rating_id: string }>>(
     `/events/${encodeURIComponent(eventId)}/checkins/${encodeURIComponent(checkinId)}/rating`,
-    { rating },
+    trimmed ? { rating, comment: trimmed } : { rating },
   )
   unwrapApiData(res)
 }

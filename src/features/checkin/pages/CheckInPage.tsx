@@ -95,12 +95,12 @@ export function CheckInPage() {
     }
   }
 
-  async function handleRatingSubmit(rating: number) {
+  async function handleRatingSubmit(rating: number, comment: string) {
     if (!eventId || !checkInResult || !isV1Flow) return
     setSubmitting(true)
     setErrorMessage(null)
     try {
-      await postV1CheckInRating(eventId, checkInResult.checkin_id, rating)
+      await postV1CheckInRating(eventId, checkInResult.checkin_id, rating, comment)
       await loadRecommendations()
     } catch (e) {
       setErrorMessage(formatClientError(e, '評価の送信に失敗しました'))
@@ -150,7 +150,7 @@ export function CheckInPage() {
       <CheckInRatingModal
         boothName={checkInResult.booth.name}
         submitting={submitting}
-        onSubmit={(r) => void handleRatingSubmit(r)}
+        onSubmit={(r, c) => void handleRatingSubmit(r, c)}
         onSkip={() => void handleRatingSkip()}
       />
     )
