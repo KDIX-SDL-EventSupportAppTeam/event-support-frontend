@@ -7,7 +7,7 @@ type Props = {
   onFallback: () => void
 }
 
-const CAMERA_FAILED_MSG = 'カメラを起動できませんでした。QRを使わず一覧から選ぶこともできます。'
+const CAMERA_FAILED_MSG = 'カメラを起動できませんでした。他の方法（番号入力、ブース一覧から選択）でも試せます。'
 const OUT_OF_SCOPE_MSG = 'このQRコードは読み取れませんでした。もう一度かざすか、一覧から選んでください。'
 
 export function CheckInQrScanView({ onDetected, onFallback }: Props) {
@@ -71,7 +71,7 @@ export function CheckInQrScanView({ onDetected, onFallback }: Props) {
       <div id="checkin-qr-reader" className="checkin-qr-reader" />
       {error ? <p className="checkin-error-box">{error}</p> : null}
       <button type="button" className="checkin-qr-fallback-link" onClick={onFallback}>
-        QRを使わず一覧から選ぶ
+        他の方法（番号入力、ブース一覧から選択）で試す
       </button>
     </div>
   )
