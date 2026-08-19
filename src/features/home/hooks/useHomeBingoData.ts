@@ -1,58 +1,53 @@
-import { useEffect, useState } from 'react'
-import { createEventDataSource, resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
-import { countCompletedBingoLines } from '@/shared/data/sample/bingoRandom'
+import { useCallback, useEffect, useState } from 'react'
+import { fetchV1BingoCard } from '@/shared/api/v1Participant'
+import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
+import { buildSampleBingoCard } from '@/shared/data/sample/sampleBingoCard'
 import { formatClientError } from '@/shared/lib/formatClientError'
-import type { BingoGridCell } from '@/shared/types/legacyBooth'
+import type { BingoCard } from '@/shared/types/bingoCard'
 
+/**
+ * 段階解放ビンゴカードのデータ取得。
+ * サーバーを単一の真実源とする（仕様: docs/.sdd/05-state-api/types-and-client.md）。
+ * ライン数の再計算はしない。`card.coins.earned` をそのまま使う。
+ */
 export function useHomeBingoData(eventId: string | undefined, userId: string | undefined) {
-  const [grid, setGrid] = useState<BingoGridCell[]>([])
-  const [bingoCount, setBingoCount] = useState(0)
-  const [gachaponCoinsSpent, setGachaponCoinsSpent] = useState(0)
-  const [checkedInBoothIds, setCheckedInBoothIds] = useState<string[]>([])
+  const [card, setCard] = useState<BingoCard | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const refetch = useCallback(async () => {
     if (!eventId || !userId) {
-      setGrid([])
+      setCard(null)
       setError(null)
       setLoading(false)
       return
     }
-    const ds = createEventDataSource()
+    setLoading(true)
+    setError(null)
+    try {
+      const c =
+        resolveEventDataSourceMode() === 'sample'
+          ? buildSampleBingoCard(eventId, userId)
+          : await fetchV1BingoCard(eventId)
+      setCard(c)
+    } catch (e) {
+      setCard(null)
+      setError(formatClientError(e, 'ビンゴ情報の取得に失敗しました'))
+    } finally {
+      setLoading(false)
+    }
+  }, [eventId, userId])
+
+  useEffect(() => {
     let cancelled = false
     ;(async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        const [g, chk, s] = await Promise.all([
-          ds.getBingoGrid(eventId, userId),
-          ds.getCheckedInBoothIds(eventId, userId),
-          ds.getGachaponCoinsSpent(eventId, userId),
-        ])
-        const c =
-          resolveEventDataSourceMode() === 'api'
-            ? countCompletedBingoLines(g, new Set(chk))
-            : await ds.getBingoCount(eventId, userId)
-        if (!cancelled) {
-          setGrid(g)
-          setBingoCount(c)
-          setGachaponCoinsSpent(s)
-          setCheckedInBoothIds(chk)
-        }
-      } catch (e) {
-        if (!cancelled) {
-          setGrid([])
-          setError(formatClientError(e, 'ビンゴ情報の取得に失敗しました'))
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
+      await refetch()
+      if (cancelled) return
     })()
     return () => {
       cancelled = true
     }
-  }, [eventId, userId])
+  }, [refetch])
 
-  return { grid, bingoCount, gachaponCoinsSpent, checkedInBoothIds, loading, error }
+  return { card, loading, error, refetch }
 }

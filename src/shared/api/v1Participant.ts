@@ -1,6 +1,7 @@
 import { apiClient } from '@/shared/api/client'
 import { unwrapApiData } from '@/shared/api/unwrap'
 import type { ApiResponse } from '@/shared/types/api'
+import type { BingoCard } from '@/shared/types/bingoCard'
 
 export type V1BoothListItem = {
   id: string
@@ -60,10 +61,24 @@ export async function fetchV1Checkins(eventId: string): Promise<V1CheckinItem[]>
   return unwrapApiData(res).checkins
 }
 
+/**
+ * ビンゴ段階解放対応後のチェックインレスポンス。
+ * 仕様: docs/.sdd/03-checkin-flow/checkin-result.md
+ */
 export type V1CheckInResponse = {
   checkin_id: string
   booth: { id: string; name: string }
   synced_at: string
+  /** COOLDOWN の残り秒数（既定 CHECKIN_COOLDOWN_SEC=0 では 0） */
+  cooldown_remaining_sec: number
+  /** 今回のチェックインでカードのどのマスが埋まったか（カード外訪問や解放前の追加訪問では null） */
+  filled_cell: { position: number } | null
+  /** 直前に評価が未回収のブースがあれば非 null（評価モーダルの先頭ステップ用） */
+  pending_rating: { checkin_id: string; booth_id: string; booth_name: string } | null
+  /** 今回のチェックインで外側12マスが解放されたか */
+  unlocked: boolean
+  new_lines: number
+  coins_earned: number
 }
 
 export async function postV1CheckIn(
@@ -79,18 +94,31 @@ export async function postV1CheckIn(
   return unwrapApiData(res)
 }
 
+/** 評価の送信文脈。既定は手動評価（マスタップ導線 / チェックイン履歴からの導線）。 */
+export type V1RatingContext = 'NEXT_CHECKIN' | 'MANUAL'
+
 export async function postV1CheckInRating(
   eventId: string,
   checkinId: string,
   rating: number,
   comment?: string,
+  context: V1RatingContext = 'MANUAL',
 ): Promise<void> {
   const trimmed = comment?.trim()
   const res = await apiClient.post<ApiResponse<{ rating_id: string }>>(
     `/events/${encodeURIComponent(eventId)}/checkins/${encodeURIComponent(checkinId)}/rating`,
-    trimmed ? { rating, comment: trimmed } : { rating },
+    { rating, context, ...(trimmed ? { comment: trimmed } : {}) },
   )
   unwrapApiData(res)
+}
+
+/**
+ * 段階解放ビンゴカードを取得する。
+ * 仕様: docs/.sdd/05-state-api/types-and-client.md
+ */
+export async function fetchV1BingoCard(eventId: string): Promise<BingoCard> {
+  const res = await apiClient.get<ApiResponse<BingoCard>>(`/events/${encodeURIComponent(eventId)}/bingo/card`)
+  return unwrapApiData(res)
 }
 
 export type V1RecommendationReason = 'recommend' | 'semi_recommend' | 'discovery'

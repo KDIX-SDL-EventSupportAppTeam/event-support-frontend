@@ -1,12 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useHomeBingoData } from '@/features/home/hooks/useHomeBingoData'
+import { useBingoUnlockedSocket } from '@/features/home/hooks/useBingoUnlockedSocket'
 import { useExhibitorStore } from '@/features/exhibitor/store/exhibitorStore'
 import { useAuthStore } from '@/shared/auth/authStore'
 import { fetchPublicEvent } from '@/shared/api/publicEvent'
-import type { LegacyBooth } from '@/shared/types/legacyBooth'
+import { hasPlayedUnlockAnimation, markUnlockAnimationPlayed } from '@/shared/lib/bingoUnlockFlag'
+import { BingoCardView } from '@/features/home/components/bingo/BingoCardView'
+import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
 import { HomeTutorialModal } from '@/features/home/pages/HomePage/HomeTutorialModal'
 import '@/features/home/styles/legacy-home.scss'
+import '@/features/home/styles/bingo-card.scss'
 
 const FEEDBACK_FORM_URL =
   (import.meta.env.VITE_FEEDBACK_FORM_URL as string | undefined) ?? 'https://forms.gle/7jf7E6DVHvBmLNKA6'
@@ -16,9 +20,27 @@ export function HomePage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
   const userId = useAuthStore((s) => s.user?.id)
   const clearSession = useAuthStore((s) => s.clearSession)
-  const { grid, bingoCount, gachaponCoinsSpent, checkedInBoothIds, loading, error } = useHomeBingoData(eventId, userId)
+  const { card, loading, error, refetch } = useHomeBingoData(eventId, userId)
   const missingUserContext = !eventId || !userId
-  const hasBoothCells = grid.some((c) => c !== null)
+
+  const [showUnlockAnimation, setShowUnlockAnimation] = useState(false)
+
+  const handleUnlocked = useCallback(
+    (payload: { card_id: string; unlocked_at: string }) => {
+      // socket.io の bingo:unlocked は副経路。正の経路（チェックインレスポンス）で
+      // 既に再生済みなら重複再生しない（docs/.sdd/02-bingo-card/unlock-animation.md）
+      if (hasPlayedUnlockAnimation(payload.card_id)) return
+      markUnlockAnimationPlayed(payload.card_id)
+      setShowUnlockAnimation(true)
+    },
+    [],
+  )
+  useBingoUnlockedSocket(handleUnlocked)
+
+  function closeUnlockAnimation() {
+    setShowUnlockAnimation(false)
+    void refetch()
+  }
 
   const isExhibitor = useExhibitorStore((s) => s.isExhibitor)
   const ensureExhibitorLoaded = useExhibitorStore((s) => s.ensureLoaded)
@@ -28,7 +50,6 @@ export function HomePage() {
     ensureExhibitorLoaded(eventId, userId)
   }, [eventId, userId, ensureExhibitorLoaded])
 
-  const [selectedBooth, setSelectedBooth] = useState<LegacyBooth | null>(null)
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [feedbackConfirmOpen, setFeedbackConfirmOpen] = useState(false)
   const [bingoModalOpen, setBingoModalOpen] = useState(false)
@@ -65,18 +86,6 @@ export function HomePage() {
     sessionStorage.removeItem('newlyCompletedLines')
     sessionStorage.removeItem('newCoinsAwarded')
   }, [])
-
-  function isCheckedIn(boothId: string) {
-    return checkedInBoothIds.includes(boothId)
-  }
-
-  function openBoothDetail(booth: LegacyBooth) {
-    setSelectedBooth(booth)
-  }
-
-  function closeBoothDetail() {
-    setSelectedBooth(null)
-  }
 
   return (
     <div className="legacy-home container py-3 px-2">
@@ -142,35 +151,7 @@ export function HomePage() {
 
       {tutorialOpen ? <HomeTutorialModal onClose={() => setTutorialOpen(false)} /> : null}
 
-      {selectedBooth ? (
-        <div className="modal-overlay" role="dialog" aria-modal="true" onClick={closeBoothDetail}>
-          <div className="modal-content booth-detail-popup text-start" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header border-0 pb-0">
-              <h5 className="modal-title w-100">{selectedBooth.booth_name}</h5>
-              <button type="button" className="btn-close" aria-label="閉じる" onClick={closeBoothDetail} />
-            </div>
-            <div className="modal-body pt-2">
-              <img
-                src={selectedBooth.booth_image_url ?? '/logo_main.png'}
-                alt=""
-                className="img-fluid rounded mb-3"
-              />
-              <h5 className="fs-6">
-                <i className="bi bi-geo-alt-fill" aria-hidden /> 場所:{' '}
-                <span className="booth-id-large">
-                  {(selectedBooth.booth_display_code ?? selectedBooth.booth_id).toUpperCase()}
-                </span>
-              </h5>
-              <p className="mt-3 mb-0">{selectedBooth.booth_description || '説明がありません。'}</p>
-            </div>
-            <div className="modal-footer border-0 pt-0">
-              <button type="button" className="btn btn-secondary btn-modal-close" onClick={closeBoothDetail}>
-                閉じる
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {showUnlockAnimation ? <UnlockAnimation onDone={closeUnlockAnimation} /> : null}
 
       {loading ? (
         <div className="text-center p-5">
@@ -202,69 +183,13 @@ export function HomePage() {
             <code>server/</code> の <code>npm run dev</code> を確認してください。
           </p>
         </div>
-      ) : grid.length === 0 ? (
+      ) : !card ? (
         <div className="text-center p-5">
           <p className="mb-0">ビンゴカードを表示できませんでした。</p>
         </div>
-      ) : !hasBoothCells ? (
-        <div className="text-center p-5">
-          <p className="mb-2">ブースが登録されていないため、ビンゴカードを作れません。</p>
-          <p className="small text-muted mb-0">
-            <code>cd server && npm run db:seed</code> を実行し、API サーバーを再起動してください。
-          </p>
-        </div>
       ) : (
         <div className="bingo-wrapper mx-auto p-2 border rounded">
-          <div className="d-flex justify-content-between align-items-center">
-            <h1 className="mb-0 ms-2 main-title">
-              <span className="sub-title">PRoTo FES</span>
-              <br />
-              BINGO
-            </h1>
-            <div className="bingo-coins">
-              {Array.from({ length: Math.max(0, bingoCount - gachaponCoinsSpent) }).map((_, i) => (
-                <img key={`gold-${i}`} src="/icons/coin-gold.png" alt="" />
-              ))}
-              {Array.from({ length: Math.max(0, 4 - bingoCount) }).map((_, i) => (
-                <img key={`gray-${i}`} src="/icons/coin-gray.png" alt="" />
-              ))}
-            </div>
-          </div>
-
-          <div className="row g-1 g-sm-2 mt-2">
-            {grid.map((booth, index) => (
-              <div key={booth ? booth.booth_id : `empty-${index}`} className="col-3">
-                <div
-                  role={booth ? 'button' : undefined}
-                  tabIndex={booth ? 0 : undefined}
-                  className={`bingo-cell d-flex flex-column justify-content-center align-items-center text-center p-1 ${
-                    booth ? '' : 'bingo-cell-empty'
-                  } ${booth && isCheckedIn(booth.booth_id) ? 'checked-in' : ''} ${
-                    booth?.is_recommendation ? 'is-recommendation' : ''
-                  }`}
-                  onClick={() => booth && openBoothDetail(booth)}
-                  onKeyDown={(e) => {
-                    if (booth && (e.key === 'Enter' || e.key === ' ')) {
-                      e.preventDefault()
-                      openBoothDetail(booth)
-                    }
-                  }}
-                >
-                  {booth ? (
-                    <>
-                      <span className="booth-emoji">{booth.booth_emoji}</span>
-                      <div className="booth-text-container">
-                        <span className="booth-number">
-                          {(booth.booth_display_code ?? booth.booth_id).toUpperCase()}
-                        </span>
-                        <span className="booth-name">{booth.booth_name}</span>
-                      </div>
-                    </>
-                  ) : null}
-                </div>
-              </div>
-            ))}
-          </div>
+          <BingoCardView card={card} eventId={eventId as string} onRated={() => void refetch()} />
         </div>
       )}
 
