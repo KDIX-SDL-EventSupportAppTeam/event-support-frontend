@@ -29,7 +29,7 @@
 
 | 既存 | 変更 |
 |---|---|
-| `src/features/home/pages/HomePage/` | カード表示を新レスポンスに対応。3要素構成へ整理（[home-layout.md](../02-bingo-card/home-layout.md)） |
+| `src/features/home/pages/HomePage/` | カード表示を新レスポンスに対応。**画面構成そのものは変更しない**（企画側で対象外と決定） |
 | `src/features/home/hooks/useHomeBingoData.ts` | 新しいカード API に置き換え。ライン数はサーバー値を使う |
 | `src/features/checkin/pages/CheckInPage.tsx` | 評価ステップを**先頭**へ移動（[03-checkin-flow](../03-checkin-flow/rating-modal.md)） |
 | `src/features/checkin/pages/CheckInRatingModal.tsx` | 段階数をサーバーの `rating_scale` に従わせる |
