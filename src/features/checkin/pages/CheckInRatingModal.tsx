@@ -5,12 +5,22 @@ type Props = {
   onSubmit: (rating: number, comment: string) => void
   onSkip: () => void
   submitting: boolean
+  /**
+   * 評価の段階数。ハードコードしない（Q-F2: docs/.sdd/06-open-questions/open-questions.md）。
+   * `GET /bingo/card` の `rating_scale` に従う。省略時は既定値 3。
+   */
+  ratingScale?: number
 }
 
-export function CheckInRatingModal({ boothName, onSubmit, onSkip, submitting }: Props) {
+const DEFAULT_RATING_SCALE = 3
+
+export function CheckInRatingModal({ boothName, onSubmit, onSkip, submitting, ratingScale }: Props) {
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
+
+  const scale =
+    ratingScale && Number.isFinite(ratingScale) && ratingScale > 0 ? Math.floor(ratingScale) : DEFAULT_RATING_SCALE
 
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="checkin-rating-title">
@@ -21,10 +31,10 @@ export function CheckInRatingModal({ boothName, onSubmit, onSkip, submitting }: 
         <p className="result-message mb-3">
           「{boothName}」はいかがでしたか？
           <br />
-          5段階で評価してください（スキップ可）
+          {scale}段階で評価してください（スキップ可）
         </p>
         <div className="checkin-rating-stars mb-4" role="group" aria-label="評価">
-          {[1, 2, 3, 4, 5].map((n) => (
+          {Array.from({ length: scale }, (_, i) => i + 1).map((n) => (
             <button
               key={n}
               type="button"
