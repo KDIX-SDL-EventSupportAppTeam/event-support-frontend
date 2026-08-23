@@ -1,6 +1,6 @@
 # ADR（Architecture Decision Records）
 
-フロントエンドにおける設計判断を記録する。新規 ADR はこのディレクトリに追加する（`docs/legacy/adrs/` には追加しない）。
+フロントエンドにおける設計判断を記録する。新規 ADR はこのディレクトリに追加する（`docs/archive/legacy/adrs/` には追加しない）。
 
 ## ファイル名
 
@@ -25,4 +25,4 @@ NNNN-kebab-case-title.md
 
 ## レガシー
 
-モノレポ時代の ADR は [docs/legacy/adrs/](../legacy/adrs/) を参照。
+モノレポ時代の ADR は [docs/archive/legacy/adrs/](../../archive/legacy/adrs/) を参照。
