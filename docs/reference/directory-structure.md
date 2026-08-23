@@ -38,7 +38,7 @@ src/
 └── main.tsx
 ```
 
-**原則：feature 間の直接 import は禁止。** 共有は `shared/` に置く。認証セッション（token・user・ロール判定）は `shared/auth/` に置き、`features/auth/` には画面と認証 API フローのみを残す（[ADR 0003](./docs/decisions/adrs/0003-move-auth-session-to-shared.md)）。
+**原則：feature 間の直接 import は禁止。** 共有は `shared/` に置く。認証セッション（token・user・ロール判定）は `shared/auth/` に置き、`features/auth/` には画面と認証 API フローのみを残す（[ADR 0003](../decisions/adrs/0003-move-auth-session-to-shared.md)）。
 
 | feature | 主なパス |
 |---------|----------|

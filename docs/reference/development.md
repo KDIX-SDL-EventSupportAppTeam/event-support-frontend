@@ -35,7 +35,7 @@ Vite プロキシ（`vite.config.ts`）: `/api/v1` → `127.0.0.1:3000`、`/api`
 2. `.env` に `VITE_MOCK_API=false` と `VITE_DATA_SOURCE=api`
 3. `npm run dev` → ログイン（シード: `dev@example.com` / `password123`）
 
-`event_id` の正: [docs/archive/legacy/tests/fixtures/dummy-login.md](./docs/archive/legacy/tests/fixtures/dummy-login.md)
+`event_id` の正: [docs/archive/legacy/tests/fixtures/dummy-login.md](../archive/legacy/tests/fixtures/dummy-login.md)
 
 ### エントリポイント（トップ `/`）
 
@@ -51,7 +51,7 @@ Vite プロキシ（`vite.config.ts`）: `/api/v1` → `127.0.0.1:3000`、`/api`
 
 主催者ポータルの共通レイアウト: `features/organizer/components/OrganizerShell.tsx`（ヘッダー・ログアウト）。
 
-経緯・判断は [docs/decisions/adrs/0002-top-redirects-to-organizer-login.md](./docs/decisions/adrs/0002-top-redirects-to-organizer-login.md)。
+経緯・判断は [docs/decisions/adrs/0002-top-redirects-to-organizer-login.md](../decisions/adrs/0002-top-redirects-to-organizer-login.md)。
 
 ### 運営画面（admin）
 
@@ -85,7 +85,7 @@ curl -s -X POST http://localhost:3000/api/v1/auth/register/admin \
 3. フロント `.env` で `VITE_MOCK_API=false` / `VITE_DATA_SOURCE=api` / `VITE_API_BASE_URL=http://localhost:3000/api/v1`
 4. http://localhost:5173/admin/login から上記アカウントでログイン
 
-サーバー側の運営 API・WebSocket 仕様は [event-support-server/docs/archive/orders/2026-06-16-完了-運営CRUD-ダッシュボード-WebSocket実装.md](../event-support-server/docs/archive/orders/2026-06-16-完了-運営CRUD-ダッシュボード-WebSocket実装.md)。
+サーバー側の運営 API・WebSocket 仕様は [event-support-server/docs/archive/orders/2026-06-16-完了-運営CRUD-ダッシュボード-WebSocket実装.md](../../../event-support-server/docs/archive/orders/2026-06-16-完了-運営CRUD-ダッシュボード-WebSocket実装.md)。
 
 ### 出展者ダッシュボード（/exhibitor）
 
@@ -97,7 +97,7 @@ curl -s -X POST http://localhost:3000/api/v1/auth/register/admin \
 - 一括登録（`/admin/exhibitors`）は既存参加者にも出展者ロールを後付けできる。反映確認は再ログイン不要（`/home` のリロードで `ensureLoaded` が再取得する）。
 - 実装: `features/exhibitor/store/exhibitorStore.ts`（is_exhibitor・担当ブースのキャッシュ）、`features/exhibitor/hooks/useExhibitorStats.ts`（stats 取得＋60秒ポーリング。admin フィーチャーからは越境 import しない）、`features/exhibitor/pages/ExhibitorDashboardPage.tsx`。API 型・fetch 関数は `shared/api/v1Exhibitor.ts`、一括登録は `shared/api/v1Admin.ts` の `bulkRegisterExhibitors`。
 - モック/サンプルモード（`VITE_MOCK_API=true` / `VITE_DATA_SOURCE=sample`）に出展者 API のモックは無い（`exhibitorStore` が常に非出展者を返す）。出展者画面の動作確認は実 API モード必須。
-- 設計書: [改修プラン/三上issue_2026-07/frontend_43_出展者管理画面.md](../改修プラン/三上issue_2026-07/frontend_43_出展者管理画面.md)（サーバー側 API 契約は `server_53_出展者ロール集計API.md` が正）。
+- 設計書: [改修プラン/三上issue_2026-07/frontend_43_出展者管理画面.md（改修プラン・リポジトリ外）（サーバー側 API 契約は `server_53_出展者ロール集計API.md` が正）。
 
 ## 本番ビルド・デプロイ
 
@@ -133,5 +133,5 @@ firebase deploy --only hosting --project event-support-app
 
 本番 URL 例: `https://event-support-app.web.app`
 
-サーバー側のデプロイ手順は [event-support-server/docs/deploy/cloud-run.md](../event-support-server/docs/deploy/cloud-run.md)。
+サーバー側のデプロイ手順は [event-support-server/docs/deploy/cloud-run.md](../../../event-support-server/docs/operations/cloud-run.md)。
 デプロイ後、Cloud Run の `CORS_ORIGIN` にフロント URL（`.web.app` と `.firebaseapp.com`）を設定する。
