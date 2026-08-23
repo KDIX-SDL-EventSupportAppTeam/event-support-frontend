@@ -20,6 +20,7 @@ src/
 │   ├── award/         # アワード投票
 │   ├── schedule/      # スケジュール
 │   ├── qa/            # Q&A
+│   ├── presurvey/     # 事前アンケート5画面（現状は localStorage のモック）
 │   ├── admin/         # 運営管理（ダッシュボード・CRUD）
 │   ├── exhibitor/     # 出展者ダッシュボード・出展者ロール判定（store, hooks, pages）
 │   └── organizer/     # 主催者ポータル（guards / pages / store / api / components）
@@ -48,6 +49,7 @@ src/
 | gachapon | `features/gachapon/pages` |
 | award | `features/award/{pages,hooks}` |
 | schedule / qa | `features/{schedule,qa}/pages` |
+| presurvey | `features/presurvey/{pages,components,api,config,store,types}` · **現状は localStorage のモック** |
 | admin | `features/admin/{pages,components}` · API: `shared/api/v1Admin.ts` |
 | exhibitor | `features/exhibitor/{pages,hooks,store}` · API: `shared/api/v1Exhibitor.ts` |
 | organizer | `features/organizer/{pages,store,api,guards,components}` |
