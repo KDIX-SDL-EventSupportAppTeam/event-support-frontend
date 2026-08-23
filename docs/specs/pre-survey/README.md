@@ -15,9 +15,8 @@
 
 ## 現状
 
-`src/features/presurvey/` に **localStorage ベースのモック実装**がある
-（`feat/pre-survey-and-app-access-gate` ブランチ）。5画面の遷移は確認済み。
-**サーバー連携が未実装。**
+`src/features/presurvey/` に **localStorage ベースのモック実装**がある（develop にマージ済み）。
+5画面の遷移とルーティング（`/pre-survey/:eventId` 配下）は動く。**サーバー連携が未実装。**
 
 ## 画面遷移
 
@@ -43,6 +42,7 @@
 | `store/presurveySessionStore.ts` | **削除。** 認証は `shared/auth/authStore` に統合する |
 | `config/questions.ts` | **削除。** 設問はサーバー配信に完全移行する（サーバー側 P-11） |
 | `pages/*` | 遷移構造は維持。サインアップ／サインインを `features/auth/hooks/useAuth` 経由に変更 |
+| `README.md`（feature 内） | サーバー接続後の記述に更新する。**localStorage 前提の説明を残さない** |
 | `types/presurvey.ts` | サーバーレスポンスに合わせて調整（`question_key` の追加など） |
 
 | `presurveyApi.ts` の関数 | 置き換え先 |
@@ -83,3 +83,4 @@ socket は JWT 必須で `/thanks` に向かない（サーバー側 P-9）。
 - [ ] 必須設問が未回答だと送信できない
 - [ ] 関心分野の選択肢がサーバーから来た値である（ハードコードされていない）
 - [ ] `presurveyLocalStore` / `presurveySessionStore` / `config/questions.ts` が存在しない
+- [ ] `/thanks` の遷移先が、ゲートの `is_open` に従う（現状はログイン状態だけで分岐している）
