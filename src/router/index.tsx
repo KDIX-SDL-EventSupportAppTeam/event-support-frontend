@@ -30,6 +30,11 @@ import { GachaponIntroPage } from '@/features/gachapon/pages/GachaponIntroPage'
 import { GachaponUsePage } from '@/features/gachapon/pages/GachaponUsePage'
 import { ExhibitorDashboardPage } from '@/features/exhibitor/pages/ExhibitorDashboardPage'
 import { HomePage } from '@/features/home/pages/HomePage/HomePage'
+import { PreSurveyEntryPage } from '@/features/presurvey/pages/PreSurveyEntryPage'
+import { PreSurveyFormPage } from '@/features/presurvey/pages/PreSurveyFormPage'
+import { PreSurveySignInPage } from '@/features/presurvey/pages/PreSurveySignInPage'
+import { PreSurveySignUpPage } from '@/features/presurvey/pages/PreSurveySignUpPage'
+import { PreSurveyThanksPage } from '@/features/presurvey/pages/PreSurveyThanksPage'
 import { QaPage } from '@/features/qa/pages/QaPage'
 import { SchedulePage } from '@/features/schedule/pages/SchedulePage'
 
@@ -55,6 +60,12 @@ export function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/join/:eventId" element={<JoinPage />} />
+      {/* 事前アンケート（参加者に配布する URL は /pre-survey/:eventId） */}
+      <Route path="/pre-survey/:eventId" element={<PreSurveyEntryPage />} />
+      <Route path="/pre-survey/:eventId/signup" element={<PreSurveySignUpPage />} />
+      <Route path="/pre-survey/:eventId/signin" element={<PreSurveySignInPage />} />
+      <Route path="/pre-survey/:eventId/form" element={<PreSurveyFormPage />} />
+      <Route path="/pre-survey/:eventId/thanks" element={<PreSurveyThanksPage />} />
       <Route path="/pre-register" element={<LegacyPlaceholderPage title="プレ登録" />} />
       <Route path="/forgot-password" element={<LegacyPlaceholderPage title="パスワードを忘れた場合" />} />
       <Route path="/reset-password/:token" element={<LegacyPlaceholderPage title="パスワード再設定" />} />
