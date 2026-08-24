@@ -101,20 +101,20 @@ YYYY-MM-DD-kebab-case-summary.md
 |----------|------|
 | （まだなし） | — |
 
-**レガシー参照:** [docs/legacy/tests/fixtures/dummy-login.md](../legacy/tests/fixtures/dummy-login.md)（event_id・ログイン例）
+**レガシー参照:** [docs/archive/legacy/tests/fixtures/dummy-login.md](../archive/legacy/tests/fixtures/dummy-login.md)（event_id・ログイン例）
 
 ---
 
 ## レガシー
 
-モノレポ時代の実行記録は [docs/legacy/tests/](../legacy/tests/) に退避済み。新規記録は `docs/tests/runs/` に追加し、legacy には書かない。
+モノレポ時代の実行記録は [docs/archive/legacy/tests/](../archive/legacy/tests/) に退避済み。新規記録は `docs/tests/runs/` に追加し、legacy には書かない。
 
 | 日付 | ファイル | 概要 |
 |------|----------|------|
-| 2026-05-12 | [runs/2026-05-12-frontend-rewrite-smoke.md](../legacy/tests/runs/2026-05-12-frontend-rewrite-smoke.md) | フロント書き換え後のスモーク |
-| 2026-05-13 | [runs/2026-05-13-mock-auth.md](../legacy/tests/runs/2026-05-13-mock-auth.md) | モック認証まわりの Vitest |
-| 2026-05-13 | [runs/2026-05-13-event-data-source.md](../legacy/tests/runs/2026-05-13-event-data-source.md) | SampleEventData・データソース切替 |
-| 2026-05-13 | [runs/2026-05-13-docs-sync-verification.md](../legacy/tests/runs/2026-05-13-docs-sync-verification.md) | lint / build / Vitest |
+| 2026-05-12 | [runs/2026-05-12-frontend-rewrite-smoke.md](../archive/legacy/tests/runs/2026-05-12-frontend-rewrite-smoke.md) | フロント書き換え後のスモーク |
+| 2026-05-13 | [runs/2026-05-13-mock-auth.md](../archive/legacy/tests/runs/2026-05-13-mock-auth.md) | モック認証まわりの Vitest |
+| 2026-05-13 | [runs/2026-05-13-event-data-source.md](../archive/legacy/tests/runs/2026-05-13-event-data-source.md) | SampleEventData・データソース切替 |
+| 2026-05-13 | [runs/2026-05-13-docs-sync-verification.md](../archive/legacy/tests/runs/2026-05-13-docs-sync-verification.md) | lint / build / Vitest |
 
 ---
 
@@ -122,4 +122,4 @@ YYYY-MM-DD-kebab-case-summary.md
 
 - [tests/README.md](../../tests/README.md) — テストコードの置き場所・コマンド
 - [AGENTS.md](../../AGENTS.md) — エージェント向けテスト規約
-- [docs/adrs/](../adrs/) — 設計判断（テスト方針の ADR はここへ）
+- [docs/decisions/adrs/](../decisions/adrs/) — 設計判断（テスト方針の ADR はここへ）
