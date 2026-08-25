@@ -17,17 +17,14 @@ import { JoinPage } from '@/features/auth/pages/JoinPage/JoinPage'
 import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage/VerifyEmailPage'
 import { VerifyEmailSentPage } from '@/features/auth/pages/VerifyEmailSentPage/VerifyEmailSentPage'
 import { isAdminUser, useAuthStore } from '@/shared/auth/authStore'
+import { RequireAppOpen } from '@/shared/access/RequireAppOpen'
 import { OrganizerLoginPage } from '@/features/organizer/pages/OrganizerLoginPage'
 import { OrganizerEventCreatePage } from '@/features/organizer/pages/OrganizerEventCreatePage'
 import { OrganizerEventListPage } from '@/features/organizer/pages/OrganizerEventListPage'
 import { OrganizerEventDetailPage } from '@/features/organizer/pages/OrganizerEventDetailPage'
 import { RequireOrganizer } from '@/features/organizer/guards/RequireOrganizer'
-import { AwardVotePage } from '@/features/award/pages/AwardVotePage'
 import { BoothListPage } from '@/features/booth/pages/BoothListPage/BoothListPage'
 import { CheckInPage } from '@/features/checkin/pages/CheckInPage'
-import { GachaponCompletePage } from '@/features/gachapon/pages/GachaponCompletePage'
-import { GachaponIntroPage } from '@/features/gachapon/pages/GachaponIntroPage'
-import { GachaponUsePage } from '@/features/gachapon/pages/GachaponUsePage'
 import { ExhibitorDashboardPage } from '@/features/exhibitor/pages/ExhibitorDashboardPage'
 import { HomePage } from '@/features/home/pages/HomePage/HomePage'
 import { PreSurveyEntryPage } from '@/features/presurvey/pages/PreSurveyEntryPage'
@@ -75,7 +72,9 @@ export function AppRoutes() {
         path="/home"
         element={
           <RequireAuth>
-            <HomePage />
+            <RequireAppOpen>
+              <HomePage />
+            </RequireAppOpen>
           </RequireAuth>
         }
       />
@@ -99,7 +98,7 @@ export function AppRoutes() {
         path="/award-vote"
         element={
           <RequireAuth>
-            <AwardVotePage />
+            <LegacyPlaceholderPage title="アワード投票（準備中）" />
           </RequireAuth>
         }
       />
@@ -123,7 +122,7 @@ export function AppRoutes() {
         path="/gachapon"
         element={
           <RequireAuth>
-            <GachaponIntroPage />
+            <LegacyPlaceholderPage title="ガチャポン（準備中）" />
           </RequireAuth>
         }
       />
@@ -131,7 +130,7 @@ export function AppRoutes() {
         path="/gachapon/use"
         element={
           <RequireAuth>
-            <GachaponUsePage />
+            <LegacyPlaceholderPage title="ガチャポン（準備中）" />
           </RequireAuth>
         }
       />
@@ -139,7 +138,7 @@ export function AppRoutes() {
         path="/gachapon/complete"
         element={
           <RequireAuth>
-            <GachaponCompletePage />
+            <LegacyPlaceholderPage title="ガチャポン（準備中）" />
           </RequireAuth>
         }
       />

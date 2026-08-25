@@ -1,17 +1,7 @@
 import { postV1CheckIn } from '@/shared/api/v1Participant'
-import {
-  fetchBingoStatusFull,
-  fetchUserCheckedInBoothDetails,
-  fetchUserVotes,
-  fetchVoteAwardCategories,
-  fetchVotingStatus,
-  postUseGachaponCoin as postUseGachaponCoinRequest,
-  postVotesUpdate,
-} from '@/shared/api/legacyParticipant'
 import type { ParticipantClient } from '@/shared/data/participantTypes'
 import { SAMPLE_QA_ITEMS } from '@/shared/data/sample/sampleQa'
 import { SAMPLE_SCHEDULE } from '@/shared/data/sample/sampleSchedule'
-import { SAMPLE_VOTE_AWARDS } from '@/shared/data/sample/sampleVoteAwards'
 
 const DEFAULT_CHECKIN_EMOJI = '🎪'
 
@@ -33,36 +23,23 @@ export class ApiParticipantClient implements ParticipantClient {
     }
   }
 
-  async getAvailableGachaponCoins(_eventId: string, userId: string): Promise<number> {
-    void _eventId
-    const s = await fetchBingoStatusFull(userId)
-    return Math.max(0, s.bingoCount - s.gachaponCoinsSpent)
+  // ガチャ・アワード投票は準備中（event-support-server/docs/specs/gacha-and-award/）。
+  // ルートは LegacyPlaceholderPage に差し替え済みで、このクライアントからは呼ばれない。
+  // 旧 Flask 直接呼び出し（legacyParticipant.ts）は削除済みのため、器だけ残す。
+  async getAvailableGachaponCoins(): Promise<number> {
+    return 0
   }
 
-  async postUseGachaponCoin(_eventId: string, userId: string): Promise<void> {
-    void _eventId
-    await postUseGachaponCoinRequest(userId)
+  async postUseGachaponCoin(): Promise<void> {
+    /* 準備中 */
   }
 
-  async getAwardVoteSnapshot(eventId: string, userId: string) {
-    void eventId
-    const [votingOpen, rawAwards, checkedBooths, rawVotesUnknown] = await Promise.all([
-      fetchVotingStatus().catch(() => true),
-      fetchVoteAwardCategories().catch(() => []),
-      fetchUserCheckedInBoothDetails(userId).catch(() => []),
-      fetchUserVotes(userId).catch(() => ({})),
-    ])
-    const rawVotes = rawVotesUnknown as Record<string, string | null>
-    const awards = rawAwards.length > 0 ? rawAwards : SAMPLE_VOTE_AWARDS.map((a) => ({ ...a }))
-    const votes: Record<string, string | null> = {}
-    for (const a of awards) {
-      votes[a.name] = rawVotes[a.name] ?? null
-    }
-    return { votingOpen, awards, checkedBooths, votes }
+  async getAwardVoteSnapshot() {
+    return { votingOpen: false, awards: [], checkedBooths: [], votes: {} }
   }
 
-  async saveVotes(userId: string, votes: Record<string, string | null>): Promise<void> {
-    await postVotesUpdate(userId, votes)
+  async saveVotes(): Promise<void> {
+    /* 準備中 */
   }
 
   async getSchedule() {
