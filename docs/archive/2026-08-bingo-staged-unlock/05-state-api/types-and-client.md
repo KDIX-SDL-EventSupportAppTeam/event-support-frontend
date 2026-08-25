@@ -50,21 +50,13 @@ export async function fetchV1BingoCard(eventId: string): Promise<BingoCard>
 
 ## socket.io
 
-既存の `src/shared/api/socket.ts` を使う。参加者は自動で `event:{event_id}:user:{user_id}` room に join される（サーバー側で対応）。
-
-**接続は `useBingoUnlockedSocket` 自身が `connectSocket()` で確立する。**参加者側には他に socket を張る画面が無く（`connectSocket` の呼び出しは運営ダッシュボード系のみ）、`getSocket()` を読むだけでは常に `null` になり購読が張られないため。サンプルモードでは接続しない。
+既存の `src/shared/api/socket.ts` の接続を流用する。参加者は自動で `event:{event_id}:user:{user_id}` room に join される（サーバー側で対応）。
 
 ```ts
 socket.on('bingo:unlocked', (data: { card_id: string; unlocked_at: string }) => { … })
 ```
 
 **これは副経路である。**正の経路はチェックインレスポンスの `unlocked: true`。両方来ても演出は1回。
-
-## ライン成立演出の受け渡し
-
-チェックインレスポンスの `new_lines` / `coins_earned` はチェックイン画面で受け取り、ホーム画面の「🎉 BINGO!」モーダルへ `src/shared/lib/bingoCelebration.ts` 経由で引き渡す（サンプルモードも同じ経路を使う）。
-
-`coins_earned` は**成立ライン総数を4でクリップした累計値であり、今回の獲得枚数ではない**。獲得枚数はチェックイン前のカードの `coins.earned` との差分で求める。差分が0でライン成立がある場合はコイン上限（4枚）到達の案内を出す。
 
 ## サンプルモード
 
