@@ -1,15 +1,15 @@
 import { Link, Navigate, useParams } from 'react-router-dom'
-import { usePreSurveySessionStore } from '@/features/presurvey/store/presurveySessionStore'
+import { useAuthStore } from '@/shared/auth/authStore'
 import { PreSurveyLayout } from '@/features/presurvey/components/PreSurveyLayout'
 
 /**
  * /pre-survey/:eventId
  * 参加者に配布する URL の入口。初回はサインアップ、2 回目以降はサインインへ振り分ける。
- * 同じセッションで回答済みの場合は完了画面へ直行する。
  */
 export function PreSurveyEntryPage() {
   const { eventId } = useParams<{ eventId: string }>()
-  const participant = usePreSurveySessionStore((s) => s.participant)
+  const token = useAuthStore((s) => s.token)
+  const user = useAuthStore((s) => s.user)
 
   if (!eventId) {
     return (
@@ -19,12 +19,9 @@ export function PreSurveyEntryPage() {
     )
   }
 
-  // 同じ端末でサインイン済み → 回答状況に応じて先へ飛ばす
-  if (participant && participant.event_id === eventId) {
-    const to = participant.has_answered
-      ? `/pre-survey/${eventId}/thanks`
-      : `/pre-survey/${eventId}/form`
-    return <Navigate to={to} replace />
+  // 同じ端末で既にこのイベントにサインイン済み → 回答画面へ
+  if (token && user?.event_id === eventId) {
+    return <Navigate to={`/pre-survey/${eventId}/form`} replace />
   }
 
   return (
