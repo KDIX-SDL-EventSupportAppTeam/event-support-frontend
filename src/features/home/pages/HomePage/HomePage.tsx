@@ -5,7 +5,8 @@ import { useBingoUnlockedSocket } from '@/features/home/hooks/useBingoUnlockedSo
 import { useExhibitorStore } from '@/features/exhibitor/store/exhibitorStore'
 import { useAuthStore } from '@/shared/auth/authStore'
 import { fetchPublicEvent } from '@/shared/api/publicEvent'
-import { hasPlayedUnlockAnimation, markUnlockAnimationPlayed } from '@/shared/lib/bingoUnlockFlag'
+import { useUnlockAnimationQueue } from '@/shared/hooks/useUnlockAnimationQueue'
+import { consumeBingoCelebration } from '@/shared/lib/bingoCelebration'
 import { BingoCardView } from '@/features/home/components/bingo/BingoCardView'
 import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
 import { HomeTutorialModal } from '@/features/home/pages/HomePage/HomeTutorialModal'
@@ -23,23 +24,25 @@ export function HomePage() {
   const { card, loading, error, refetch } = useHomeBingoData(eventId, userId)
   const missingUserContext = !eventId || !userId
 
-  const [showUnlockAnimation, setShowUnlockAnimation] = useState(false)
+  const { current: currentUnlock, enqueuePairs, advance } = useUnlockAnimationQueue()
 
-  const handleUnlocked = useCallback(
-    (payload: { card_id: string; unlocked_at: string }) => {
-      // socket.io の bingo:unlocked は副経路。正の経路（チェックインレスポンス）で
-      // 既に再生済みなら重複再生しない（docs/.sdd/02-bingo-card/unlock-animation.md）
-      if (hasPlayedUnlockAnimation(payload.card_id)) return
-      markUnlockAnimationPlayed(payload.card_id)
-      setShowUnlockAnimation(true)
-    },
-    [],
-  )
+  // カード取得のたびに、この端末でまだ再生していない解放演出をキューに積む
+  // （評価送信などでカードが再取得され card の identity が変わっても、キュー内の
+  //  pair_key 重複チェックで同じ演出が二重に積まれることはない）
+  // （正の経路＝チェックインレスポンスを見逃した場合の取りこぼし対策。02-unlock-animation.md）
+  useEffect(() => {
+    if (card) enqueuePairs(card.card_id, card.unlock_events)
+  }, [card, enqueuePairs])
+
+  const handleUnlocked = useCallback(() => {
+    // socket.io の bingo:unlocked は副経路。カードを再取得し、unlock_events から
+    // 未再生の演出をキューに積み直す（docs/specs/bingo-dynamic-unlock/02-unlock-animation.md）
+    void refetch()
+  }, [refetch])
   useBingoUnlockedSocket(handleUnlocked)
 
   function closeUnlockAnimation() {
-    setShowUnlockAnimation(false)
-    void refetch()
+    if (card) advance(card.card_id)
   }
 
   const isExhibitor = useExhibitorStore((s) => s.isExhibitor)
@@ -53,8 +56,6 @@ export function HomePage() {
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [feedbackConfirmOpen, setFeedbackConfirmOpen] = useState(false)
   const [bingoModalOpen, setBingoModalOpen] = useState(false)
-  const [coinLimitModalOpen, setCoinLimitModalOpen] = useState(false)
-  const [newCoinsWon, setNewCoinsWon] = useState(0)
   const [surveyUrl, setSurveyUrl] = useState<string | null>(null)
 
   useEffect(() => {
@@ -73,18 +74,8 @@ export function HomePage() {
   }, [eventId])
 
   useEffect(() => {
-    const newlyCompletedLines = Number.parseInt(sessionStorage.getItem('newlyCompletedLines') ?? '0', 10)
-    const newCoinsAwarded = Number.parseInt(sessionStorage.getItem('newCoinsAwarded') ?? '0', 10)
-    if (newlyCompletedLines > 0) {
-      if (newCoinsAwarded > 0) {
-        setNewCoinsWon(newCoinsAwarded)
-        setBingoModalOpen(true)
-      } else {
-        setCoinLimitModalOpen(true)
-      }
-    }
-    sessionStorage.removeItem('newlyCompletedLines')
-    sessionStorage.removeItem('newCoinsAwarded')
+    const { lines } = consumeBingoCelebration()
+    if (lines > 0) setBingoModalOpen(true)
   }, [])
 
   return (
@@ -95,30 +86,8 @@ export function HomePage() {
             <h2 id="bingo-modal-title" className="bingo-celebration-title">
               🎉 BINGO! 🎉
             </h2>
-            <p className="bingo-celebration-message">
-              おめでとうございます！
-              <br />
-              ガチャポンコインを{newCoinsWon}枚獲得しました！
-            </p>
+            <p className="bingo-celebration-message">おめでとうございます！</p>
             <button type="button" className="btn btn-primary" onClick={() => setBingoModalOpen(false)}>
-              閉じる
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {coinLimitModalOpen ? (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="coin-limit-title">
-          <div className="modal-content text-center">
-            <h2 id="coin-limit-title" className="bingo-celebration-title">
-              🎉 BINGO! 🎉
-            </h2>
-            <p className="bingo-celebration-message">
-              ビンゴ達成おめでとうございます！
-              <br />
-              ※コインの獲得上限（4枚）に達しているため、新しいコインは獲得できません。
-            </p>
-            <button type="button" className="btn btn-primary" onClick={() => setCoinLimitModalOpen(false)}>
               閉じる
             </button>
           </div>
@@ -151,7 +120,7 @@ export function HomePage() {
 
       {tutorialOpen ? <HomeTutorialModal onClose={() => setTutorialOpen(false)} /> : null}
 
-      {showUnlockAnimation ? <UnlockAnimation onDone={closeUnlockAnimation} /> : null}
+      {currentUnlock ? <UnlockAnimation positions={currentUnlock.positions} onDone={closeUnlockAnimation} /> : null}
 
       {loading ? (
         <div className="text-center p-5">

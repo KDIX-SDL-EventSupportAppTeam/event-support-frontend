@@ -7,22 +7,29 @@ type Props = {
 
 /**
  * ビンゴカードの1マス表示。
- * 仕様: docs/.sdd/02-bingo-card/card-display.md
+ * 仕様: docs/specs/bingo-dynamic-unlock/01-card-display.md
  *
- * - LOCKED: 枠と「?」のみ。ブース名は出さない（サーバーが返さない。中身を推測して埋めない）
- * - EMPTY (CENTER): 次の訪問が入る空きマス
- * - EMPTY (OUTER): 推薦ブース名を表示（未達成）
- * - ACHIEVED: 達成済み。参加ボーナスマスにはバッジを付ける
+ * - `is_revealed: false`: 閉じたマス。「？」のみ（サーバーが `booth: null` で返すため中身を補完しない）
+ * - `is_revealed: true, is_achieved: false`: 開いているが未訪問。ブース名 + 説明
+ * - `is_revealed: true, is_achieved: true`: 達成。ブース名 + 達成マーク
+ *
+ * 例外として `is_revealed: true` かつ `booth: null` があり得る（サーバー側 E7:
+ * INSUFFICIENT_CANDIDATES = 推薦候補が足りず対象ブースを決められないまま解放されたマス）。
+ * 01-card-display.md にこのケースの表示指定は無いため、空白＋タップ可能（不具合に見える）を避ける
+ * 目的で「ブース未定」と分かる穏当な文言を出し、タップ導線からは外す判断をした。
  */
 export function BingoCellView({ cell, onTap }: Props) {
-  const tappable = cell.state !== 'LOCKED'
-  const isBonus = cell.source === 'SIGNUP_BONUS'
+  // 対象ブースが決まらなかったマス（is_revealed かつ booth: null）はタップしても
+  // 中身が空のモーダルが開くだけなので、タップ導線から外す
+  const tappable = cell.is_revealed && Boolean(cell.booth)
+  const isPresurvey = cell.source === 'PRESURVEY'
 
   const classes = [
     'bingo-cell-v2',
-    `bingo-cell-${cell.state.toLowerCase()}`,
+    cell.is_revealed ? (cell.is_achieved ? 'bingo-cell-achieved' : 'bingo-cell-revealed') : 'bingo-cell-locked',
     `bingo-cell-zone-${cell.zone.toLowerCase()}`,
-    isBonus ? 'bingo-cell-bonus' : '',
+    isPresurvey ? 'bingo-cell-presurvey' : '',
+    cell.is_revealed && !cell.booth ? 'bingo-cell-undecided' : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -40,22 +47,18 @@ export function BingoCellView({ cell, onTap }: Props) {
         }
       }}
     >
-      {cell.state === 'LOCKED' ? (
+      {!cell.is_revealed ? (
         <span className="bingo-cell-locked-mark" aria-label="未解放">
           ?
         </span>
-      ) : isBonus ? (
-        <>
-          <span className="bingo-cell-bonus-badge">参加ありがとう</span>
-        </>
-      ) : cell.state === 'EMPTY' && cell.zone === 'CENTER' ? (
-        <span className="bingo-cell-empty-hint">次の訪問がここに</span>
       ) : cell.booth ? (
         <>
-          {cell.state === 'ACHIEVED' ? <i className="bi bi-check-circle-fill bingo-cell-check" aria-hidden /> : null}
+          {cell.is_achieved ? <i className="bi bi-check-circle-fill bingo-cell-check" aria-hidden /> : null}
           <span className="bingo-cell-booth-name">{cell.booth.name}</span>
         </>
-      ) : null}
+      ) : (
+        <span className="bingo-cell-undecided-text">ブースが決まりませんでした</span>
+      )}
     </div>
   )
 }
