@@ -1,14 +1,27 @@
 /**
- * 解放演出の再生済みフラグ（`card_id` をキーに `sessionStorage`）。
- * 仕様: docs/.sdd/02-bingo-card/unlock-animation.md
- * 「両方が届いても演出は1回だけ」「リロードしても再生し直さない」を満たすための実装。
+ * 解放演出の再生済みフラグ。
+ * 仕様: docs/specs/bingo-dynamic-unlock/02-unlock-animation.md
+ *
+ * 新仕様では解放が最大3回起きるため、単一のブール値では管理できない。
+ * `pair_key`（`5-6` など6種類）ごとに独立したフラグを `sessionStorage` に持つ。
+ * 「両方の経路（チェックインレスポンス／socket）が届いても演出は1回だけ」
+ * 「演出中に画面を離れても、次にカードを開いたときに未再生の演出が出る」を満たすための実装。
  */
 const KEY_PREFIX = 'es_bingo_unlock_played_'
 
-export function hasPlayedUnlockAnimation(cardId: string): boolean {
-  return sessionStorage.getItem(KEY_PREFIX + cardId) === '1'
+function keyFor(cardId: string, pairKey: string): string {
+  return `${KEY_PREFIX}${cardId}:${pairKey}`
 }
 
-export function markUnlockAnimationPlayed(cardId: string): void {
-  sessionStorage.setItem(KEY_PREFIX + cardId, '1')
+export function hasPlayedUnlockAnimation(cardId: string, pairKey: string): boolean {
+  return sessionStorage.getItem(keyFor(cardId, pairKey)) === '1'
+}
+
+export function markUnlockAnimationPlayed(cardId: string, pairKey: string): void {
+  sessionStorage.setItem(keyFor(cardId, pairKey), '1')
+}
+
+/** 与えられた `pair_key` の一覧から、この端末でまだ再生していないものだけを返す。 */
+export function filterUnplayed(cardId: string, pairKeys: string[]): string[] {
+  return pairKeys.filter((pairKey) => !hasPlayedUnlockAnimation(cardId, pairKey))
 }
