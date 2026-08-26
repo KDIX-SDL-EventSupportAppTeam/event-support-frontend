@@ -125,7 +125,7 @@ export function ExhibitorDashboardPage() {
     booths.find((b) => b.id === selectedBoothId)?.name ?? booths[0].name
 
   return (
-    <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+    <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: 'var(--pf-cream-light)' }}>
       {/* サイドバー（AdminSidebar の鏡写し。上部=現在ブース名、中央=担当ブース一覧＋画面切替、下部=ログアウト） */}
       <aside
         className="bg-dark text-white d-flex flex-column flex-shrink-0"
@@ -256,7 +256,7 @@ export function ExhibitorDashboardPage() {
                         <XAxis dataKey="time_slot" tick={{ fontSize: 10 }} />
                         <YAxis tick={{ fontSize: 10 }} allowDecimals={false} />
                         <Tooltip />
-                        <Bar isAnimationActive={false} dataKey="count" fill="#f8730d" name="チェックイン数" />
+                        <Bar isAnimationActive={false} dataKey="count" fill="var(--pf-orange)" name="チェックイン数" />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
