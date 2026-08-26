@@ -35,6 +35,7 @@ import { PreSurveySignUpPage } from '@/features/presurvey/pages/PreSurveySignUpP
 import { PreSurveyThanksPage } from '@/features/presurvey/pages/PreSurveyThanksPage'
 import { QaPage } from '@/features/qa/pages/QaPage'
 import { SchedulePage } from '@/features/schedule/pages/SchedulePage'
+import { VenueMapPage } from '@/features/venue-map/pages/VenueMapPage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token)
@@ -117,6 +118,14 @@ export function AppRoutes() {
           element={
             <RequireAuth>
               <BoothListPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/venue-map"
+          element={
+            <RequireAuth>
+              <VenueMapPage />
             </RequireAuth>
           }
         />

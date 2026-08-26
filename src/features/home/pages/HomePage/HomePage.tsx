@@ -211,17 +211,22 @@ export function HomePage() {
       ) : null}
 
       <div className="row g-2 mt-2 sub-actions">
-        <div className="col-4">
+        <div className="col-3">
+          <button type="button" className="btn btn-sub-action" onClick={() => navigate('/venue-map')}>
+            会場マップ
+          </button>
+        </div>
+        <div className="col-3">
           <button type="button" className="btn btn-sub-action" onClick={() => setTutorialOpen(true)}>
             アプリ説明
           </button>
         </div>
-        <div className="col-4">
+        <div className="col-3">
           <button type="button" className="btn btn-sub-action" onClick={() => navigate('/qa')}>
             Q&amp;A
           </button>
         </div>
-        <div className="col-4">
+        <div className="col-3">
           <button type="button" className="btn btn-sub-action" onClick={() => setFeedbackConfirmOpen(true)}>
             アプリ
             <br />
