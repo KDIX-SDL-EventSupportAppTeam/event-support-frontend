@@ -44,7 +44,7 @@
 | `--pf-surface` | `#FEF8EE` | `bingo/bingo-grid-empty.png`。**カード・パネルの面** |
 | `--pf-ink` | `#3B3527` | 線画アイコンの主線。**本文テキスト** |
 | `--pf-ink-strong` | `#271603` | ロゴの黒。見出し |
-| `--pf-ink-muted` | `#8A8070` | 補助テキスト（`--pf-ink` からの導出値） |
+| `--pf-ink-muted` | `#6E6656` | 補助テキスト（`--pf-ink` からの導出値。**コントラスト検証済み**） |
 
 ## 手順
 
@@ -67,7 +67,7 @@
 
   --pf-ink: #3b3527;
   --pf-ink-strong: #271603;
-  --pf-ink-muted: #8a8070;
+  --pf-ink-muted: #6e6656;
 
   --pf-radius-sm: 0.5rem;
   --pf-radius-md: 0.75rem;
@@ -112,14 +112,73 @@ Bootstrap は `@import` 時に SCSS 変数を必要とするため、`var()` を
 $pf-yellow: #fcbf01;
 ```
 
-### 3. 文字色の確認
+### 3. コントラストをテストで担保する
 
-`$primary` が黄色になるため、`.btn-primary` の文字色が問題になる。
-Bootstrap 5 は `color-contrast()` で自動的に暗い文字を選ぶので**通常は正しく出る**が、
-**必ず実物で確認すること。** 黄色地に白文字は読めない。
+`$primary` が黄色になるため、**文字色が読めるかどうかが最大のリスク**である。
+目視だけに頼らず、**自動テストで落とす。**
 
-意図どおりにならなければ `$min-contrast-ratio` の調整ではなく、
-`--bs-btn-color` の明示指定で対処する。
+#### 検証済みの実測値
+
+計算済みのコントラスト比。**この表を満たすことをテストで固定する。**
+
+| 前景 | 背景 | 比 | 判定 |
+|---|---|---|---|
+| `--pf-ink-strong` | `--pf-yellow` | 10.47 | ✅ 主要ボタンの文字はこれ |
+| `--pf-ink` | `--pf-yellow` | 7.30 | ✅ |
+| `--pf-ink-strong` | `--pf-orange` | 6.20 | ✅ |
+| `--pf-ink` | `--pf-cream-light` | 10.85 | ✅ 本文 |
+| `--pf-ink` | `--pf-surface` | 11.53 | ✅ カード上の本文 |
+| `--pf-ink-muted` | `--pf-surface` | 5.37 | ✅ 補助テキスト |
+| `--pf-ink-muted` | `--pf-cream-light` | 5.06 | ✅ |
+| `--pf-ink-muted` | `--pf-cream` | 4.75 | ✅ |
+| **白** | `--pf-yellow` | **1.67** | ❌ **絶対に作ってはいけない組み合わせ** |
+| **白** | `--pf-orange` | **2.82** | ❌ **同上** |
+
+> `--pf-ink-muted` は当初 `#8A8070` としていたが、**AA 基準（4.5）を満たさなかった**
+> （3.68 / 3.46 / 3.25）。`#6E6656` へ補正済み。**元の値へ戻さないこと。**
+
+#### テストを書く
+
+`tests/unit/design-tokens.test.ts` を新規に追加する。
+テスト環境は `environment: 'node'` で jsdom が無いため、**描画せず値を検証する。**
+
+**トークンの値を TS 側にコピーしない。** 三重管理になる。
+`src/shared/styles/tokens.scss` を `node:fs` で読み、`--pf-*` を正規表現で抜き出す。
+**SCSS ファイルそのものを検証対象にする。**
+
+テストに書くこと:
+
+1. 上の表の ✅ の組がすべて **4.5 以上**であること
+2. **白 × `--pf-yellow` と 白 × `--pf-orange` が 4.5 未満であること**
+   （[rules/testing.md](../../rules/testing.md)「起きてはいけないことを書く」）
+   — この 2 つが 4.5 を超えたら、それはトークンが書き換わった証拠なので落とす
+3. `legacy-app.scss` の `$pf-yellow` / `$pf-orange` が
+   `tokens.scss` の `--pf-yellow` / `--pf-orange` と**同じ値**であること
+   — 手順 2 の二重管理が壊れたことを検知する
+
+コントラスト比は WCAG 2.1 の定義で計算する（相対輝度 → `(L1+0.05)/(L2+0.05)`）。
+計算関数は `tests/unit/` 内に置き、`src/` へは入れない（本番コードで使わないため）。
+
+#### 実装で守ること
+
+- **`.btn-primary` の文字色を暗色に固定する。**
+  Bootstrap 5 の `color-contrast()` は通常正しく暗色を選ぶが、
+  依存せず `--bs-btn-color: var(--pf-ink-strong)` を明示する
+- ホバー・アクティブ・`disabled` の各状態でも文字色を明示する。
+  **状態によって白文字に戻る**のがよくある事故である
+
+#### 目視で確かめること
+
+テストは色の値しか見ない。**実物でしか分からないものは自分の目で確認する。**
+
+- 参加者・運営・出展者・主催者の各画面でボタンの文字が読めるか
+- `btn-outline-primary` の枠線と文字が背景から浮くか
+- フォーカスリングが黄色背景の上で見えるか
+
+#### 記録を残す
+
+テストを追加したら [docs/tests/runs/_template.md](../../tests/runs/_template.md) に沿って
+`docs/tests/runs/` に実行記録を残す（[rules/testing.md](../../rules/testing.md)）。
 
 ## 運営・出展者・主催者画面
 
@@ -171,6 +230,8 @@ Bootstrap 5 は `color-contrast()` で自動的に暗い文字を選ぶので**�
 ## 完了の条件
 
 - `grep -rn "proto-red\|proto-orange\|proto-dark-orange" src` が **0 件**
+- `tests/unit/design-tokens.test.ts` があり、上の表を満たしている
+- `docs/tests/runs/` に実行記録がある
 - 参加者・運営・出展者・主催者の各画面を開き、
   **ボタンの文字が読める**（黄色地に白文字になっていない）
 - 統計グラフの系列が従来どおり識別できる
