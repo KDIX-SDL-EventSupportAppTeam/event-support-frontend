@@ -28,6 +28,7 @@ import { BoothListPage } from '@/features/booth/pages/BoothListPage/BoothListPag
 import { CheckInPage } from '@/features/checkin/pages/CheckInPage'
 import { ExhibitorDashboardPage } from '@/features/exhibitor/pages/ExhibitorDashboardPage'
 import { HomePage } from '@/features/home/pages/HomePage/HomePage'
+import { OnboardingPage } from '@/features/onboarding/pages/OnboardingPage'
 import { PreSurveyEntryPage } from '@/features/presurvey/pages/PreSurveyEntryPage'
 import { PreSurveyFormPage } from '@/features/presurvey/pages/PreSurveyFormPage'
 import { PreSurveySignInPage } from '@/features/presurvey/pages/PreSurveySignInPage'
@@ -75,6 +76,15 @@ export function AppRoutes() {
         element={
           <RequireAuth>
             <ExhibitorDashboardPage />
+          </RequireAuth>
+        }
+      />
+      {/* ボトムナビを出さないため ParticipantLayout の外に置く（/login, /register と同様） */}
+      <Route
+        path="/onboarding"
+        element={
+          <RequireAuth>
+            <OnboardingPage />
           </RequireAuth>
         }
       />
