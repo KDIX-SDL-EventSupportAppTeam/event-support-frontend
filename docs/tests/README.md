@@ -89,6 +89,7 @@ YYYY-MM-DD-kebab-case-summary.md
 |------|----------|------|--------------|
 | 2026-05-24 | [runs/2026-05-24-features-shared-refactor.md](./runs/2026-05-24-features-shared-refactor.md) | features/shared 移行後の lint/build/test | 全 unit + integration |
 | 2026-07-11 | [runs/2026-07-11-auth-exhibitor-unit-tests-restore.md](./runs/2026-07-11-auth-exhibitor-unit-tests-restore.md) | tests/ 実行復旧＋出展者・ログイン分岐の単体テスト追加 | resolve-landing-path, auth-role-helpers, exhibitor-store（新規）＋既存8ファイル |
+| 2026-08-25 | [runs/2026-08-25-bingo-dynamic-unlock.md](./runs/2026-08-25-bingo-dynamic-unlock.md) | **ビンゴ動的段階解放のUI実装と検証**（2軸セル表示・ペア単位の解放演出・事前アンケートのサーバー連携） | bingo-card, v1-participant-bingo, bingo-celebration, app-access, use-app-access, presurvey-api |
 
 ---
 
