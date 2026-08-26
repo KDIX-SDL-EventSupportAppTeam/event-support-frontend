@@ -9,9 +9,11 @@ type Props = {
  * ビンゴカードの1マス表示。
  * 仕様: docs/specs/bingo-dynamic-unlock/01-card-display.md
  *
- * - `is_revealed: false`: 閉じたマス。「？」のみ（サーバーが `booth: null` で返すため中身を補完しない）
+ * - `is_revealed: false`: 閉じたマス。中身は出さない（サーバーが `booth: null` で返すため中身を補完しない）。
+ *   2026年版デザインでは `--pf-surface` の地のみで視覚的なプレースホルダは置かない
+ *   （docs/specs/design-refresh-2026/04-home-and-bingo.md）
  * - `is_revealed: true, is_achieved: false`: 開いているが未訪問。ブース名 + 説明
- * - `is_revealed: true, is_achieved: true`: 達成。ブース名 + 達成マーク
+ * - `is_revealed: true, is_achieved: true`: 達成。ブース名 + スタンプ画像
  *
  * 例外として `is_revealed: true` かつ `booth: null` があり得る（サーバー側 E7:
  * INSUFFICIENT_CANDIDATES = 推薦候補が足りず対象ブースを決められないまま解放されたマス）。
@@ -38,6 +40,7 @@ export function BingoCellView({ cell, onTap }: Props) {
     <div
       role={tappable ? 'button' : undefined}
       tabIndex={tappable ? 0 : undefined}
+      aria-label={!cell.is_revealed ? '未解放' : undefined}
       className={classes}
       onClick={() => tappable && onTap(cell)}
       onKeyDown={(e) => {
@@ -47,13 +50,11 @@ export function BingoCellView({ cell, onTap }: Props) {
         }
       }}
     >
-      {!cell.is_revealed ? (
-        <span className="bingo-cell-locked-mark" aria-label="未解放">
-          ?
-        </span>
-      ) : cell.booth ? (
+      {!cell.is_revealed ? null : cell.booth ? (
         <>
-          {cell.is_achieved ? <i className="bi bi-check-circle-fill bingo-cell-check" aria-hidden /> : null}
+          {cell.is_achieved ? (
+            <img src="/bingo/bingo-cell-stamp.png" alt="達成" className="bingo-cell-stamp" aria-hidden />
+          ) : null}
           <span className="bingo-cell-booth-name">{cell.booth.name}</span>
         </>
       ) : (
