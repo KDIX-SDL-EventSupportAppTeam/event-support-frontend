@@ -68,8 +68,8 @@ src/shared/components/modal/
 | 場所 | 現状 | 2026 年版 |
 |---|---|---|
 | `HomePage.tsx` ビンゴ達成モーダル | 絵文字 `🎉 BINGO! 🎉` | `popup-bingo-complete.png` |
-| 投票完了 | **要調査** | `popup-vote-complete.png` |
-| 全コイン獲得 | **存在しない** | `popup-coin-complete.png` |
+| 投票完了 | `AwardVotePage.tsx` の完了表示 | `popup-vote-complete.png` |
+| 全コイン獲得 | 該当する状態がフロントに無い | **今回は使わない**（据え置き） |
 
 投票完了の表示は `src/features/award/pages/AwardVotePage.tsx` にある。
 着手前にこのファイルを読み、既存の完了表示を差し替えること。

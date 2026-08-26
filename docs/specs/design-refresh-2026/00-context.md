@@ -81,7 +81,18 @@ export default function App() {
 | `/venue-map` | 会場マップ | **新規**。[07-venue-map.md](07-venue-map.md) |
 | `/onboarding` | オンボーディング | **新規**。[06-onboarding.md](06-onboarding.md) |
 
-`/organizer/*` `/admin/*` `/exhibitor` `/pre-survey/*` `/login` `/register` は**対象外**。触らない。
+`/organizer/*` `/admin/*` `/exhibitor` `/pre-survey/*` `/login` `/register` には
+**ボトムナビを付けない。画面構成にも手を入れない。**
+
+ただし**配色だけは全画面が対象**である。運営・出展者・主催者画面も
+2026 年版の色に変わる（[01-design-tokens.md](01-design-tokens.md)）。
+
+```
+  配色          … 全画面が対象
+  レイアウト     ┐
+  ボトムナビ     ├ 参加者向け画面のみ
+  アート素材     ┘
+```
 
 ### 存在しない機能
 
@@ -138,4 +149,5 @@ Bootstrap のクラスで組まれているため、上の 1 箇所を直せば�
 - 既存の挙動を変えない。**これは見た目の差し替えであって、機能追加ではない**
   （例外は [03](03-bottom-navigation.md) のナビと [06](06-onboarding.md) のオンボーディング）
 - 既存テストを壊さない。`npm run test` と `npm run build` が通ることを PR 前に確認する
-- **迷ったら止めて聞く。** 「要判断」と書かれた箇所を自分で決めない
+- **迷ったら止めて聞く。** この仕様に未決定の項目は残していない。
+  書かれていないことを推測で埋めるくらいなら、手を止めて確認する
