@@ -1,30 +1,34 @@
 /**
  * 事前アンケート（pre-survey）のドメイン型。
  *
+ * API 契約の正本: event-support-server `docs/specs/pre-survey/06-api.md` / `02-data-model.md`。
  * 回答値はラフ集合分析（event-support-analytics）の決定表にそのまま載せられるよう、
- * すべて「離散値のコード（choice.value）」で保持する。自由記述は分析対象外の補助情報。
+ * すべて「離散値のコード（option.value）」で保持する。自由記述は分析対象外の補助情報。
  */
 
 /** 質問の回答形式 */
-export type PreSurveyQuestionType = 'single' | 'multi' | 'text'
+export type PreSurveyAnswerType = 'single' | 'multi' | 'text'
 
 /** 選択肢（value が決定表に載るコード） */
-export type PreSurveyChoice = {
+export type PreSurveyOption = {
   value: string
   label: string
 }
 
-/** 質問定義（config/questions.ts が正本） */
+/**
+ * 質問定義。サーバー配信（`GET /events/:event_id/pre-survey/questions`）から取得する。
+ * フロントに設問定義をハードコードしない（P-11）。
+ */
 export type PreSurveyQuestion = {
-  /** 決定表の属性名になる。サーバー・DB のカラム／キーと一致させる */
+  /** UUID。表示・React key には使えるが、分析側の識別子ではない */
   id: string
+  /** 設問の安定した識別子。回答の送信・分析はこちらで行う（`age_group` / `interest_categories` 等） */
+  question_key: string
   label: string
-  type: PreSurveyQuestionType
+  answer_type: PreSurveyAnswerType
   required: boolean
-  /** type が 'single' | 'multi' のとき必須 */
-  choices?: PreSurveyChoice[]
-  /** 補足説明（任意） */
-  help?: string
+  /** `interest_categories` はサーバーが `categories` から動的生成して返す（P-10） */
+  options: PreSurveyOption[]
 }
 
 /**
@@ -35,25 +39,13 @@ export type PreSurveyQuestion = {
  */
 export type PreSurveyAnswerValue = string | string[]
 
-/** 質問 id → 回答値 */
+/** `question_key` → 回答値 */
 export type PreSurveyAnswers = Record<string, PreSurveyAnswerValue>
 
-/** サーバー送信ペイロード（API 接続時にそのまま JSON body にする想定） */
+/** 送信結果 */
 export type PreSurveySubmission = {
   event_id: string
-  /** 回答者の識別子。サインアップ／サインインで確定する */
-  participant_ref: string
   answers: PreSurveyAnswers
   /** ISO8601 */
   answered_at: string
-}
-
-/** 回答者（事前アンケートの中でだけ使う軽量な参加者情報） */
-export type PreSurveyParticipant = {
-  participant_ref: string
-  event_id: string
-  email: string
-  display_name: string
-  /** 既に回答済みか。true なら入力画面を飛ばして完了画面へ */
-  has_answered: boolean
 }

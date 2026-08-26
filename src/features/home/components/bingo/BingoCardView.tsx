@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { fetchV1Checkins, postV1CheckInRating } from '@/shared/api/v1Participant'
+import { ApiError } from '@/shared/api/unwrap'
 import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
 import { formatClientError } from '@/shared/lib/formatClientError'
 import type { BingoCard, BingoCell } from '@/shared/types/bingoCard'
 import { BingoCellView } from '@/features/home/components/bingo/BingoCellView'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
-import { ReasonPanel } from '@/features/home/components/bingo/ReasonPanel'
 
 type Props = {
   card: BingoCard
@@ -15,7 +15,7 @@ type Props = {
 
 /**
  * 段階解放ビンゴカードの表示。
- * 仕様: docs/.sdd/02-bingo-card/card-display.md
+ * 仕様: docs/specs/bingo-dynamic-unlock/01-card-display.md
  */
 export function BingoCardView({ card, eventId, onRated }: Props) {
   const [selectedCell, setSelectedCell] = useState<BingoCell | null>(null)
@@ -35,7 +35,8 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
     }
     try {
       const checkins = await fetchV1Checkins(eventId)
-      const match = [...checkins].reverse().find((c) => c.booth_id === cell.booth!.id)
+      // 1ブース1チェックインのため該当は高々1件
+      const match = checkins.find((c) => c.booth_id === cell.booth!.id)
       if (!match) {
         setRatingLookupError('チェックイン履歴が見つかりませんでした。')
         return
@@ -46,25 +47,40 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
     }
   }
 
-  async function submitManualRating(rating: number) {
+  async function submitManualRating(rating: number, comment: string) {
     if (!ratingTarget || isSample) {
       setRatingTarget(null)
       return
     }
     setRatingSubmitting(true)
+    setRatingLookupError(null)
     try {
-      await postV1CheckInRating(eventId, ratingTarget.checkinId, rating, undefined, 'MANUAL')
+      await postV1CheckInRating(eventId, ratingTarget.checkinId, rating, comment, 'MANUAL')
       onRated?.()
-    } catch {
-      // 評価の送信失敗はチェックイン等の成功表示を妨げないのと同様、静かに握りつぶす
+    } catch (e) {
+      // 評価済み（409）は無言で閉じると「押しても何も起きない」ため理由を出す。
+      // それ以外の送信失敗はチェックイン等と同様、表示を妨げない
+      if (e instanceof ApiError && e.code === 'CONFLICT') {
+        setRatingLookupError('このブースは既に評価済みです。')
+      }
     } finally {
       setRatingSubmitting(false)
       setRatingTarget(null)
     }
   }
 
-  // マス評価の対象は ACHIEVED かつ参加ボーナスではないマス（reason-text.md）
-  const canRate = (cell: BingoCell) => cell.state === 'ACHIEVED' && cell.source !== 'SIGNUP_BONUS' && cell.booth
+  // マス評価の対象は「達成済みかつブースが紐づくマス」。
+  // source は問わない: is_achieved が真なら事前推薦マスでも実際に訪問済みで check_ins 行があり、
+  // かつ NEXT_CHECKIN では最後の1件を構造上取り逃すため、手動評価が唯一の回収手段になる
+  // （03-checkin-flow.md「手動評価の導線」）。
+  const canRate = (cell: BingoCell) => cell.is_achieved && Boolean(cell.booth)
+
+  const guideMessage =
+    card.progress.center_achieved < 2
+      ? '気になるブースを回ってみよう'
+      : card.progress.revealed_cells > card.progress.center_total
+        ? '新しいマスが開きました。開いたマスのブースに行ってみよう'
+        : '気になるブースを回ってみよう'
 
   return (
     <div className="bingo-card-v2">
@@ -74,21 +90,15 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
           <br />
           BINGO
         </h1>
-        <div className="bingo-coins" aria-label={`ガチャポンコイン ${card.coins.earned}/${card.coins.max}`}>
-          {Array.from({ length: card.coins.earned }).map((_, i) => (
-            <img key={`gold-${i}`} src="/icons/coin-gold.png" alt="" />
-          ))}
-          {Array.from({ length: Math.max(0, card.coins.max - card.coins.earned) }).map((_, i) => (
-            <img key={`gray-${i}`} src="/icons/coin-gray.png" alt="" />
-          ))}
-        </div>
       </div>
 
-      {card.status === 'CENTER_ONLY' ? (
-        <p className="bingo-unlock-guide mb-2">
-          あと{card.progress.visits_to_unlock}ブース回るとカードが広がります
-        </p>
-      ) : null}
+      <p className="bingo-unlock-guide mb-2">{guideMessage}</p>
+
+      <div className="bingo-progress small text-muted mb-2">
+        中央 {card.progress.center_achieved}/{card.progress.center_total} ・ 開放
+        {card.progress.revealed_cells}マス ・ 達成{card.progress.achieved_cells}マス ・ ビンゴ
+        {card.lines_completed}本
+      </div>
 
       <div className="row g-1 g-sm-2 mt-1">
         {card.cells.map((cell) => (
@@ -107,7 +117,7 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
         >
           <div className="modal-content booth-detail-popup text-start" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header border-0 pb-0">
-              <h5 className="modal-title w-100">{selectedCell.booth?.name ?? 'ご参加ありがとうございます'}</h5>
+              <h5 className="modal-title w-100">{selectedCell.booth?.name ?? 'ブース情報'}</h5>
               <button
                 type="button"
                 className="btn-close"
@@ -116,10 +126,7 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
               />
             </div>
             <div className="modal-body pt-2">
-              {selectedCell.source === 'SIGNUP_BONUS' ? (
-                <p className="mb-0">ご参加ありがとうございます。中央のマスに参加ボーナスとして配られました。</p>
-              ) : null}
-              <ReasonPanel reason={selectedCell.reason} />
+              {selectedCell.booth?.description ? <p className="mb-2">{selectedCell.booth.description}</p> : null}
               {canRate(selectedCell) ? (
                 <div className="mt-3">
                   <button
@@ -151,8 +158,7 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
           boothName={ratingTarget.boothName}
           ratingScale={card.rating_scale}
           submitting={ratingSubmitting}
-          onSubmit={(r) => void submitManualRating(r)}
-          onSkip={() => setRatingTarget(null)}
+          onComplete={(r, c) => void submitManualRating(r, c)}
         />
       ) : null}
     </div>

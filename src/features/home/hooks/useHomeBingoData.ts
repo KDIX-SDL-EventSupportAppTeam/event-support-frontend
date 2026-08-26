@@ -6,9 +6,9 @@ import { formatClientError } from '@/shared/lib/formatClientError'
 import type { BingoCard } from '@/shared/types/bingoCard'
 
 /**
- * 段階解放ビンゴカードのデータ取得。
- * サーバーを単一の真実源とする（仕様: docs/.sdd/05-state-api/types-and-client.md）。
- * ライン数の再計算はしない。`card.coins.earned` をそのまま使う。
+ * 動的段階解放ビンゴカードのデータ取得。
+ * サーバーを単一の真実源とする（仕様: docs/specs/bingo-dynamic-unlock/01-card-display.md）。
+ * 進捗・ライン数の再計算はしない。`card.progress` / `card.lines_completed` をそのまま使う。
  */
 export function useHomeBingoData(eventId: string | undefined, userId: string | undefined) {
   const [card, setCard] = useState<BingoCard | null>(null)

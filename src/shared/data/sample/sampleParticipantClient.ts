@@ -14,6 +14,7 @@ import {
 } from '@/shared/data/sample/sampleSession'
 import { SAMPLE_VOTE_AWARDS } from '@/shared/data/sample/sampleVoteAwards'
 import type { CheckInResult } from '@/shared/types/checkin'
+import { recordBingoCelebration } from '@/shared/lib/bingoCelebration'
 
 export class SampleParticipantClient implements ParticipantClient {
   private readonly sample = new SampleEventData()
@@ -31,23 +32,17 @@ export class SampleParticipantClient implements ParticipantClient {
     const pickIds = pickCheckedInBoothIds(SAMPLE_LEGACY_BOOTHS, eventId, userId)
     const beforeSet = new Set<string>([...pickIds, ...readSampleExtraCheckedIds(userId)])
     const rawBefore = countCompletedBingoLines(grid, beforeSet)
-    const bingoBefore = Math.min(4, rawBefore)
 
     appendSampleCheckedId(userId, booth.booth_id)
 
     const afterSet = new Set<string>([...pickIds, ...readSampleExtraCheckedIds(userId)])
     const rawAfter = countCompletedBingoLines(grid, afterSet)
-    const bingoAfter = Math.min(4, rawAfter)
 
-    const newCoinsAwarded = Math.max(0, bingoAfter - bingoBefore)
     const newlyCompletedLines = Math.max(0, rawAfter - rawBefore)
 
     startSampleCooldown(userId, 45_000)
 
-    if (newlyCompletedLines > 0) {
-      sessionStorage.setItem('newlyCompletedLines', String(newlyCompletedLines))
-      sessionStorage.setItem('newCoinsAwarded', String(newCoinsAwarded))
-    }
+    recordBingoCelebration(newlyCompletedLines)
 
     return {
       checkin_id: `sample-${booth.booth_id}`,

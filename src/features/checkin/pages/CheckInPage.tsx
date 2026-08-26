@@ -11,22 +11,21 @@ import { createParticipantClient } from '@/shared/data/createParticipantClient'
 import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
 import { useLegacyBoothList } from '@/shared/hooks/useLegacyBoothList'
 import { formatClientError } from '@/shared/lib/formatClientError'
-import { hasPlayedUnlockAnimation, markUnlockAnimationPlayed } from '@/shared/lib/bingoUnlockFlag'
+import { resolveCheckInView, type CheckInStep } from '@/shared/lib/checkInFlowView'
+import { useUnlockAnimationQueue } from '@/shared/hooks/useUnlockAnimationQueue'
+import { recordBingoCelebration } from '@/shared/lib/bingoCelebration'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
 import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
 import { useAuthStore } from '@/shared/auth/authStore'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
 import type { CheckInResult } from '@/shared/types/checkin'
 
-// 段階解放版のフロー（docs/.sdd/03-checkin-flow/rating-modal.md, checkin-result.md）:
-//   booth（ブース選択）→ checkin（送信） →
-//   rating（pending_rating が非 null のときのみ、前ブースの評価を先頭で聞く） →
-//   result（チェックイン成功。unlocked なら解放演出へ）
-//
-// Q-F1（docs/.sdd/06-open-questions/open-questions.md）: 推薦は外側12マスに同化させる方針で
-// 「推薦欄」単体の役割は未決定。CheckInRecommendView.tsx 自体には手を入れず、
-// この新フローからは呼び出さない（新フローの仕様に推薦ステップは無い）。
-type Step = 'booth' | 'rating' | 'already_visited' | 'result'
+// チェックイン成功モーダルの順序（docs/specs/bingo-dynamic-unlock/03-checkin-flow.md）:
+//   1. 評価ステップ（pending_rating が非 null のときだけ、前のブースの評価を先頭で聞く）
+//   2. チェックイン成功ステップ（今回チェックインしたブース名 / 埋まったマス）
+//   3. 解放演出（unlocked_pairs が空でないときだけ）
+// 判定は resolveCheckInView（純粋関数）に置く。
+type Step = CheckInStep
 
 export function CheckInPage() {
   const navigate = useNavigate()
@@ -46,10 +45,13 @@ export function CheckInPage() {
 
   const [checkInResult, setCheckInResult] = useState<CheckInResult | null>(null)
   const [checkInResponse, setCheckInResponse] = useState<V1CheckInResponse | null>(null)
-  const [ratingScale, setRatingScale] = useState<number>(3)
+  const [ratingScale, setRatingScale] = useState<number>(4)
   const [cardId, setCardId] = useState<string | null>(null)
   const [cooldownRemainingSec, setCooldownRemainingSec] = useState(0)
-  const [showUnlockAnimation, setShowUnlockAnimation] = useState(false)
+
+  const [resultAcknowledged, setResultAcknowledged] = useState(false)
+
+  const { current: currentUnlock, enqueuePairs, advance } = useUnlockAnimationQueue()
 
   const selectedBooth: LegacyBooth | undefined = useMemo(
     () => booths.find((b) => b.booth_id === selectedBoothId),
@@ -62,7 +64,7 @@ export function CheckInPage() {
     if (boothIdParam) setSelectedBoothId(boothIdParam)
   }, [boothIdParam])
 
-  // rating_scale / card_id は事前にカードを1回取得しておく（Q-F2: ハードコードしない）
+  // rating_scale / card_id は事前にカードを1回取得しておく（ハードコードしない）
   useEffect(() => {
     if (!eventId || !isV1Flow) return
     let active = true
@@ -73,12 +75,19 @@ export function CheckInPage() {
         setCardId(card.card_id)
       })
       .catch(() => {
-        /* 取得に失敗しても既定値（3）で続行する */
+        /* 取得に失敗しても既定値（4）で続行する */
       })
     return () => {
       active = false
     }
   }, [eventId, isV1Flow])
+
+  // 成功ステップを閉じた後、残りの解放演出をすべて見せ終えたらホームへ戻る
+  useEffect(() => {
+    if (!resultAcknowledged) return
+    if (currentUnlock) return
+    navigate('/home', { replace: true })
+  }, [resultAcknowledged, currentUnlock, navigate])
 
   useEffect(() => {
     if (cooldownRemainingSec <= 0) return
@@ -100,11 +109,16 @@ export function CheckInPage() {
       })
       setCheckInResponse(res)
       setCheckInResult({ checkin_id: res.checkin_id, booth: { booth_id: res.booth.id, name: res.booth.name, emoji: '🎪' } })
+      // ライン成立演出はホーム側で出す（サンプルモードと同じ sessionStorage 経由）
+      if (res.new_lines > 0) recordBingoCelebration(res.new_lines)
+      // 解放演出のキューに積む（正の経路）。中央3・4マス目の達成では複数ペアが同時成立するため、
+      // サーバーが返す unlocked_pairs をペアごとに積む（unlocked_positions は全ペア分の平坦な配列）
+      if (cardId) enqueuePairs(cardId, res.unlocked_pairs)
       if (res.cooldown_remaining_sec > 0) setCooldownRemainingSec(res.cooldown_remaining_sec)
       setStep(res.pending_rating ? 'rating' : 'result')
     } catch (e) {
       if (e instanceof ApiError && e.code === 'CONFLICT') {
-        // ALREADY_VISITED はエラーとして赤く出さない（同じ QR の再読み取りは正常な行動）
+        // 同じブースへの2回目はエラーとして赤く出さない（同じ QR の再読み取りは正常な行動）
         setStep('already_visited')
       } else if (e instanceof ApiError && e.code === 'COOLDOWN') {
         const match = /(\d+)/.exec(e.message)
@@ -151,14 +165,20 @@ export function CheckInPage() {
     }
   }
 
-  async function submitPendingRating(rating: number, comment: string) {
+  // 星（中央値なし）＋ コメント欄 ＋「完了」ボタン1つ。星未選択のまま完了しても
+  // 評価を送らず次へ進む（スキップ扱い、エラーにしない）。送信失敗は静かに握りつぶす
+  // （チェックイン成功の表示を妨げない。未回収なら次回 pending_rating で再提示される）
+  async function completePendingRating(rating: number, comment: string) {
     if (!eventId || !checkInResponse?.pending_rating) {
+      setStep('result')
+      return
+    }
+    if (rating < 1) {
       setStep('result')
       return
     }
     setSubmitting(true)
     try {
-      // 評価の送信失敗はチェックイン成功表示を妨げない（失敗は握りつぶし、次回 pending_rating で再提示される）
       await postV1CheckInRating(eventId, checkInResponse.pending_rating.checkin_id, rating, comment, 'NEXT_CHECKIN')
     } catch {
       /* noop */
@@ -168,22 +188,14 @@ export function CheckInPage() {
     }
   }
 
-  function skipPendingRating() {
-    setStep('result')
-  }
-
+  // 「ホームに戻る」= チェックイン成功ステップを閉じる。解放演出が残っていれば
+  // それを見せてから遷移する（下の useEffect が空になった時点で遷移する）
   function finishAndGoHome() {
-    if (checkInResponse?.unlocked && cardId && !hasPlayedUnlockAnimation(cardId)) {
-      markUnlockAnimationPlayed(cardId)
-      setShowUnlockAnimation(true)
-      return
-    }
-    navigate('/home', { replace: true })
+    setResultAcknowledged(true)
   }
 
   function afterUnlockAnimation() {
-    setShowUnlockAnimation(false)
-    navigate('/home', { replace: true })
+    if (cardId) advance(cardId)
   }
 
   if (!userId || !eventId) {
@@ -197,23 +209,29 @@ export function CheckInPage() {
     )
   }
 
-  if (showUnlockAnimation) {
-    return <UnlockAnimation onDone={afterUnlockAnimation} />
-  }
+  const view = resolveCheckInView({
+    step,
+    hasPendingRating: Boolean(checkInResponse?.pending_rating),
+    hasPendingUnlock: Boolean(currentUnlock),
+    resultAcknowledged,
+  })
 
-  if (step === 'rating' && checkInResponse?.pending_rating) {
+  if (view === 'rating' && checkInResponse?.pending_rating) {
     return (
       <CheckInRatingModal
         boothName={checkInResponse.pending_rating.booth_name}
         ratingScale={ratingScale}
         submitting={submitting}
-        onSubmit={(r, c) => void submitPendingRating(r, c)}
-        onSkip={skipPendingRating}
+        onComplete={(r, c) => void completePendingRating(r, c)}
       />
     )
   }
 
-  if (step === 'already_visited') {
+  if (view === 'unlock' && currentUnlock) {
+    return <UnlockAnimation positions={currentUnlock.positions} onDone={afterUnlockAnimation} />
+  }
+
+  if (view === 'already_visited') {
     return (
       <div className="reader-container container py-3">
         <div className="result-ui-container">
@@ -231,7 +249,7 @@ export function CheckInPage() {
     )
   }
 
-  if (step === 'result' && checkInResult) {
+  if (view === 'result' && checkInResult) {
     return (
       <div className="reader-container container py-3">
         <div className="result-ui-container">
@@ -243,8 +261,16 @@ export function CheckInPage() {
             <br />
             チェックインが完了しました。
           </p>
-          {checkInResponse?.filled_cell ? (
-            <p className="small text-muted">ビンゴカードのマスが1つ埋まりました。</p>
+          {checkInResponse ? (
+            checkInResponse.filled_cell ? (
+              <p className="small text-muted">ビンゴカードのマスが1つ埋まりました。</p>
+            ) : (
+              <p className="small text-muted">
+                チェックインは記録されましたが、ビンゴカードには載りませんでした。
+                <br />
+                訪問ありがとうございます。
+              </p>
+            )
           ) : null}
           <button type="button" className="checkin-home-button" onClick={finishAndGoHome}>
             ホームに戻る

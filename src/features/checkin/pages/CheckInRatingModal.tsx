@@ -2,22 +2,27 @@ import { useState } from 'react'
 
 type Props = {
   boothName: string
-  onSubmit: (rating: number, comment: string) => void
-  onSkip: () => void
+  onComplete: (rating: number, comment: string) => void
   submitting: boolean
   /**
-   * 評価の段階数。ハードコードしない（Q-F2: docs/.sdd/06-open-questions/open-questions.md）。
-   * `GET /bingo/card` の `rating_scale` に従う。省略時は既定値 3。
+   * 評価の段階数。ハードコードしない。
+   * `GET /bingo/card` の `rating_scale` に従う（既定 4）。
    */
   ratingScale?: number
 }
 
-const DEFAULT_RATING_SCALE = 3
+const DEFAULT_RATING_SCALE = 4
 
-export function CheckInRatingModal({ boothName, onSubmit, onSkip, submitting, ratingScale }: Props) {
+/**
+ * チェックイン成功モーダルの評価ステップ。
+ * 仕様: docs/specs/bingo-dynamic-unlock/03-checkin-flow.md
+ *
+ * 星（中央値なし）＋ コメント欄 ＋「完了」ボタン1つ。
+ * 星未選択で完了しても評価を送らず次へ進む（スキップ扱い、エラーにしない）。
+ */
+export function CheckInRatingModal({ boothName, onComplete, submitting, ratingScale }: Props) {
   const [rating, setRating] = useState(0)
   const [comment, setComment] = useState('')
-  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
 
   const scale =
     ratingScale && Number.isFinite(ratingScale) && ratingScale > 0 ? Math.floor(ratingScale) : DEFAULT_RATING_SCALE
@@ -31,7 +36,7 @@ export function CheckInRatingModal({ boothName, onSubmit, onSkip, submitting, ra
         <p className="result-message mb-3">
           「{boothName}」はいかがでしたか？
           <br />
-          {scale}段階で評価してください（スキップ可）
+          未選択のまま完了してもかまいません
         </p>
         <div className="checkin-rating-stars mb-4" role="group" aria-label="評価">
           {Array.from({ length: scale }, (_, i) => i + 1).map((n) => (
@@ -69,46 +74,13 @@ export function CheckInRatingModal({ boothName, onSubmit, onSkip, submitting, ra
           <button
             type="button"
             className="checkin-home-button"
-            disabled={rating < 1 || submitting}
-            onClick={() => onSubmit(rating, comment)}
-          >
-            {submitting ? '送信中…' : '評価を送信'}
-          </button>
-          {rating < 1 && comment.trim() !== '' ? (
-            <p className="small text-muted mb-0">送信には星の選択が必要です</p>
-          ) : null}
-          <button
-            type="button"
-            className="btn btn-outline-secondary"
             disabled={submitting}
-            onClick={() => setShowLeaveConfirm(true)}
+            onClick={() => onComplete(rating, comment)}
           >
-            スキップ
+            {submitting ? '送信中…' : '完了'}
           </button>
         </div>
       </div>
-      {showLeaveConfirm ? (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="leave-confirm-title">
-          <div className="modal-content text-center">
-            <h3 id="leave-confirm-title" className="result-title">
-              評価を送信せずに戻りますか？
-            </h3>
-            <p className="result-message mb-3">
-              {rating >= 1 || comment.trim() !== ''
-                ? '入力した内容はまだ送信されていません。破棄して進みますか？'
-                : '評価はイベント改善の参考になります。よろしければご協力ください。'}
-            </p>
-            <div className="d-grid gap-2">
-              <button type="button" className="checkin-home-button" onClick={() => setShowLeaveConfirm(false)}>
-                入力に戻る
-              </button>
-              <button type="button" className="btn btn-outline-secondary" onClick={onSkip}>
-                このまま戻る
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   )
 }

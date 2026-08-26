@@ -1,46 +1,45 @@
 /**
- * ビンゴカード段階解放方式の型。
+ * ビンゴカード動的段階解放方式の型。
  *
- * `src/shared/types/legacyBooth.ts` の `BingoGridCell` とは別系統。
- * サーバー仕様: `event-support-server/docs/.sdd/06-api/participant-api.md`
- * フロント仕様: `docs/.sdd/05-state-api/types-and-client.md`
+ * サーバー仕様の正本: `event-support-server/docs/specs/bingo-dynamic-unlock/06-api/participant-api.md`
+ * フロント仕様: `docs/specs/bingo-dynamic-unlock/01-card-display.md`
  *
- * `booth` は `state === 'LOCKED'` のとき必ず `null`。
- * `reason` は生成ロジック未決定のため当面 `null`（docs/.sdd/06-open-questions/open-questions.md Q-F3）。
+ * マスは `is_revealed` / `is_achieved` の2軸。`is_revealed: false` のとき `booth` は必ず `null`。
+ * 推薦理由文（`reason`）はサーバーが返さないため、この型には無い。
  */
-export type BingoCellState = 'LOCKED' | 'EMPTY' | 'ACHIEVED'
 export type BingoCellZone = 'CENTER' | 'OUTER'
-export type BingoCellSource = 'SIGNUP_BONUS' | 'FREE_VISIT' | 'RECOMMEND'
+export type BingoCellSource = 'PRESURVEY' | 'FREE_VISIT' | 'RECOMMEND' | null
 
-export type BingoCellReason = { summary: string; detail: string }
-
-export type BingoCellBooth = { id: string; name: string; manual_code: string }
+export type BingoCellBooth = { id: string; name: string; manual_code: string; description: string }
 
 export type BingoCell = {
   position: number // 0..15（行優先）
   zone: BingoCellZone
-  state: BingoCellState
-  source: BingoCellSource | null
-  booth: BingoCellBooth | null // LOCKED では必ず null
-  reason: BingoCellReason | null // 当面は null
+  is_revealed: boolean
+  is_achieved: boolean
+  source: BingoCellSource
+  booth: BingoCellBooth | null // is_revealed: false では必ず null
 }
-
-export type BingoCardStatus = 'CENTER_ONLY' | 'UNLOCKED'
 
 export type BingoCardProgress = {
-  center_filled: number
+  center_achieved: number
   center_total: number
-  visits_to_unlock: number
+  revealed_cells: number
+  achieved_cells: number
 }
 
-export type BingoCardCoins = { earned: number; max: number }
+/** `pair_key` は `5-6` のようなハイフン区切り（小さい position が先）。6種類のみ存在する。 */
+export type BingoUnlockEvent = {
+  pair_key: string
+  released_positions: number[]
+  unlocked_at: string
+}
 
 export type BingoCard = {
   card_id: string
-  status: BingoCardStatus
-  unlocked_at: string | null
   rating_scale: number
   progress: BingoCardProgress
-  coins: BingoCardCoins
+  lines_completed: number
+  unlock_events: BingoUnlockEvent[]
   cells: BingoCell[] // position 昇順で必ず16件
 }
