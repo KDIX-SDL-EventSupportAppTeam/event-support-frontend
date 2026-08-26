@@ -86,7 +86,8 @@ export function AwardVotePage() {
       {votingClosed ? (
         <div className="vote-result-container">
           <div className="vote-result-header text-center">
-            <h1>投票期間が終了しました</h1>
+            <img src="/feedback/popup-vote-complete.png" alt="" className="vote-result-image" />
+            <h1 className="visually-hidden">投票期間が終了しました</h1>
             <p>あなたの投票内容は以下の通りです。</p>
           </div>
           <div className="vote-result-list">
