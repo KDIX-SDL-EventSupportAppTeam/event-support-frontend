@@ -56,6 +56,7 @@ export function HomePage() {
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [feedbackConfirmOpen, setFeedbackConfirmOpen] = useState(false)
   const [bingoModalOpen, setBingoModalOpen] = useState(false)
+  const [tweetsComingSoonOpen, setTweetsComingSoonOpen] = useState(false)
   const [surveyUrl, setSurveyUrl] = useState<string | null>(null)
 
   useEffect(() => {
@@ -114,6 +115,20 @@ export function HomePage() {
                 はい
               </button>
             </div>
+          </div>
+        </div>
+      ) : null}
+
+      {tweetsComingSoonOpen ? (
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="tweets-modal-title">
+          <div className="modal-content text-center">
+            <h5 id="tweets-modal-title" className="modal-title">
+              つぶやき
+            </h5>
+            <p className="modal-body-text">この機能は準備中です。もうしばらくお待ちください。</p>
+            <button type="button" className="btn btn-primary" onClick={() => setTweetsComingSoonOpen(false)}>
+              閉じる
+            </button>
           </div>
         </div>
       ) : null}
@@ -210,27 +225,33 @@ export function HomePage() {
         </div>
       ) : null}
 
-      <div className="row g-2 mt-2 sub-actions">
-        <div className="col-3">
+      <div className="row row-cols-5 g-2 mt-2 sub-actions">
+        <div className="col">
           <button type="button" className="btn btn-sub-action" onClick={() => navigate('/venue-map')}>
             会場マップ
           </button>
         </div>
-        <div className="col-3">
+        <div className="col">
           <button type="button" className="btn btn-sub-action" onClick={() => setTutorialOpen(true)}>
             アプリ説明
           </button>
         </div>
-        <div className="col-3">
+        <div className="col">
           <button type="button" className="btn btn-sub-action" onClick={() => navigate('/qa')}>
             Q&amp;A
           </button>
         </div>
-        <div className="col-3">
+        <div className="col">
           <button type="button" className="btn btn-sub-action" onClick={() => setFeedbackConfirmOpen(true)}>
             アプリ
             <br />
             フィードバック
+          </button>
+        </div>
+        <div className="col">
+          <button type="button" className="btn btn-sub-action" onClick={() => setTweetsComingSoonOpen(true)}>
+            <i className="bi bi-chat-dots me-1" aria-hidden="true" />
+            つぶやき
           </button>
         </div>
       </div>
