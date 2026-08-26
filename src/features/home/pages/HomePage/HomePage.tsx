@@ -176,54 +176,6 @@ export function HomePage() {
             </button>
           </div>
         </div>
-        <div className="col-6">
-          <div className="d-grid">
-            <button
-              type="button"
-              className="btn btn-light action-button"
-              onClick={() => navigate('/booth-list')}
-            >
-              <img src="/legacy/icons/map.png" alt="" className="action-icon" />
-              <span>ブース一覧</span>
-            </button>
-          </div>
-        </div>
-        <div className="col-6">
-          <div className="d-grid">
-            <button
-              type="button"
-              className="btn btn-light action-button"
-              onClick={() => navigate('/checkin')}
-            >
-              <img src="/legacy/icons/qr-code-scan.png" alt="" className="action-icon" />
-              <span>チェックイン</span>
-            </button>
-          </div>
-        </div>
-        <div className="col-6">
-          <div className="d-grid">
-            <button
-              type="button"
-              className="btn btn-light action-button"
-              onClick={() => navigate('/schedule')}
-            >
-              <img src="/legacy/icons/time-table.png" alt="" className="action-icon" />
-              <span>スケジュール</span>
-            </button>
-          </div>
-        </div>
-        <div className="col-6">
-          <div className="d-grid">
-            <button
-              type="button"
-              className="btn btn-light action-button"
-              onClick={() => navigate('/award-vote')}
-            >
-              <img src="/legacy/icons/trophy.png" alt="" className="action-icon" />
-              <span>アワード投票</span>
-            </button>
-          </div>
-        </div>
       </div>
 
       {isExhibitor ? (
