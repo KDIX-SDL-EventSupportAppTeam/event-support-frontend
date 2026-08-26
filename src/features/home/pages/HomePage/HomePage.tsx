@@ -170,9 +170,9 @@ export function HomePage() {
               className="btn btn-light action-button btn-gachapon"
               onClick={() => navigate('/gachapon')}
             >
-              <img src="/icons/gacha1.png" alt="" className="gachapon-icon" />
+              <img src="/gacha/coin.png" alt="" className="gachapon-icon" />
               <span>ガチャポンコインを使う</span>
-              <img src="/icons/gacha2.png" alt="" className="gachapon-icon" />
+              <img src="/gacha/coin.png" alt="" className="gachapon-icon" />
             </button>
           </div>
         </div>
@@ -183,7 +183,7 @@ export function HomePage() {
               className="btn btn-light action-button"
               onClick={() => navigate('/booth-list')}
             >
-              <img src="/icons/map.png" alt="" className="action-icon" />
+              <img src="/legacy/icons/map.png" alt="" className="action-icon" />
               <span>ブース一覧</span>
             </button>
           </div>
@@ -195,7 +195,7 @@ export function HomePage() {
               className="btn btn-light action-button"
               onClick={() => navigate('/checkin')}
             >
-              <img src="/icons/qr-code-scan.png" alt="" className="action-icon" />
+              <img src="/legacy/icons/qr-code-scan.png" alt="" className="action-icon" />
               <span>チェックイン</span>
             </button>
           </div>
@@ -207,7 +207,7 @@ export function HomePage() {
               className="btn btn-light action-button"
               onClick={() => navigate('/schedule')}
             >
-              <img src="/icons/time-table.png" alt="" className="action-icon" />
+              <img src="/legacy/icons/time-table.png" alt="" className="action-icon" />
               <span>スケジュール</span>
             </button>
           </div>
@@ -219,7 +219,7 @@ export function HomePage() {
               className="btn btn-light action-button"
               onClick={() => navigate('/award-vote')}
             >
-              <img src="/icons/trophy.png" alt="" className="action-icon" />
+              <img src="/legacy/icons/trophy.png" alt="" className="action-icon" />
               <span>アワード投票</span>
             </button>
           </div>
