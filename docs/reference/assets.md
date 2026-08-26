@@ -171,6 +171,7 @@ public/
 **新規実装では参照しない。**
 
 > ⚠️ **既知の不整合**：`legacy/` へ移した際、既存コードの参照パスが未追従。
+> 解消の手順は [specs/design-refresh-2026/02-legacy-asset-cleanup.md](../specs/design-refresh-2026/02-legacy-asset-cleanup.md) にある。
 > 下記は現状リンク切れになっている。差し替え先が決まり次第まとめて直すこと。
 >
 > | 参照元 | 現在のパス |
@@ -180,6 +181,27 @@ public/
 > | `src/features/gachapon/pages/GachaponUsePage.tsx:63` | `/icons/coin-gold.png` |
 > | `src/features/home/pages/HomePage/HomePage.tsx:173,175` | `/icons/gacha1.png`, `/icons/gacha2.png` |
 > | `src/features/home/pages/HomePage/HomePage.tsx:186,198,210,222` | `/icons/map.png`, `/icons/qr-code-scan.png`, `/icons/time-table.png`, `/icons/trophy.png` |
+
+## 未受領の素材
+
+アート仕様書にはあるが**まだ届いていないもの。** 代用の方針は
+[specs/design-refresh-2026/](../specs/design-refresh-2026/README.md) に書いてある。
+
+| 素材 | 仕様書の採番 | 現在の代用 |
+|---|---|---|
+| 会場全体簡略マップ | 3-6 | `bingo/bingo-grid-empty.png`（受領後 `map/venue-map.png` へ） |
+| スマホモックアップ枠 | 4-1-1 | `onboarding/award-screen-*.png` |
+| ファビコン | — | `mascot/mascot-cheering.png` から生成 |
+| つぶやき関連（鉛筆・ハート・吹き出し） | — | 使わない。`bootstrap-icons` で代替 |
+
+**不要と決まったもの**（依頼しない）:
+
+- 通知ベル — 通知機能を作らないため
+- ブースマーカー — 会場マップは画像を出すだけのため
+- ビンゴ進捗ステッパー（仕様書 p.8 の 3-3） — CSS で実装するため
+
+> 仕様書では `3-3` の採番が 2 箇所で重複している（p.8 の進捗ステッパー、
+> p.10 のビンゴ完了ポップアップ）。受領したのは後者のみ。
 
 ## 素材を追加するとき
 

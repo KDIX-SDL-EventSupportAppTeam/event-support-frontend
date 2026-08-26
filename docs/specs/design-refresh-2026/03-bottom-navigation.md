@@ -1,71 +1,59 @@
 ---
-状態: 草案
+状態: 確定
 最終更新: 2026-08-26
 ---
 
-# ボトムナビゲーション
+# ボトムナビゲーションと参加者レイアウト
 
 作業ブランチ: `feat/design/bottom-nav`
 
-**この仕様だけは見た目の差し替えではなく、新規の構造追加である。** 影響範囲が広い。
+**この仕様は見た目の差し替えではなく、新規の構造追加である。** 影響範囲が広い。
 [00-context.md](00-context.md)「参加者画面にレイアウト共通部品が無い」を先に読むこと。
 
-## 何を作るか
-
-参加者向け画面の下端に固定されるナビゲーションバー。
-**中央だけが円形に飛び出す**形状で、そこに主要アクション（FAB）が載る。
+## 構成（確定）
 
 ```
-┌─────────────────────────────┐
-│                             │
-│         （ページ本体）        │
-│                             │
-├──────────┬───┬──────────────┤
-│          │ ◯ │              │   ← 中央が円形に飛び出す
-│  ホーム   │FAB│ マップ  ガイド │
-└──────────┴───┴──────────────┘
+┌───────────────────────────────────────┐
+│                                       │
+│            （ページ本体）              │
+│                                       │
+├────────┬────────┬──────┬───────┬──────┤
+│        │        │  ◯   │       │      │  ← 中央だけ円形に飛び出す
+│ ホーム │ブース  │チェッ│スケジ │アワー│
+│        │一覧    │クイン│ュール │ド投票│
+└────────┴────────┴──────┴───────┴──────┘
+  /home   /booth-  /checkin /schedule /award-
+          list      (FAB)             vote
 ```
+
+**ヘッダーは作らない。** 通知ベル・ハンバーガー・メニュー画面も**作らない。**
+スクロールを要するほどの情報量が無いため、上部は各ページに任せる。
+
+会場マップ（[07](07-venue-map.md)）とつぶやき（[08](08-tweets-placeholder.md)）は
+**ナビに載せない。** ホーム画面からの導線とする。
 
 ## 使う素材
 
-| 用途 | パス |
+| 位置 | 素材 |
 |---|---|
-| バーの背景（中央が飛び出す・影あり） | `/ui/nav/nav-bar-notched.png` |
-| バーの背景（影なし版） | `/ui/nav/nav-bar-flat.png` |
-| ホーム（非選択） | `/icon/nav/nav-home.png` |
-| ホーム（選択中） | `/icon/nav/nav-home-active.png` |
-| 会場マップ | `/icon/nav/nav-map.png` |
-| 参加ガイド | `/icon/nav/nav-guide.png` |
+| バーの背景 | `/ui/nav/nav-bar-notched.png` |
+| ホーム（非選択 / 選択中） | `/icon/nav/nav-home.png` / `/icon/nav/nav-home-active.png` |
+| ブース一覧 | `/icon/nav/nav-map.png` |
 | スケジュール | `/icon/nav/nav-schedule.png` |
-| 中央 FAB：チェックイン | `/icon/nav/nav-fab-checkin.png` |
-| 中央 FAB：アワード投票 | `/icon/nav/nav-fab-award.png` |
+| アワード投票 | `/icon/nav/nav-fab-award.png` を非 FAB 用に縮小、または `/icon/feature/feature-award.png` |
+| 中央 FAB（チェックイン） | `/icon/nav/nav-fab-checkin.png` |
 
-**`/icon/nav/nav-set-home-checkin-guide.png` は使わない。** 3 項目が 1 枚に合成された素材で、
-個別素材が揃っている以上、押下領域を分けられず不適切である。
+**使わない素材**（このナビ構成では出番が無い。消さずに `public/` に残す）:
+
+- `/icon/nav/nav-set-home-checkin-guide.png` — 3項目の合成画像。押下領域を分けられない
+- `/icon/nav/nav-guide.png` — 参加ガイドはナビに載せない
+- `/icon/action/menu.png` — メニュー画面を作らない
 
 各アイコン素材には**ラベル文字（「ホーム」等）が焼き込まれている。**
 テキストを別途重ねると二重になる。**画像をそのまま置き、テキストは足さない。**
 その代わり `alt` とスクリーンリーダー向けのラベルは必ず付ける。
 
-## 項目の構成（要判断）
-
-素材は 5 種のアイコンと 2 種の FAB があるが、**同時に何を並べるかは決まっていない。**
-アート仕様書の画面ごとにナビの中身が違っており、一意に定まらない。
-
-観測できた組み合わせ:
-
-| 出典 | 左側 | 中央 FAB | 右側 |
-|---|---|---|---|
-| 仕様書 p.5 | ホーム | チェックイン | 参加ガイド |
-| 仕様書 p.6 | ホーム, 会場マップ | アワード投票 | メニュー |
-| 仕様書 p.9 | ホーム, 会場マップ | アワード投票 | スケジュール, つぶやき |
-
-**実装者はここを自分で決めないこと。** 確定するまで着手しない。
-決める際に必要な情報:
-
-- 「つぶやき」機能はこのリポジトリに**存在しない**（ルートも feature も無い）
-- 「メニュー」に相当する画面も無い。`/icon/action/menu.png` は素材だけある
-- 現状ホームから飛べるのは ブース一覧 / チェックイン / スケジュール / アワード投票 / ガチャポン / Q&A
+`/icon/nav/nav-bar-flat.png`（影なし）は影ありで問題が出たときの予備。通常は使わない。
 
 ## 実装の形
 
@@ -75,7 +63,7 @@
 
 ```
 src/shared/components/layout/
-├── ParticipantLayout.tsx      # ヘッダー無し・ボトムナビ付きの外枠
+├── ParticipantLayout.tsx      # 参加者画面の外枠
 ├── BottomNav.tsx              # ナビ本体
 └── bottom-nav.scss
 ```
@@ -83,59 +71,66 @@ src/shared/components/layout/
 `src/shared/components/` は**このリポジトリで初めて作るディレクトリ**である。
 作ったら [reference/directory-structure.md](../../reference/directory-structure.md) に追記すること。
 
+### ParticipantLayout の責務
+
+1. ルート要素に **`.pf-2026` を付ける** — [01](01-design-tokens.md) の配色はこの下でだけ効く
+2. `<BottomNav />` を描画する
+3. 本体に `padding-bottom: var(--pf-nav-height)` を持たせ、ナビの下に潜り込ませない
+4. `env(safe-area-inset-bottom)` を加味する（iOS の下端ジェスチャーバー対策）
+
+```tsx
+<div className="pf-2026 participant-layout">
+  <main className="participant-layout__body"><Outlet /></main>
+  <BottomNav />
+</div>
+```
+
 ### ルーターへの適用
 
-`src/router/index.tsx` で、参加者向けルートを `ParticipantLayout` で包む。
-**個別ページに `<BottomNav />` を書いて回らない。** レイアウトルートで一度だけ差し込む。
+`src/router/index.tsx` で、参加者向けルートをレイアウトルートで包む。
+**個別ページに `<BottomNav />` を書いて回らない。**
 
-対象は [00-context.md](00-context.md)「参加者向けルート」の表にあるパスのみ。
-`/organizer/*` `/admin/*` `/pre-survey/*` `/login` `/register` には**付けない。**
+対象は [00-context.md](00-context.md)「参加者向けルート」の表にあるパス。
+`/organizer/*` `/admin/*` `/exhibitor` `/pre-survey/*` `/login` `/register` には**付けない。**
+
+`/onboarding` は参加者向けだが**ナビを出さない。** レイアウトの外に置く。
 
 ### 選択状態
 
 `react-router-dom` の `NavLink` を使い、現在パスと一致する項目を
 `nav-home-active.png` 側に差し替える。**選択状態を自前の state で持たない。**
-`/booth-list` のように子パスを持たないルートばかりなので `end` の指定は不要。
-
-### 高さの確保
-
-固定配置にすると各ページの末尾がナビの下に潜り込む。
-`ParticipantLayout` 側で本体に `padding-bottom` を持たせて逃がす。
-**個別ページの CSS を 1 枚ずつ直して回らない。**
-
-ナビの高さはトークンとして `tokens.scss` に足す（例 `--pf-nav-height`）。
-`padding-bottom` はそれを参照する。
-
-### 安全領域
-
-iOS の下端ジェスチャーバーに重なる。`env(safe-area-inset-bottom)` を加味すること。
 
 ## HomePage のボタングリッドを消す
 
-ナビが入ると、`HomePage.tsx` のボタングリッドは**同じ導線の重複になる。**
+ナビが入ると `HomePage.tsx` のボタングリッドは同じ導線の重複になる。
 
-削除対象（`src/features/home/pages/HomePage/HomePage.tsx`）:
+**削除する 4 ボタン**（`.action-button`）:
 
-- ブース一覧 / チェックイン / スケジュール / アワード投票 の 4 ボタン（`.action-button`）
+- ブース一覧 / チェックイン / スケジュール / アワード投票
 
-**残すもの**（ナビに載らないため）:
+**残すもの**:
 
-- ガチャポンボタン
-- 「イベントアンケートに回答する」（`survey_url` 設定時のみ表示）
-- 下段の アプリ説明 / Q&A / アプリフィードバック
+| 要素 | 理由 |
+|---|---|
+| ガチャポンボタン | ナビに載らない |
+| 会場マップへの導線 | [07](07-venue-map.md) で追加する |
+| つぶやきボタン | [08](08-tweets-placeholder.md) で追加する |
+| 「イベントアンケートに回答する」 | `survey_url` 設定時のみ表示。ナビに載らない |
+| アプリ説明 / Q&A / アプリフィードバック | 下段の副導線。ナビに載らない |
 
-> **要判断**：上の「項目の構成」が確定するまで、何をナビに移せるかが決まらない。
-> 例えばナビにスケジュールが入らないなら、スケジュールのボタンは残す必要がある。
-> **構成が決まってから削除範囲を確定する。**
+削除に伴い `legacy-home.scss` の `.action-button` 系や `legacy-app.scss` の
+`.action-button` が未使用になる可能性がある。
+**使われなくなったスタイルは同じ PR で消す。** ただし `legacy-app.scss` の
+`.action-button` は他画面が使っていないか確認してから消すこと。
 
-削除に伴い `src/features/home/styles/legacy-home.scss` の `.action-button` 系や、
-`legacy-app.scss` の `.action-button` が未使用になる可能性がある。
-**使われなくなったスタイルは同じ PR で消す。**
+[02](02-legacy-asset-cleanup.md) で `/legacy/` 参照に直した 4 件は、
+この PR でボタンごと消える。**`public/legacy/icons/` のファイル自体は消さない。**
 
 ## 完了の条件
 
-- 参加者向けルートすべてでナビが出て、管理・主催者・認証画面では出ない
+- 参加者向けルートすべてでナビが出て、管理・主催者・出展者・認証・オンボーディングでは出ない
 - 現在地の項目が選択状態になる
 - 各ページの一番下のコンテンツがナビに隠れない
+- `.pf-2026` が付いたことで参加者画面が 2026 年版配色になり、`/admin` は前年配色のまま
 - キーボード操作でナビ項目に到達でき、読み上げでラベルが分かる
 - `npm run test` と `npm run build` が通る

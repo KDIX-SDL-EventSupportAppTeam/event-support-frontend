@@ -1,5 +1,5 @@
 ---
-状態: 草案
+状態: 確定
 最終更新: 2026-08-26
 ---
 
@@ -69,17 +69,32 @@ export default function App() {
 
 `src/router/index.tsx` に定義済み。ボトムナビの対象になるのは次の範囲。
 
-| パス | ページ |
-|---|---|
-| `/home` | ホーム（ビンゴ） |
-| `/booth-list` | ブース一覧 |
-| `/checkin` | チェックイン |
-| `/schedule` | スケジュール |
-| `/award-vote` | アワード投票 |
-| `/gachapon`, `/gachapon/use`, `/gachapon/complete` | ガチャポン |
-| `/qa` | Q&A |
+| パス | ページ | 状況 |
+|---|---|---|
+| `/home` | ホーム（ビンゴ） | 既存 |
+| `/booth-list` | ブース一覧 | 既存 |
+| `/checkin` | チェックイン | 既存 |
+| `/schedule` | スケジュール | 既存 |
+| `/award-vote` | アワード投票 | 既存 |
+| `/gachapon`, `/gachapon/use`, `/gachapon/complete` | ガチャポン | 既存（準備中表示） |
+| `/qa` | Q&A | 既存 |
+| `/venue-map` | 会場マップ | **新規**。[07-venue-map.md](07-venue-map.md) |
+| `/onboarding` | オンボーディング | **新規**。[06-onboarding.md](06-onboarding.md) |
 
-`/organizer/*` `/admin/*` `/pre-survey/*` `/login` `/register` は**対象外**。触らない。
+`/organizer/*` `/admin/*` `/exhibitor` `/pre-survey/*` `/login` `/register` は**対象外**。触らない。
+
+### 存在しない機能
+
+デザインのモックには出てくるが、**このリポジトリに実装が無いもの。**
+勝手に作らない。扱いは決まっている。
+
+| モックにあるもの | 実装 | 今回の扱い |
+|---|---|---|
+| 通知ベル | 無し | **仕様から削除。作らない** |
+| ヘッダー（ロゴ+ベル+≡） | 無し | **作らない**。スクロールを要する画面が無いため |
+| メニュー画面 | 無し | **作らない**。ナビにも載せない |
+| つぶやき（投稿・一覧） | 無し | **ボタンだけ作る**。[08-tweets-placeholder.md](08-tweets-placeholder.md) |
+| ブースマーカー | 無し | **不要**。会場マップは画像を出すだけ |
 
 ### スタイルの現状
 
@@ -100,8 +115,16 @@ feature 固有のものは各 feature の `styles/` に置き、ページ側で 
 ### ガチャは準備中
 
 ガチャ機能は準備中表示になっている（コミット `fe8dc8b`）。
-**ガチャ画面の作り込みはこの仕様の範囲外。** `public/gacha/coin.png` は
-ビンゴ達成ポップアップ側で使う可能性があるだけである。
+**ガチャ画面の作り込みはこの仕様の範囲外。**
+
+ただし**ガチャコインの最大所有枚数は 4 枚**であり、この値は
+[04-home-and-bingo.md](04-home-and-bingo.md) の進捗ステッパーが参照する。
+現状この 4 は 2 箇所にべた書きされている。
+
+- `src/shared/data/sample/SampleEventData.ts:52` — `Math.min(4, ...)`
+- `src/features/home/pages/HomePage/HomeTutorialModal.tsx:14` — 「最大4枚まで」の文言
+
+**ステッパー実装時に共有定数へ切り出し、3 箇所目を増やさないこと。**
 
 ## 進め方の作法
 

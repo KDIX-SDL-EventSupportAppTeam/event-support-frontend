@@ -1,5 +1,5 @@
 ---
-状態: 草案
+状態: 確定
 最終更新: 2026-08-26
 ---
 
@@ -71,11 +71,11 @@ src/shared/components/modal/
 | 投票完了 | **要調査** | `popup-vote-complete.png` |
 | 全コイン獲得 | **存在しない** | `popup-coin-complete.png` |
 
-> **要判断**：投票完了の表示が `src/features/award/` にあるか未確認である。
-> 着手前に `src/features/award/pages/` を読んで確かめること。
->
-> **要判断**：`popup-coin-complete.png` の出しどころが無い。ガチャは準備中で、
-> 「全コイン獲得」に対応する状態がフロントに無い。**この PR では素材を使わず据え置く。**
+投票完了の表示は `src/features/award/pages/AwardVotePage.tsx` にある。
+着手前にこのファイルを読み、既存の完了表示を差し替えること。
+
+`popup-coin-complete.png` は**この PR では使わない。** ガチャが準備中で、
+「全コイン獲得」に対応する状態がフロントに無い。素材は `public/` に置いたまま据え置く。
 
 ## 完了の条件
 
