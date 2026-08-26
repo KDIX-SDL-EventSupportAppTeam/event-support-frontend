@@ -52,6 +52,7 @@
 
 .bottom-nav__link {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   border-radius: var(--pf-radius-pill);
@@ -65,4 +66,12 @@
     max-width: 100%;
     height: auto;
   }
+}
+
+.bottom-nav__label {
+  margin-top: 0.15rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--pf-ink);
+  line-height: 1.1;
 }

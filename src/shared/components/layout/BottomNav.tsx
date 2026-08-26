@@ -7,6 +7,8 @@ interface NavItem {
   icon: string
   activeIcon?: string
   isFab?: boolean
+  /** icon にラベル文字が焼き込まれていない場合のみ、ラベルを画面上にも表示する */
+  showLabel?: boolean
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -19,7 +21,13 @@ const NAV_ITEMS: NavItem[] = [
   {
     to: '/booth-list',
     label: 'ブース一覧',
-    icon: '/icon/nav/nav-map.png',
+    // /icon/nav/nav-map.png は「会場マップ」という文言が焼き込まれており、
+    // 07-venue-map.md で追加した /venue-map の導線と紛らわしいため使わない。
+    // ブース一覧向けの正しいナビ用アイコン（文字焼き込み版）は未受領。
+    // 代用として文字なしの feature アイコンを使い、ラベルはHTML側で足す。
+    // 正式なアイコンが届いたら icon を差し替え、showLabel を外すこと。
+    icon: '/icon/feature/feature-booth-list.png',
+    showLabel: true,
   },
   {
     to: '/checkin',
@@ -53,7 +61,10 @@ export function BottomNav() {
               aria-label={item.label}
             >
               {({ isActive }) => (
-                <img src={isActive && item.activeIcon ? item.activeIcon : item.icon} alt={item.label} />
+                <>
+                  <img src={isActive && item.activeIcon ? item.activeIcon : item.icon} alt="" />
+                  {item.showLabel ? <span className="bottom-nav__label">{item.label}</span> : null}
+                </>
               )}
             </NavLink>
           </li>
