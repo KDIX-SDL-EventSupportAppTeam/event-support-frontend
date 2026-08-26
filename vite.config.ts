@@ -20,10 +20,9 @@ export default defineConfig({
         target: 'http://127.0.0.1:5000',
         changeOrigin: true,
       },
-      '/checkin': {
-        target: 'http://127.0.0.1:5000',
-        changeOrigin: true,
-      },
+      // 旧 Vue 版のチェックイン Webhook 用プロキシだったが、React 側の SPA ルート
+      // `/checkin`（参加者のチェックイン画面）とパスが完全一致し、直接アクセスや
+      // リロード時に開発サーバーが 500 を返す原因になっていたため削除した。
     },
   },
 })
