@@ -18,6 +18,7 @@ import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage/VerifyEma
 import { VerifyEmailSentPage } from '@/features/auth/pages/VerifyEmailSentPage/VerifyEmailSentPage'
 import { isAdminUser, useAuthStore } from '@/shared/auth/authStore'
 import { RequireAppOpen } from '@/shared/access/RequireAppOpen'
+import { ParticipantLayout } from '@/shared/components/layout/ParticipantLayout'
 import { OrganizerLoginPage } from '@/features/organizer/pages/OrganizerLoginPage'
 import { OrganizerEventCreatePage } from '@/features/organizer/pages/OrganizerEventCreatePage'
 import { OrganizerEventListPage } from '@/features/organizer/pages/OrganizerEventListPage'
@@ -69,16 +70,6 @@ export function AppRoutes() {
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/verify-email/sent" element={<VerifyEmailSentPage />} />
       <Route
-        path="/home"
-        element={
-          <RequireAuth>
-            <RequireAppOpen>
-              <HomePage />
-            </RequireAppOpen>
-          </RequireAuth>
-        }
-      />
-      <Route
         path="/exhibitor"
         element={
           <RequireAuth>
@@ -86,63 +77,75 @@ export function AppRoutes() {
           </RequireAuth>
         }
       />
-      <Route
-        path="/checkin"
-        element={
-          <RequireAuth>
-            <CheckInPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/award-vote"
-        element={
-          <RequireAuth>
-            <LegacyPlaceholderPage title="アワード投票（準備中）" />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/schedule"
-        element={
-          <RequireAuth>
-            <SchedulePage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/booth-list"
-        element={
-          <RequireAuth>
-            <BoothListPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/gachapon"
-        element={
-          <RequireAuth>
-            <LegacyPlaceholderPage title="ガチャポン（準備中）" />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/gachapon/use"
-        element={
-          <RequireAuth>
-            <LegacyPlaceholderPage title="ガチャポン（準備中）" />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/gachapon/complete"
-        element={
-          <RequireAuth>
-            <LegacyPlaceholderPage title="ガチャポン（準備中）" />
-          </RequireAuth>
-        }
-      />
-      <Route path="/qa" element={<QaPage />} />
+      <Route element={<ParticipantLayout />}>
+        <Route
+          path="/home"
+          element={
+            <RequireAuth>
+              <RequireAppOpen>
+                <HomePage />
+              </RequireAppOpen>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/checkin"
+          element={
+            <RequireAuth>
+              <CheckInPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/award-vote"
+          element={
+            <RequireAuth>
+              <LegacyPlaceholderPage title="アワード投票（準備中）" />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/schedule"
+          element={
+            <RequireAuth>
+              <SchedulePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/booth-list"
+          element={
+            <RequireAuth>
+              <BoothListPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/gachapon"
+          element={
+            <RequireAuth>
+              <LegacyPlaceholderPage title="ガチャポン（準備中）" />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/gachapon/use"
+          element={
+            <RequireAuth>
+              <LegacyPlaceholderPage title="ガチャポン（準備中）" />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/gachapon/complete"
+          element={
+            <RequireAuth>
+              <LegacyPlaceholderPage title="ガチャポン（準備中）" />
+            </RequireAuth>
+          }
+        />
+        <Route path="/qa" element={<QaPage />} />
+      </Route>
       <Route path="/organizer/login" element={<OrganizerLoginPage />} />
       <Route
         path="/organizer/events"
