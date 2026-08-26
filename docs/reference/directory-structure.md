@@ -27,6 +27,7 @@ src/
 ├── shared/
 │   ├── api/           # v1 / legacy HTTP クライアント
 │   ├── auth/          # 認証セッション（authStore・AuthUser 型・モック判定）
+│   ├── components/    # 複数 feature から使う共有 UI 部品（layout 等）
 │   ├── data/          # EventDataSource / ParticipantClient（移行期）
 │   ├── hooks/         # 複数 feature から使う hooks
 │   ├── types/         # 共通型
