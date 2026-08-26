@@ -1,10 +1,18 @@
-$proto-red: #f84f35;
-$proto-orange: #f8730d;
-$proto-dark-orange: #f8920d;
-$primary: $proto-red;
-$secondary: $proto-dark-orange;
+// tokens.scss の --pf-yellow と同じ値。両方セットで直すこと
+$pf-yellow: #fcbf01;
+// tokens.scss の --pf-orange と同じ値。両方セットで直すこと
+$pf-orange: #fd6f0d;
+$primary: $pf-yellow;
+$secondary: $pf-orange;
 
 @import 'bootstrap/scss/bootstrap';
+
+.btn-primary {
+  --bs-btn-color: var(--pf-ink-strong);
+  --bs-btn-hover-color: var(--pf-ink-strong);
+  --bs-btn-active-color: var(--pf-ink-strong);
+  --bs-btn-disabled-color: var(--pf-ink-strong);
+}
 
 :root {
   --color-accent-primary: #fdcc50;
