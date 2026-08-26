@@ -253,7 +253,7 @@ export function CheckInPage() {
     return (
       <div className="reader-container container py-3">
         <div className="result-ui-container">
-          <img src="/icons/success.png" alt="" className="success-icon" />
+          <img src="/mascot/mascot-cheering.png" alt="" className="success-icon" />
           <h2 className="result-title">チェックイン完了！</h2>
           <div className="booth-emoji-large">{checkInResult.booth.emoji}</div>
           <p className="result-message">

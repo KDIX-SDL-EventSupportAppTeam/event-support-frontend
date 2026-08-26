@@ -60,7 +60,7 @@ export function GachaponUsePage() {
             <p className="lead">所持コイン数: {availableCoins}枚</p>
             <div className="coins-display my-4">
               {Array.from({ length: availableCoins }).map((_, i) => (
-                <img key={i} src="/icons/coin-gold.png" alt="" />
+                <img key={i} src="/gacha/coin.png" alt="" />
               ))}
             </div>
             <div className="d-grid gap-2">
