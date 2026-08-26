@@ -2,6 +2,8 @@
 // 演出は当日 13:30-15:30 に集中発火するため、重いアニメーションは避ける（Q-F5）。
 // 配色は docs/specs/design-refresh-2026/01-design-tokens.md の --pf-* トークンに合わせる。
 
+@use 'sass:math';
+
 .bingo-logo {
   height: 1.4em;
   width: auto;
@@ -166,7 +168,7 @@
 
 @for $i from 1 through 12 {
   .bingo-unlock-piece:nth-child(#{$i}) {
-    $angle: (360deg / 12) * ($i - 1);
+    $angle: math.div(360deg, 12) * ($i - 1);
     --bingo-unlock-angle: #{$angle};
   }
 }
