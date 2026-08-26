@@ -3,9 +3,11 @@ import { fetchV1Checkins, postV1CheckInRating } from '@/shared/api/v1Participant
 import { ApiError } from '@/shared/api/unwrap'
 import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
 import { formatClientError } from '@/shared/lib/formatClientError'
+import { MAX_GACHAPON_COINS } from '@/shared/config/gachapon'
 import type { BingoCard, BingoCell } from '@/shared/types/bingoCard'
 import { BingoCellView } from '@/features/home/components/bingo/BingoCellView'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
+import { BingoProgressStepper } from '@/features/home/components/bingo/BingoProgressStepper'
 
 type Props = {
   card: BingoCard
@@ -86,13 +88,15 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
     <div className="bingo-card-v2">
       <div className="d-flex justify-content-between align-items-center mb-2">
         <h1 className="mb-0 main-title">
-          <span className="sub-title">PRoTo FES</span>
+          <img src="/brand/logo-protofes.png" alt="PRoTo FES" className="bingo-logo" />
           <br />
           BINGO
         </h1>
       </div>
 
       <p className="bingo-unlock-guide mb-2">{guideMessage}</p>
+
+      <BingoProgressStepper current={card.lines_completed} max={MAX_GACHAPON_COINS} />
 
       <div className="bingo-progress small text-muted mb-2">
         中央 {card.progress.center_achieved}/{card.progress.center_total} ・ 開放
