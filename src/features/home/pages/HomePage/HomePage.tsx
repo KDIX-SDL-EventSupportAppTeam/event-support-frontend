@@ -10,6 +10,7 @@ import { consumeBingoCelebration } from '@/shared/lib/bingoCelebration'
 import { BingoCardView } from '@/features/home/components/bingo/BingoCardView'
 import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
 import { HomeTutorialModal } from '@/features/home/pages/HomePage/HomeTutorialModal'
+import { Modal } from '@/shared/components/modal/Modal'
 import '@/features/home/styles/legacy-home.scss'
 import '@/features/home/styles/bingo-card.scss'
 
@@ -82,41 +83,44 @@ export function HomePage() {
   return (
     <div className="legacy-home container py-3 px-2">
       {bingoModalOpen ? (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="bingo-modal-title">
-          <div className="modal-content text-center">
-            <h2 id="bingo-modal-title" className="bingo-celebration-title">
-              🎉 BINGO! 🎉
-            </h2>
-            <p className="bingo-celebration-message">おめでとうございます！</p>
-            <button type="button" className="btn btn-primary" onClick={() => setBingoModalOpen(false)}>
-              閉じる
-            </button>
-          </div>
-        </div>
+        <Modal titleId="bingo-modal-title" onClose={() => setBingoModalOpen(false)} contentClassName="text-center">
+          <img src="/feedback/popup-bingo-complete.png" alt="" className="modal-popup-image" />
+          <h2 id="bingo-modal-title" className="visually-hidden">
+            BINGO！おめでとうございます
+          </h2>
+          <p className="bingo-celebration-message">おめでとうございます！</p>
+          <button type="button" className="btn btn-primary" onClick={() => setBingoModalOpen(false)}>
+            閉じる
+          </button>
+        </Modal>
       ) : null}
 
       {feedbackConfirmOpen ? (
-        <div className="modal-overlay" role="dialog" aria-modal="true">
-          <div className="modal-content text-center">
-            <h5 className="modal-title">アンケートを開きます</h5>
-            <p className="modal-body-text">アンケートフォームを新しいタブで開きます。よろしいですか？</p>
-            <div className="modal-footer-buttons">
-              <button type="button" className="btn-custom-secondary" onClick={() => setFeedbackConfirmOpen(false)}>
-                キャンセル
-              </button>
-              <button
-                type="button"
-                className="btn-custom-primary-red"
-                onClick={() => {
-                  window.open(FEEDBACK_FORM_URL, '_blank', 'noopener,noreferrer')
-                  setFeedbackConfirmOpen(false)
-                }}
-              >
-                はい
-              </button>
-            </div>
+        <Modal
+          titleId="feedback-confirm-title"
+          onClose={() => setFeedbackConfirmOpen(false)}
+          contentClassName="text-center"
+        >
+          <h5 id="feedback-confirm-title" className="modal-title">
+            アンケートを開きます
+          </h5>
+          <p className="modal-body-text">アンケートフォームを新しいタブで開きます。よろしいですか？</p>
+          <div className="modal-footer-buttons">
+            <button type="button" className="btn-custom-secondary" onClick={() => setFeedbackConfirmOpen(false)}>
+              キャンセル
+            </button>
+            <button
+              type="button"
+              className="btn-custom-primary-red"
+              onClick={() => {
+                window.open(FEEDBACK_FORM_URL, '_blank', 'noopener,noreferrer')
+                setFeedbackConfirmOpen(false)
+              }}
+            >
+              はい
+            </button>
           </div>
-        </div>
+        </Modal>
       ) : null}
 
       {tweetsComingSoonOpen ? (
