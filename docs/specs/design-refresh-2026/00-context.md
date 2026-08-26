@@ -109,8 +109,13 @@ feature 固有のものは各 feature の `styles/` に置き、ページ側で 
 **`legacy-` 接頭辞は「前年から持ち越した未整理のスタイル」を意味する。**
 新しく書くファイルにこの接頭辞を付けない。
 
-現状の色は前年のオレンジ／赤系（`$proto-red: #f84f35` 等）で、
-2026 年版の黄色系とは合わない。→ [01-design-tokens.md](01-design-tokens.md)
+現状の色は前年のオレンジ／赤系（`$proto-red: #f84f35` 等）で、2026 年版の黄色系とは合わない。
+**この 3 変数は `legacy-app.scss` の 1〜5 行目でしか使われておらず**、
+そこから Bootstrap の `$primary` / `$secondary` に流し込まれて全画面に効いている。
+→ [01-design-tokens.md](01-design-tokens.md)
+
+`src/features/admin/` `organizer/` `exhibitor/` には**SCSS/CSS ファイルが無い。**
+Bootstrap のクラスで組まれているため、上の 1 箇所を直せば配色は一括で切り替わる。
 
 ### ガチャは準備中
 

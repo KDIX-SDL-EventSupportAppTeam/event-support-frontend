@@ -21,8 +21,8 @@
 
 ## 画面の地
 
-背景は `.pf-2026` 側（[01](01-design-tokens.md)）で `--pf-cream-light` が当たっている。
-**`body` を直接いじらない**（管理画面まで変わる）。
+背景は `ParticipantLayout`（[03](03-bottom-navigation.md)）が `--pf-cream-light` を敷く。
+**`body` を直接いじらない。**
 
 `background/onboarding-scene.png` は**オンボーディング専用**である
 （キャラの居ない地面と草花の絵）。ホームの背景に流用しない。
@@ -132,6 +132,18 @@ export const MAX_GACHAPON_COINS = 4
 **画像が要るのは形が CSS で出せないものだけ**である。具体的には
 `bottom-bar-primary.png`（上辺だけカーブした帯）と
 `nav-bar-notched.png`（中央が飛び出す帯）の 2 つ。
+
+## 前年色のべた書きを片付ける
+
+このPRで触る SCSS に残っている前年の色を `var(--pf-*)` へ寄せる（[01](01-design-tokens.md)）。
+
+| ファイル | 件数 |
+|---|---|
+| `src/features/home/styles/legacy-home.scss` | 40 |
+| `src/features/home/styles/bingo-card.scss` | 18 |
+| `src/shared/styles/legacy-participant-pages.scss` | ホーム・ビンゴに関わる範囲のみ |
+
+**担当範囲の外まで手を広げない。** モーダル関連は [05](05-modals.md) が扱う。
 
 ## 完了の条件
 

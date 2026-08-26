@@ -73,17 +73,21 @@ src/shared/components/layout/
 
 ### ParticipantLayout の責務
 
-1. ルート要素に **`.pf-2026` を付ける** — [01](01-design-tokens.md) の配色はこの下でだけ効く
-2. `<BottomNav />` を描画する
-3. 本体に `padding-bottom: var(--pf-nav-height)` を持たせ、ナビの下に潜り込ませない
-4. `env(safe-area-inset-bottom)` を加味する（iOS の下端ジェスチャーバー対策）
+1. `<BottomNav />` を描画する
+2. 本体に `padding-bottom: var(--pf-nav-height)` を持たせ、ナビの下に潜り込ませない
+3. `env(safe-area-inset-bottom)` を加味する（iOS の下端ジェスチャーバー対策）
+4. 参加者画面の背景 `--pf-cream-light` を敷く
 
 ```tsx
-<div className="pf-2026 participant-layout">
+<div className="participant-layout">
   <main className="participant-layout__body"><Outlet /></main>
   <BottomNav />
 </div>
 ```
+
+**配色のスコープ用クラスは不要である。** [01](01-design-tokens.md) で
+Bootstrap の変数ごと差し替えるため、色は全画面に既に効いている。
+`ParticipantLayout` が持つのは**レイアウトの責務だけ。**
 
 ### ルーターへの適用
 
@@ -131,6 +135,5 @@ src/shared/components/layout/
 - 参加者向けルートすべてでナビが出て、管理・主催者・出展者・認証・オンボーディングでは出ない
 - 現在地の項目が選択状態になる
 - 各ページの一番下のコンテンツがナビに隠れない
-- `.pf-2026` が付いたことで参加者画面が 2026 年版配色になり、`/admin` は前年配色のまま
 - キーボード操作でナビ項目に到達でき、読み上げでラベルが分かる
 - `npm run test` と `npm run build` が通る
