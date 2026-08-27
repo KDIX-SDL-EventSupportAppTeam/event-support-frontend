@@ -10,11 +10,10 @@ export type AwardVoteSnapshot = {
   votes: Record<string, string | null>
 }
 
-/** ガチャ・チェックイン・投票・スケジュール・Q&A（旧 Flask / サンプル） */
+/** チェックイン・投票・スケジュール・Q&A（旧 Flask / サンプル）。
+ *  ガチャコインは features/gachapon/api/gachaClient.ts が担う。 */
 export interface ParticipantClient {
   postCheckIn(eventId: string, userId: string, boothId: string): Promise<CheckInResult>
-  getAvailableGachaponCoins(eventId: string, userId: string): Promise<number>
-  postUseGachaponCoin(eventId: string, userId: string): Promise<void>
   getAwardVoteSnapshot(eventId: string, userId: string): Promise<AwardVoteSnapshot>
   saveVotes(userId: string, votes: Record<string, string | null>): Promise<void>
   getSchedule(): Promise<ScheduleDay[]>

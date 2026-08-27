@@ -8,6 +8,7 @@ import { fetchPublicEvent } from '@/shared/api/publicEvent'
 import { useUnlockAnimationQueue } from '@/shared/hooks/useUnlockAnimationQueue'
 import { consumeBingoCelebration } from '@/shared/lib/bingoCelebration'
 import { BingoCardView } from '@/features/home/components/bingo/BingoCardView'
+import { createGachaClient, type GachaCoins } from '@/features/gachapon/api/gachaClient'
 import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
 import { HomeTutorialModal } from '@/features/home/pages/HomePage/HomeTutorialModal'
 import { Modal } from '@/shared/components/modal/Modal'
@@ -53,6 +54,24 @@ export function HomePage() {
     if (!eventId || !userId) return
     ensureExhibitorLoaded(eventId, userId)
   }, [eventId, userId, ensureExhibitorLoaded])
+
+  // ガチャコインの所持枚数。card 取得（＝チェックインでライン数が動いた可能性）のたび取り直す。
+  const [gachaCoins, setGachaCoins] = useState<GachaCoins | null>(null)
+  useEffect(() => {
+    if (!eventId || !userId) return
+    let alive = true
+    void createGachaClient()
+      .getCoins(eventId, userId)
+      .then((c) => {
+        if (alive) setGachaCoins(c)
+      })
+      .catch(() => {
+        /* コインボタンは枚数なしで表示する（ナビゲーションは可能） */
+      })
+    return () => {
+      alive = false
+    }
+  }, [eventId, userId, card])
 
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [feedbackConfirmOpen, setFeedbackConfirmOpen] = useState(false)
@@ -188,9 +207,13 @@ export function HomePage() {
               type="button"
               className="btn btn-light action-button btn-gachapon"
               onClick={() => navigate('/gachapon')}
+              disabled={gachaCoins != null && gachaCoins.available <= 0}
             >
               <img src="/gacha/coin.png" alt="" className="gachapon-icon" />
-              <span>ガチャポンコインを使う</span>
+              <span>
+                ガチャポンコインを使う
+                {gachaCoins != null ? `（残り${gachaCoins.available}枚）` : ''}
+              </span>
               <img src="/gacha/coin.png" alt="" className="gachapon-icon" />
             </button>
           </div>
