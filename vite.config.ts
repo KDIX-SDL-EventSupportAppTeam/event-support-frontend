@@ -13,15 +13,17 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        // Bootstrap 5 のSCSS自体が @import・color.mix() 未移行などDart Sass 3.0系の
-        // 非推奨機能を使っており、大量の警告を出す。node_modules 配下（依存先）由来の
-        // 警告を黙らせる。こちら側のSCSS(src/配下)で新たに同種の非推奨記法を使えば
-        // 引き続き警告が出る（quietDeps は依存先由来の警告のみを対象にするため）。
+        // Bootstrap 5 の SCSS 自体が Dart Sass 3.0 系の非推奨機能（@import・
+        // グローバル mix() など）を使っており、ビルドのたびに大量の警告を出す。
+        // quietDeps は node_modules 配下（依存先）由来の警告だけを黙らせるため、
+        // src/ 配下で新たに非推奨記法を書けば警告は従来どおり出る。
         quietDeps: true,
-        // legacy-app.scss 自身の `@import 'bootstrap/scss/bootstrap'` だけは
-        // このファイル内で発生する警告として quietDeps の対象外になる。
-        // Bootstrap 5 は `@use` 経由の変数上書きに対応していないため @import を
-        // 使わざるを得ず、この1件だけ個別に黙らせる。
+        // src/shared/styles/legacy-app.scss の `@import 'bootstrap/scss/bootstrap'`
+        // は自ファイル内で起きる警告なので quietDeps では消えない。Bootstrap 5 は
+        // @use 経由の変数上書きに対応しておらず @import を使わざるを得ないため、
+        // import 系の非推奨警告だけを抑止する。
+        // 注意: これはビルド全体に効くので、src/ 配下で新しく @import を書いても
+        // 警告が出なくなる。新規SCSSでは @use / @forward を使うこと。
         silenceDeprecations: ['import'],
       },
     },
@@ -36,9 +38,8 @@ export default defineConfig({
         target: 'http://127.0.0.1:5000',
         changeOrigin: true,
       },
-      // 旧 Vue 版のチェックイン Webhook 用プロキシだったが、React 側の SPA ルート
-      // `/checkin`（参加者のチェックイン画面）とパスが完全一致し、直接アクセスや
-      // リロード時に開発サーバーが 500 を返す原因になっていたため削除した。
+      // `/checkin` のプロキシを足さないこと。SPA ルートの /checkin と完全一致し、
+      // 直接アクセス・リロード時に開発サーバーが 500 を返す（旧 Vue 版の名残で実在した）。
     },
   },
 })

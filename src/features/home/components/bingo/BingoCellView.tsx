@@ -52,7 +52,9 @@ export function BingoCellView({ cell, onTap }: Props) {
     <div
       role={tappable ? 'button' : undefined}
       tabIndex={tappable ? 0 : undefined}
-      aria-label={!cell.is_revealed ? (isCenterInvite ? undefined : '未解放') : undefined}
+      aria-label={
+        cell.is_revealed ? undefined : isCenterInvite ? '好きなブースで埋まるマス' : '未解放のマス'
+      }
       className={classes}
       onClick={() => tappable && onTap(cell)}
       onKeyDown={(e) => {
@@ -64,7 +66,10 @@ export function BingoCellView({ cell, onTap }: Props) {
     >
       {!cell.is_revealed ? (
         isCenterInvite ? (
-          <span className="bingo-cell-center-invite-text">好きなブースに回ってください</span>
+          // 中央の空きマスは最大4つ並ぶ。命令文（「好きなブースに回ってください」）を
+          // 各マスで繰り返すと同じ文が3〜4回並んで読みづらいため、
+          // 命令文は盤上部の .bingo-unlock-guide に任せ、ここは枠の役割を示す短い名札にする
+          <span className="bingo-cell-center-invite-text">好きなブース</span>
         ) : (
           <i className="bi bi-lock-fill bingo-cell-lock-icon" aria-hidden="true" />
         )

@@ -35,9 +35,9 @@
   padding: 1rem 1.25rem 0;
 }
 
+// 透明余白の切り落としは .pf-logo（shared/styles/brand-logo.scss）が持つ
 .onboarding-logo {
-  height: 2.25rem;
-  width: auto;
+  height: 1.75rem;
 }
 
 .onboarding-skip {

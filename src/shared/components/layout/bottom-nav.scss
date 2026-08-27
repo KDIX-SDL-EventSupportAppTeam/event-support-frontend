@@ -32,7 +32,9 @@
 .bottom-nav__list {
   position: relative;
   display: flex;
-  align-items: center;
+  // stretch にして全項目を同じ高さにする。center だと項目の高さが中身なりになり、
+  // HTMLラベルを持つ項目だけ背が高くなってアイコンの位置が上下にずれる
+  align-items: stretch;
   justify-content: space-between;
   height: var(--pf-nav-height);
   margin: 0;
@@ -44,6 +46,7 @@
   flex: 1;
   display: flex;
   justify-content: center;
+  min-width: 0;
 }
 
 .bottom-nav__item--fab {
@@ -84,4 +87,5 @@
   font-weight: 500;
   color: var(--pf-ink);
   line-height: 1.1;
+  white-space: nowrap;
 }

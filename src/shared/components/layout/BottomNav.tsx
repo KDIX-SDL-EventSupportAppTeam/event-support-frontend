@@ -23,9 +23,7 @@ const NAV_ITEMS: NavItem[] = [
     label: 'ブース一覧',
     // /icon/nav/nav-map.png は「会場マップ」という文言が焼き込まれており、
     // 07-venue-map.md で追加した /venue-map の導線と紛らわしいため使わない。
-    // ブース一覧向けの正しいナビ用アイコン（文字焼き込み版）は未受領。
-    // 代用として文字なしの feature アイコンを使い、ラベルはHTML側で足す。
-    // 正式なアイコンが届いたら icon を差し替え、showLabel を外すこと。
+    // 代用の feature アイコンは文字なしなので showLabel でラベルを補う
     icon: '/icon/feature/feature-booth-list.png',
     showLabel: true,
   },
@@ -37,8 +35,11 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     to: '/schedule',
+    // nav-schedule.png はカレンダーの絵だけでラベルが焼き込まれていないため、
+    // showLabel が無いと項目名がどこにも出ない
     label: 'スケジュール',
     icon: '/icon/nav/nav-schedule.png',
+    showLabel: true,
   },
   {
     to: '/award-vote',

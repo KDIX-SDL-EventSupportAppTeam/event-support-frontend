@@ -4,9 +4,9 @@
 
 @use 'sass:math';
 
+// 透明余白の切り落としは .pf-logo（shared/styles/brand-logo.scss）が持つ
 .bingo-logo {
   height: 1.4em;
-  width: auto;
   display: block;
 }
 
@@ -38,13 +38,13 @@
 .bingo-cell-locked {
   // 外周マスは線ペアの解放待ち。暗くしてロック中であることを視覚的に伝える
   background: var(--pf-ink);
-  color: var(--pf-ink-muted);
+  color: var(--pf-cream); // 暗い地の上で読めること（--pf-ink-muted では沈む）
   cursor: default;
 }
 
 .bingo-cell-lock-icon {
   font-size: 1.3rem;
-  color: rgb(254 248 238 / 55%); // --pf-surface の低opacity版
+  // 色は .bingo-cell-locked から継承する
 }
 
 .bingo-cell-center-invite {
@@ -88,17 +88,6 @@
   margin-bottom: 0.1rem;
 }
 
-.bingo-cell-bonus {
-  background: var(--pf-cream);
-  border-color: var(--pf-yellow-strong);
-}
-
-.bingo-cell-bonus-badge {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--pf-ink-strong);
-}
-
 .bingo-cell-booth-name {
   font-size: 0.68rem;
   line-height: 1.1;
@@ -111,12 +100,6 @@
   line-height: 1.15;
   color: var(--pf-ink-muted);
   word-break: break-word;
-}
-
-.bingo-reason-panel {
-  background: var(--pf-cream-light);
-  border-radius: var(--pf-radius-sm);
-  padding: 0.6rem 0.75rem;
 }
 
 // ビンゴ進捗ステッパー（4段階の丸連番インジケータ）。素材は無くCSSのみで実装する
@@ -136,7 +119,7 @@
 .bingo-progress-stepper-line {
   width: 1.75rem;
   height: 2px;
-  background: rgb(110 102 86 / 20%); // --pf-ink-muted 20%程度
+  background: var(--pf-divider);
 }
 
 .bingo-progress-stepper-line-achieved {
