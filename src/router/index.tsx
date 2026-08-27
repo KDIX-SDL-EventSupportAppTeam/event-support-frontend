@@ -18,6 +18,7 @@ import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage/VerifyEma
 import { VerifyEmailSentPage } from '@/features/auth/pages/VerifyEmailSentPage/VerifyEmailSentPage'
 import { isAdminUser, useAuthStore } from '@/shared/auth/authStore'
 import { RequireAppOpen } from '@/shared/access/RequireAppOpen'
+import { ParticipantLayout } from '@/shared/components/layout/ParticipantLayout'
 import { OrganizerLoginPage } from '@/features/organizer/pages/OrganizerLoginPage'
 import { OrganizerEventCreatePage } from '@/features/organizer/pages/OrganizerEventCreatePage'
 import { OrganizerEventListPage } from '@/features/organizer/pages/OrganizerEventListPage'
@@ -27,6 +28,7 @@ import { BoothListPage } from '@/features/booth/pages/BoothListPage/BoothListPag
 import { CheckInPage } from '@/features/checkin/pages/CheckInPage'
 import { ExhibitorDashboardPage } from '@/features/exhibitor/pages/ExhibitorDashboardPage'
 import { HomePage } from '@/features/home/pages/HomePage/HomePage'
+import { OnboardingPage } from '@/features/onboarding/pages/OnboardingPage'
 import { PreSurveyEntryPage } from '@/features/presurvey/pages/PreSurveyEntryPage'
 import { PreSurveyFormPage } from '@/features/presurvey/pages/PreSurveyFormPage'
 import { PreSurveySignInPage } from '@/features/presurvey/pages/PreSurveySignInPage'
@@ -34,6 +36,7 @@ import { PreSurveySignUpPage } from '@/features/presurvey/pages/PreSurveySignUpP
 import { PreSurveyThanksPage } from '@/features/presurvey/pages/PreSurveyThanksPage'
 import { QaPage } from '@/features/qa/pages/QaPage'
 import { SchedulePage } from '@/features/schedule/pages/SchedulePage'
+import { VenueMapPage } from '@/features/venue-map/pages/VenueMapPage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token)
@@ -69,16 +72,6 @@ export function AppRoutes() {
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/verify-email/sent" element={<VerifyEmailSentPage />} />
       <Route
-        path="/home"
-        element={
-          <RequireAuth>
-            <RequireAppOpen>
-              <HomePage />
-            </RequireAppOpen>
-          </RequireAuth>
-        }
-      />
-      <Route
         path="/exhibitor"
         element={
           <RequireAuth>
@@ -86,63 +79,92 @@ export function AppRoutes() {
           </RequireAuth>
         }
       />
+      {/* ボトムナビを出さないため ParticipantLayout の外に置く（/login, /register と同様） */}
       <Route
-        path="/checkin"
+        path="/onboarding"
         element={
           <RequireAuth>
-            <CheckInPage />
+            <OnboardingPage />
           </RequireAuth>
         }
       />
-      <Route
-        path="/award-vote"
-        element={
-          <RequireAuth>
-            <LegacyPlaceholderPage title="アワード投票（準備中）" />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/schedule"
-        element={
-          <RequireAuth>
-            <SchedulePage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/booth-list"
-        element={
-          <RequireAuth>
-            <BoothListPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/gachapon"
-        element={
-          <RequireAuth>
-            <LegacyPlaceholderPage title="ガチャポン（準備中）" />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/gachapon/use"
-        element={
-          <RequireAuth>
-            <LegacyPlaceholderPage title="ガチャポン（準備中）" />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/gachapon/complete"
-        element={
-          <RequireAuth>
-            <LegacyPlaceholderPage title="ガチャポン（準備中）" />
-          </RequireAuth>
-        }
-      />
-      <Route path="/qa" element={<QaPage />} />
+      <Route element={<ParticipantLayout />}>
+        <Route
+          path="/home"
+          element={
+            <RequireAuth>
+              <RequireAppOpen>
+                <HomePage />
+              </RequireAppOpen>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/checkin"
+          element={
+            <RequireAuth>
+              <CheckInPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/award-vote"
+          element={
+            <RequireAuth>
+              <LegacyPlaceholderPage title="アワード投票（準備中）" />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/schedule"
+          element={
+            <RequireAuth>
+              <SchedulePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/booth-list"
+          element={
+            <RequireAuth>
+              <BoothListPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/venue-map"
+          element={
+            <RequireAuth>
+              <VenueMapPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/gachapon"
+          element={
+            <RequireAuth>
+              <LegacyPlaceholderPage title="ガチャポン（準備中）" />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/gachapon/use"
+          element={
+            <RequireAuth>
+              <LegacyPlaceholderPage title="ガチャポン（準備中）" />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/gachapon/complete"
+          element={
+            <RequireAuth>
+              <LegacyPlaceholderPage title="ガチャポン（準備中）" />
+            </RequireAuth>
+          }
+        />
+        <Route path="/qa" element={<QaPage />} />
+      </Route>
       <Route path="/organizer/login" element={<OrganizerLoginPage />} />
       <Route
         path="/organizer/events"

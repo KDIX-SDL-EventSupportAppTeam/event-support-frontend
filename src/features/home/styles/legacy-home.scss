@@ -1,4 +1,5 @@
 /* 旧 HomeView.vue scoped を .legacy-home 配下に集約 */
+/* 配色は docs/specs/design-refresh-2026/01-design-tokens.md の --pf-* トークンに合わせる */
 .legacy-home {
   .main-title {
     font-size: 1.3rem;
@@ -13,20 +14,20 @@
 
   .bingo-wrapper {
     max-width: 480px;
-    background-color: #fff;
-    border: 2px solid #000 !important;
+    background-color: var(--pf-surface);
+    border: 2px solid var(--pf-ink-strong) !important;
   }
 
   .bingo-cell {
     aspect-ratio: 1 / 1;
     margin-bottom: 6px;
     border-radius: 0.375rem;
-    border: 2px solid #000;
+    border: 2px solid var(--pf-ink-strong);
     cursor: pointer;
     transition:
       transform 0.1s,
       box-shadow 0.1s;
-    background-color: #fff;
+    background-color: var(--pf-surface);
     font-weight: 500;
     overflow: hidden;
   }
@@ -37,9 +38,9 @@
   }
 
   .bingo-cell.checked-in {
-    background-color: #ffa28d;
-    color: #000;
-    border-color: #000;
+    background-color: var(--pf-yellow-soft);
+    color: var(--pf-ink-strong);
+    border-color: var(--pf-ink-strong);
   }
 
   .booth-emoji {
@@ -71,12 +72,12 @@
   }
 
   .bingo-cell.is-recommendation {
-    border: 2px solid #000;
-    background-color: #fff;
+    border: 2px solid var(--pf-ink-strong);
+    background-color: var(--pf-surface);
   }
 
   .bingo-cell.is-recommendation.checked-in {
-    background-color: #ffa28d;
+    background-color: var(--pf-yellow-soft);
   }
 
   .bingo-coins {
@@ -100,12 +101,12 @@
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.2s;
-    background-color: #fff;
-    border: 2px solid #000;
+    background-color: var(--pf-surface);
+    border: 2px solid var(--pf-ink-strong);
   }
 
   .action-button:hover {
-    background-color: #e3e3e3;
+    background-color: var(--pf-cream-light);
   }
 
   .action-button:not(.btn-gachapon) {
@@ -115,23 +116,19 @@
 
   .btn-gachapon {
     gap: 0.4rem;
-    background-color: var(--color-accent-primary, #fdcc50);
-    border-color: var(--color-border, #000);
+    background-color: var(--color-accent-primary, var(--pf-yellow));
+    border-color: var(--color-border, var(--pf-ink-strong));
     padding: 1.5rem 0;
     font-size: medium;
     font-weight: bold;
   }
 
   .btn-gachapon:hover {
-    background-color: #f8c030;
-    border-color: #000;
+    background-color: var(--pf-yellow-strong);
+    border-color: var(--pf-ink-strong);
   }
 
   .gachapon-icon {
-    height: 25px;
-  }
-
-  .action-icon {
     height: 25px;
   }
 
@@ -144,7 +141,7 @@
     cursor: pointer;
     /* タップできると一目で分かる立体感（3D影）。押せるマス（role=button）だけに付与し、空マスには付けない */
     box-shadow:
-      0 5px 0 0 #969ba3,
+      0 5px 0 0 var(--pf-ink-muted),
       0 7px 10px rgba(16, 24, 40, 0.18);
   }
 
@@ -152,7 +149,7 @@
   .bingo-cell[role='button']:active {
     transform: translateY(5px);
     box-shadow:
-      0 0 0 0 #969ba3,
+      0 0 0 0 var(--pf-ink-muted),
       0 2px 3px rgba(16, 24, 40, 0.14);
   }
 
@@ -170,58 +167,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
+    background-color: var(--pf-cream-light);
+    border: 1px solid var(--pf-cream);
     border-radius: 6px;
-    color: #333;
-  }
-
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-  }
-
-  .modal-content {
-    background: #fff;
-    padding: 2rem;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  }
-
-  .modal-title {
-    font-size: 1.3rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-  }
-
-  .modal-body-text {
-    font-size: 1rem;
-    margin-bottom: 2rem;
-  }
-
-  .modal-footer-buttons {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .modal-footer-buttons button {
-    flex-grow: 1;
+    color: var(--pf-ink);
   }
 
   .btn-custom-primary-red {
-    background-color: #fa8072;
-    color: #fff;
-    border: 1px solid #fa8072;
+    background-color: var(--pf-orange);
+    color: var(--pf-ink-strong);
+    border: 1px solid var(--pf-orange);
     padding: 0.6rem 1rem;
     border-radius: 8px;
     cursor: pointer;
@@ -229,20 +184,13 @@
   }
 
   .btn-custom-secondary {
-    background-color: #fdcc50;
-    color: #333;
-    border: 1px solid #000;
+    background-color: var(--pf-yellow);
+    color: var(--pf-ink-strong);
+    border: 1px solid var(--pf-ink-strong);
     padding: 0.6rem 1rem;
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
-  }
-
-  .bingo-celebration-title {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #ffc107;
-    margin-bottom: 1rem;
   }
 
   .bingo-celebration-message {
@@ -261,7 +209,7 @@
 
   .btn-modal-close {
     font-weight: bold;
-    border: 2px solid #000;
+    border: 2px solid var(--pf-ink-strong);
   }
 }
 
@@ -277,7 +225,7 @@
 }
 
 .home-tutorial-card {
-  background: #fff;
+  background: var(--pf-surface);
   border-radius: 20px;
   width: 90%;
   max-width: 400px;
@@ -291,7 +239,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, #fff6d5 0%, #fff 100%);
+  background: linear-gradient(180deg, var(--pf-cream-light) 0%, var(--pf-surface) 100%);
 }
 
 .home-tutorial-step-emoji {
@@ -339,11 +287,11 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #dee2e6;
+    background: var(--pf-cream);
 
     &.active {
-      background: #fdcc50;
-      border: 1px solid #000;
+      background: var(--pf-yellow);
+      border: 1px solid var(--pf-ink-strong);
     }
   }
 }
@@ -363,7 +311,7 @@
 .home-tutorial-btn {
   border-radius: 10px;
   font-weight: bold;
-  border: 2px solid #000;
+  border: 2px solid var(--pf-ink-strong);
   padding: 0.5rem 1rem;
   cursor: pointer;
 }
@@ -371,13 +319,13 @@
 .home-tutorial-btn-back {
   width: 44px;
   flex-shrink: 0;
-  background: #f8f9fa;
+  background: var(--pf-cream-light);
 }
 
 .home-tutorial-btn-next,
 .home-tutorial-btn-start {
   flex: 1;
-  background: #fdcc50;
+  background: var(--pf-yellow);
 }
 
 .home-tutorial-btn-start {

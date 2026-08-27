@@ -8,6 +8,7 @@ import {
 } from '@/shared/data/sample/bingoRandom'
 import { SAMPLE_LEGACY_BOOTHS } from '@/shared/data/sample/sampleBooths'
 import { readSampleExtraCheckedIds, readSampleGachaponExtraSpent } from '@/shared/data/sample/sampleSession'
+import { MAX_GACHAPON_COINS } from '@/shared/config/gachapon'
 
 const SAMPLE_AWARDS: Award[] = [
   { id: 'award-1', name: '来場者投票', description: '当日投票で決定' },
@@ -49,7 +50,7 @@ export class SampleEventData {
   getBingoCount(eventId: string, userId: string): number {
     const grid = this.bingoGridFor(eventId, userId)
     const checked = new Set(this.getCheckedInBoothIds(eventId, userId))
-    return Math.min(4, countCompletedBingoLines(grid, checked))
+    return Math.min(MAX_GACHAPON_COINS, countCompletedBingoLines(grid, checked))
   }
 
   getGachaponBaseSpent(eventId: string, userId: string): number {

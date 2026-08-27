@@ -1,0 +1,27 @@
+:root {
+  --pf-yellow: #fcbf01;
+  --pf-yellow-strong: #fcc801;
+  --pf-yellow-soft: #fdd94c;
+  --pf-orange: #fd6f0d;
+
+  --pf-cream: #feeaab;
+  --pf-cream-light: #fef1d0;
+  --pf-surface: #fef8ee;
+
+  --pf-ink: #3b3527;
+  --pf-ink-strong: #271603;
+  --pf-ink-muted: #6e6656;
+
+  --pf-radius-sm: 0.5rem;
+  --pf-radius-md: 0.75rem;
+  --pf-radius-lg: 1.25rem;
+  --pf-radius-pill: 999px;
+
+  // --pf-ink-muted を薄めた区切り線・未達成部分の色（値を各所に散らさないためここで持つ）
+  --pf-divider: rgb(110 102 86 / 20%);
+
+  --pf-shadow-card: 0 2px 8px rgb(39 22 3 / 8%);
+  --pf-shadow-nav: 0 -2px 12px rgb(39 22 3 / 10%);
+
+  --pf-nav-height: 4.5rem;
+}

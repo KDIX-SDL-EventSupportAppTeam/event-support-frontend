@@ -3,9 +3,12 @@ import { fetchV1Checkins, postV1CheckInRating } from '@/shared/api/v1Participant
 import { ApiError } from '@/shared/api/unwrap'
 import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
 import { formatClientError } from '@/shared/lib/formatClientError'
+import { MAX_GACHAPON_COINS } from '@/shared/config/gachapon'
 import type { BingoCard, BingoCell } from '@/shared/types/bingoCard'
 import { BingoCellView } from '@/features/home/components/bingo/BingoCellView'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
+import { BingoProgressStepper } from '@/features/home/components/bingo/BingoProgressStepper'
+import { Modal } from '@/shared/components/modal/Modal'
 
 type Props = {
   card: BingoCard
@@ -86,13 +89,15 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
     <div className="bingo-card-v2">
       <div className="d-flex justify-content-between align-items-center mb-2">
         <h1 className="mb-0 main-title">
-          <span className="sub-title">PRoTo FES</span>
+          <img src="/brand/logo-protofes.png" alt="PRoTo FES" className="bingo-logo pf-logo" />
           <br />
           BINGO
         </h1>
       </div>
 
       <p className="bingo-unlock-guide mb-2">{guideMessage}</p>
+
+      <BingoProgressStepper current={card.lines_completed} max={MAX_GACHAPON_COINS} />
 
       <div className="bingo-progress small text-muted mb-2">
         中央 {card.progress.center_achieved}/{card.progress.center_total} ・ 開放
@@ -109,48 +114,43 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
       </div>
 
       {selectedCell ? (
-        <div
-          className="modal-overlay"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setSelectedCell(null)}
+        <Modal
+          titleId="booth-detail-title"
+          onClose={() => setSelectedCell(null)}
+          contentClassName="booth-detail-popup text-start"
         >
-          <div className="modal-content booth-detail-popup text-start" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header border-0 pb-0">
-              <h5 className="modal-title w-100">{selectedCell.booth?.name ?? 'ブース情報'}</h5>
-              <button
-                type="button"
-                className="btn-close"
-                aria-label="閉じる"
-                onClick={() => setSelectedCell(null)}
-              />
-            </div>
-            <div className="modal-body pt-2">
-              {selectedCell.booth?.description ? <p className="mb-2">{selectedCell.booth.description}</p> : null}
-              {canRate(selectedCell) ? (
-                <div className="mt-3">
-                  <button
-                    type="button"
-                    className="btn btn-outline-primary btn-sm"
-                    onClick={() => void openManualRating(selectedCell)}
-                  >
-                    このブースを評価する
-                  </button>
-                  {ratingLookupError ? <p className="text-danger small mt-2 mb-0">{ratingLookupError}</p> : null}
-                </div>
-              ) : null}
-            </div>
-            <div className="modal-footer border-0 pt-0">
-              <button
-                type="button"
-                className="btn btn-secondary btn-modal-close"
-                onClick={() => setSelectedCell(null)}
-              >
-                閉じる
-              </button>
-            </div>
+          <div className="modal-header border-0 pb-0">
+            <h5 id="booth-detail-title" className="modal-title w-100">
+              {selectedCell.booth?.name ?? 'ブース情報'}
+            </h5>
+            <button
+              type="button"
+              className="btn-close"
+              aria-label="閉じる"
+              onClick={() => setSelectedCell(null)}
+            />
           </div>
-        </div>
+          <div className="modal-body pt-2">
+            {selectedCell.booth?.description ? <p className="mb-2">{selectedCell.booth.description}</p> : null}
+            {canRate(selectedCell) ? (
+              <div className="mt-3">
+                <button
+                  type="button"
+                  className="btn btn-outline-primary btn-sm"
+                  onClick={() => void openManualRating(selectedCell)}
+                >
+                  このブースを評価する
+                </button>
+                {ratingLookupError ? <p className="text-danger small mt-2 mb-0">{ratingLookupError}</p> : null}
+              </div>
+            ) : null}
+          </div>
+          <div className="modal-footer border-0 pt-0">
+            <button type="button" className="btn btn-secondary btn-modal-close" onClick={() => setSelectedCell(null)}>
+              閉じる
+            </button>
+          </div>
+        </Modal>
       ) : null}
 
       {ratingTarget ? (

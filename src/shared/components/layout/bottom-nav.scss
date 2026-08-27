@@ -1,0 +1,91 @@
+.participant-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--pf-cream-light);
+}
+
+.participant-layout__body {
+  flex: 1 0 auto;
+  padding-bottom: calc(var(--pf-nav-height) + env(safe-area-inset-bottom, 0px));
+}
+
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  height: calc(var(--pf-nav-height) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.bottom-nav__bar {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: var(--pf-nav-height);
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.bottom-nav__list {
+  position: relative;
+  display: flex;
+  // stretch にして全項目を同じ高さにする。center だと項目の高さが中身なりになり、
+  // HTMLラベルを持つ項目だけ背が高くなってアイコンの位置が上下にずれる
+  align-items: stretch;
+  justify-content: space-between;
+  height: var(--pf-nav-height);
+  margin: 0;
+  padding: 0 0.5rem;
+  list-style: none;
+}
+
+.bottom-nav__item {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.bottom-nav__item--fab {
+  transform: translateY(-0.6rem);
+}
+
+.bottom-nav__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border-radius: var(--pf-radius-pill);
+
+  &:focus-visible {
+    outline: 3px solid var(--pf-orange);
+    outline-offset: 2px;
+  }
+
+  img {
+    width: auto;
+    max-width: 100%;
+    // アイコン素材が正方形いっぱいに描画されているため、幅基準のままだと
+    // ナビバーの高さいっぱいまで拡大され、フッターが不自然に大きく見える。
+    // 高さの上限を固定し、余白を持たせる。
+    max-height: 2.3rem;
+  }
+}
+
+.bottom-nav__item--fab .bottom-nav__link img {
+  // 中央FABだけは飛び出す演出のため、他項目よりひとまわり大きく見せる
+  max-height: 3.2rem;
+}
+
+.bottom-nav__label {
+  margin-top: 0.1rem;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--pf-ink);
+  line-height: 1.1;
+  white-space: nowrap;
+}

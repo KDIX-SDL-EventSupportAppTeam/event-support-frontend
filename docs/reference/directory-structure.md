@@ -1,6 +1,6 @@
 ---
 状態: 実装済み
-最終更新: 2026-08-24
+最終更新: 2026-08-26
 ---
 
 > **現状の事実を記録する文書。** 「これからどうするか」は [../specs/](../specs/README.md) を見ること。
@@ -27,6 +27,7 @@ src/
 ├── shared/
 │   ├── api/           # v1 / legacy HTTP クライアント
 │   ├── auth/          # 認証セッション（authStore・AuthUser 型・モック判定）
+│   ├── components/    # 複数 feature から使う共有 UI 部品（layout / modal 等）
 │   ├── data/          # EventDataSource / ParticipantClient（移行期）
 │   ├── hooks/         # 複数 feature から使う hooks
 │   ├── types/         # 共通型
@@ -37,6 +38,8 @@ src/
 ├── App.tsx
 └── main.tsx
 ```
+
+`public/`（静的アート素材）の構成と命名は [assets.md](assets.md) を参照。
 
 **原則：feature 間の直接 import は禁止。** 共有は `shared/` に置く。認証セッション（token・user・ロール判定）は `shared/auth/` に置き、`features/auth/` には画面と認証 API フローのみを残す（[ADR 0003](../decisions/adrs/0003-move-auth-session-to-shared.md)）。
 

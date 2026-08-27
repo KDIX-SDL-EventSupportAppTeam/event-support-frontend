@@ -1,0 +1,203 @@
+// オンボーディング（横スワイプ4枚）。仕様: docs/specs/design-refresh-2026/06-onboarding.md
+// ボトムナビは出さないため、ここは ParticipantLayout 配下ではない前提のスタイル。
+
+.onboarding-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  // min-height だと中身（見出し・スライド）が画面より高い端末でフッター（ドット＋次へ）が
+  // 画面の外へ押し出されてしまう。高さを画面ぴったりに固定し、はみ出す分は
+  // .onboarding-track 側だけをスクロールさせる。100dvh 非対応ブラウザ向けに 100vh を先に書く
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--pf-cream-light);
+}
+
+// 背景 onboarding-scene.png は 941x1672。原寸のまま敷かず画面幅に合わせて縮小する。
+.onboarding-background {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  z-index: 0;
+}
+
+.onboarding-header {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0;
+}
+
+// 透明余白の切り落としは .pf-logo（shared/styles/brand-logo.scss）が持つ
+.onboarding-logo {
+  height: 1.75rem;
+}
+
+.onboarding-skip {
+  border: none;
+  background: none;
+  color: var(--pf-ink-strong);
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+}
+
+.onboarding-track {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  // flex-basis を 0 にして「残りの高さぴったり」に収める。auto のままだと中身の高さ分
+  // 膨らみ、ヘッダー・ドット・次へボタンが画面の外に押し出されていた
+  flex: 1 1 0;
+  min-height: 0; // flex子はこれが無いと中身の高さより縮められない
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.onboarding-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  // 画面が低い端末（横向き・小型スマホ）でも縦に収まりきらない分だけスクロールできるようにする
+  overflow-y: auto;
+  padding: 1rem 1.5rem 1rem;
+  text-align: center;
+}
+
+.onboarding-mockup-frame {
+  position: relative;
+  width: 100%;
+  // 縦長の代用モックアップ画像（縦横比 約0.84）がそのまま画面高を圧迫しないよう、
+  // 18rem から縮小。iPhone SE 相当（375x667）でも次へボタンまで収まることを確認済み
+  max-width: 13rem;
+  margin: 0 auto 1rem;
+}
+
+.onboarding-mockup {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.onboarding-illustrations {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
+.onboarding-feature-icon {
+  width: 3rem;
+  height: 3rem;
+}
+
+.onboarding-flow-image,
+.onboarding-award-image {
+  width: 90%;
+  max-width: 16rem;
+  height: auto;
+}
+
+.onboarding-mascot {
+  width: 5rem;
+  height: auto;
+}
+
+.onboarding-title {
+  color: var(--pf-ink-strong);
+  font-weight: 700;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.onboarding-description {
+  color: var(--pf-ink);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.onboarding-gesture-hint {
+  margin-top: 1rem;
+  width: 3rem;
+  height: auto;
+  opacity: 0.8;
+}
+
+.onboarding-progress {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding-bottom: 0.75rem;
+  flex: 0 0 auto;
+}
+
+.onboarding-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+
+  span {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: var(--pf-radius-pill);
+    background-color: var(--pf-cream);
+
+    &.active {
+      background-color: var(--pf-orange);
+      width: 1.25rem;
+    }
+  }
+}
+
+// 「今何ページ目か」をドットに加えて数字でも伝える
+.onboarding-page-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--pf-ink-muted);
+  letter-spacing: 0.02em;
+}
+
+.onboarding-next {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0 1.25rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  display: block;
+
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  span {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--pf-ink-strong);
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+}

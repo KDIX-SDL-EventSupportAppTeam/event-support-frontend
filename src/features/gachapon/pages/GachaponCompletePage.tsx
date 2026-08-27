@@ -5,7 +5,7 @@ export function GachaponCompletePage() {
   return (
     <div className="gachapon-container">
       <div className="card p-4 text-center">
-        <img src="/logo_main.png" alt="ProtoFes" className="logo mb-4" style={{ maxWidth: 150, height: 'auto' }} />
+        <img src="/brand/logo-protofes.png" alt="ProtoFes" className="logo mb-4 pf-logo" style={{ width: 150 }} />
         <h1 className="mb-3 h3">ガチャポンコイン使用済</h1>
         <p className="lead mb-4">プロトフェスを引き続きお楽しみください</p>
         <div className="d-grid">
