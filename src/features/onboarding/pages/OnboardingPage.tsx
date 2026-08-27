@@ -97,10 +97,15 @@ export function OnboardingPage() {
         ))}
       </div>
 
-      <div className="onboarding-dots" aria-hidden>
-        {ONBOARDING_SLIDES.map((slide, index) => (
-          <span key={slide.id} className={index === current ? 'active' : undefined} />
-        ))}
+      <div className="onboarding-progress">
+        <div className="onboarding-dots" aria-hidden>
+          {ONBOARDING_SLIDES.map((slide, index) => (
+            <span key={slide.id} className={index === current ? 'active' : undefined} />
+          ))}
+        </div>
+        <span className="onboarding-page-count" aria-hidden>
+          {current + 1} / {ONBOARDING_SLIDES.length}
+        </span>
       </div>
 
       <button type="button" className="onboarding-next" onClick={goNext}>
