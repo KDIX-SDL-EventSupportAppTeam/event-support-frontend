@@ -31,6 +31,7 @@ public/
 ├── map/            # 会場マップ関連
 ├── onboarding/     # オンボーディングの一枚絵
 ├── feedback/       # 完了ポップアップ用イラスト
+├── favicon.png     # ブラウザタブのアイコン（mascot-cheering.png から生成）
 └── legacy/         # 前年版の素材（下記「legacy」を参照）
 ```
 
@@ -58,8 +59,9 @@ public/
 
 | パス | 用途 |
 |---|---|
-| `brand/logo-protofes.png` | PROTOFES ロゴ（タグライン付き） |
+| `brand/logo-protofes.png` | PROTOFES ロゴ（タグライン付き）。**1024×1536 のうちロゴ本体は 905×127 で、残りは透明な余白。** そのまま `height` 指定で置くと極小になるため、表示は共有クラス `.pf-logo`（`src/shared/styles/brand-logo.scss`）を使う |
 | `background/onboarding-scene.png` | オンボーディングの背景のみ（キャラ・文字なし） |
+| `favicon.png` | ブラウザタブのアイコン。`mascot/mascot-cheering.png` に `--pf-cream` の下地を敷いて 512×512 で書き出したもの |
 
 ### mascot
 
@@ -170,17 +172,10 @@ public/
 `icons/*.png` が入っている。2026 年版の素材へ差し替えるまでの一時的な置き場で、
 **新規実装では参照しない。**
 
-> ⚠️ **既知の不整合**：`legacy/` へ移した際、既存コードの参照パスが未追従。
-> 解消の手順は [specs/design-refresh-2026/02-legacy-asset-cleanup.md](../specs/design-refresh-2026/02-legacy-asset-cleanup.md) にある。
-> 下記は現状リンク切れになっている。差し替え先が決まり次第まとめて直すこと。
->
-> | 参照元 | 現在のパス |
-> |---|---|
-> | `src/features/checkin/pages/CheckInPage.tsx:256` | `/icons/success.png` |
-> | `src/features/gachapon/pages/GachaponCompletePage.tsx:8` | `/logo_main.png` |
-> | `src/features/gachapon/pages/GachaponUsePage.tsx:63` | `/icons/coin-gold.png` |
-> | `src/features/home/pages/HomePage/HomePage.tsx:173,175` | `/icons/gacha1.png`, `/icons/gacha2.png` |
-> | `src/features/home/pages/HomePage/HomePage.tsx:186,198,210,222` | `/icons/map.png`, `/icons/qr-code-scan.png`, `/icons/time-table.png`, `/icons/trophy.png` |
+**参照パスの不整合は解消済み**（[specs/design-refresh-2026/02-legacy-asset-cleanup.md](../specs/design-refresh-2026/02-legacy-asset-cleanup.md)）。
+`src/` から `public/legacy/` を参照している箇所は無い。
+ホームのボタングリッドにあった 4 件は [03](../specs/design-refresh-2026/03-bottom-navigation.md) の
+ボトムナビ導入でボタンごと削除された。ファイル自体は復帰用に残している。
 
 ## 未受領の素材
 
