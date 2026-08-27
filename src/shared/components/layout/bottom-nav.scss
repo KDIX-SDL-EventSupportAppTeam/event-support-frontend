@@ -55,6 +55,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: 100%;
   border-radius: var(--pf-radius-pill);
 
   &:focus-visible {
@@ -63,14 +64,23 @@
   }
 
   img {
+    width: auto;
     max-width: 100%;
-    height: auto;
+    // アイコン素材が正方形いっぱいに描画されているため、幅基準のままだと
+    // ナビバーの高さいっぱいまで拡大され、フッターが不自然に大きく見える。
+    // 高さの上限を固定し、余白を持たせる。
+    max-height: 2.3rem;
   }
 }
 
+.bottom-nav__item--fab .bottom-nav__link img {
+  // 中央FABだけは飛び出す演出のため、他項目よりひとまわり大きく見せる
+  max-height: 3.2rem;
+}
+
 .bottom-nav__label {
-  margin-top: 0.15rem;
-  font-size: 0.7rem;
+  margin-top: 0.1rem;
+  font-size: 0.65rem;
   font-weight: 500;
   color: var(--pf-ink);
   line-height: 1.1;
