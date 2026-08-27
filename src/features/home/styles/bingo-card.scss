@@ -36,9 +36,32 @@
 }
 
 .bingo-cell-locked {
-  background: var(--pf-surface);
+  // 外周マスは線ペアの解放待ち。暗くしてロック中であることを視覚的に伝える
+  background: var(--pf-ink);
   color: var(--pf-ink-muted);
   cursor: default;
+}
+
+.bingo-cell-lock-icon {
+  font-size: 1.3rem;
+  color: rgb(254 248 238 / 55%); // --pf-surface の低opacity版
+}
+
+.bingo-cell-center-invite {
+  // 中央マスは「後出し割当」でどのブースに行っても即達成になるため、
+  // 外周のロック表現ではなく前向きな誘導文にする
+  background: var(--pf-cream);
+  border-style: dashed;
+  border-color: var(--pf-yellow-strong);
+  color: var(--pf-ink);
+  cursor: default;
+}
+
+.bingo-cell-center-invite-text {
+  font-size: 0.62rem;
+  line-height: 1.2;
+  font-weight: 500;
+  word-break: break-word;
 }
 
 .bingo-cell-revealed {

@@ -25,10 +25,22 @@ export function BingoCellView({ cell, onTap }: Props) {
   // 中身が空のモーダルが開くだけなので、タップ導線から外す
   const tappable = cell.is_revealed && Boolean(cell.booth)
   const isPresurvey = cell.source === 'PRESURVEY'
+  const isCenter = cell.zone === 'CENTER'
+  // 中央マスは「後出し割当」でどのブースにチェックインしても即達成扱いになる（サーバー: assignCenterCell）。
+  // 未解放の中央マスに事前推薦（PRESURVEY）以外の意味はなく、外周のような線ペア解放待ちではないため、
+  // 外周と同じ「ロック」表現ではなく「好きなブースに回ってください」という誘導文にする
+  // （docs/specs/design-refresh-2026/04-home-and-bingo.md 追補）
+  const isCenterInvite = !cell.is_revealed && isCenter
 
   const classes = [
     'bingo-cell-v2',
-    cell.is_revealed ? (cell.is_achieved ? 'bingo-cell-achieved' : 'bingo-cell-revealed') : 'bingo-cell-locked',
+    cell.is_revealed
+      ? cell.is_achieved
+        ? 'bingo-cell-achieved'
+        : 'bingo-cell-revealed'
+      : isCenterInvite
+        ? 'bingo-cell-center-invite'
+        : 'bingo-cell-locked',
     `bingo-cell-zone-${cell.zone.toLowerCase()}`,
     isPresurvey ? 'bingo-cell-presurvey' : '',
     cell.is_revealed && !cell.booth ? 'bingo-cell-undecided' : '',
@@ -40,7 +52,7 @@ export function BingoCellView({ cell, onTap }: Props) {
     <div
       role={tappable ? 'button' : undefined}
       tabIndex={tappable ? 0 : undefined}
-      aria-label={!cell.is_revealed ? '未解放' : undefined}
+      aria-label={!cell.is_revealed ? (isCenterInvite ? undefined : '未解放') : undefined}
       className={classes}
       onClick={() => tappable && onTap(cell)}
       onKeyDown={(e) => {
@@ -50,7 +62,13 @@ export function BingoCellView({ cell, onTap }: Props) {
         }
       }}
     >
-      {!cell.is_revealed ? null : cell.booth ? (
+      {!cell.is_revealed ? (
+        isCenterInvite ? (
+          <span className="bingo-cell-center-invite-text">好きなブースに回ってください</span>
+        ) : (
+          <i className="bi bi-lock-fill bingo-cell-lock-icon" aria-hidden="true" />
+        )
+      ) : cell.booth ? (
         <>
           {cell.is_achieved ? (
             <img src="/bingo/bingo-cell-stamp.png" alt="達成" className="bingo-cell-stamp" aria-hidden />
