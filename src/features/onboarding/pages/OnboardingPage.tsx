@@ -56,7 +56,7 @@ export function OnboardingPage() {
       <img className="onboarding-background" src="/background/onboarding-scene.png" alt="" aria-hidden />
 
       <div className="onboarding-header">
-        <img className="onboarding-logo" src="/brand/logo-protofes.png" alt="PRoToFES" />
+        <img className="onboarding-logo pf-logo" src="/brand/logo-protofes.png" alt="PRoToFES" />
         <button type="button" className="onboarding-skip" onClick={finish}>
           スキップ
         </button>

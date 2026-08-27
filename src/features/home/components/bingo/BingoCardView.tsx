@@ -89,7 +89,7 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
     <div className="bingo-card-v2">
       <div className="d-flex justify-content-between align-items-center mb-2">
         <h1 className="mb-0 main-title">
-          <img src="/brand/logo-protofes.png" alt="PRoTo FES" className="bingo-logo" />
+          <img src="/brand/logo-protofes.png" alt="PRoTo FES" className="bingo-logo pf-logo" />
           <br />
           BINGO
         </h1>
