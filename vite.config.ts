@@ -10,6 +10,22 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // Bootstrap 5 のSCSS自体が @import・color.mix() 未移行などDart Sass 3.0系の
+        // 非推奨機能を使っており、大量の警告を出す。node_modules 配下（依存先）由来の
+        // 警告を黙らせる。こちら側のSCSS(src/配下)で新たに同種の非推奨記法を使えば
+        // 引き続き警告が出る（quietDeps は依存先由来の警告のみを対象にするため）。
+        quietDeps: true,
+        // legacy-app.scss 自身の `@import 'bootstrap/scss/bootstrap'` だけは
+        // このファイル内で発生する警告として quietDeps の対象外になる。
+        // Bootstrap 5 は `@use` 経由の変数上書きに対応していないため @import を
+        // 使わざるを得ず、この1件だけ個別に黙らせる。
+        silenceDeprecations: ['import'],
+      },
+    },
+  },
   server: {
     proxy: {
       '/api/v1': {
