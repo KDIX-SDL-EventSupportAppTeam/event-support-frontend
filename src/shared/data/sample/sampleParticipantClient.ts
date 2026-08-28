@@ -6,7 +6,6 @@ import { SAMPLE_QA_ITEMS } from '@/shared/data/sample/sampleQa'
 import { SAMPLE_SCHEDULE } from '@/shared/data/sample/sampleSchedule'
 import {
   appendSampleCheckedId,
-  incrementSampleGachaponExtraSpent,
   readSampleExtraCheckedIds,
   readSampleVotes,
   startSampleCooldown,
@@ -51,21 +50,6 @@ export class SampleParticipantClient implements ParticipantClient {
         name: booth.booth_name,
         emoji: booth.booth_emoji,
       },
-    }
-  }
-
-  async getAvailableGachaponCoins(eventId: string, userId: string): Promise<number> {
-    const lines = this.sample.getBingoCount(eventId, userId)
-    const spent = this.sample.getGachaponCoinsSpent(eventId, userId)
-    return Math.max(0, lines - spent)
-  }
-
-  async postUseGachaponCoin(eventId: string, userId: string): Promise<void> {
-    const lines = this.sample.getBingoCount(eventId, userId)
-    const base = this.sample.getGachaponBaseSpent(eventId, userId)
-    const ok = incrementSampleGachaponExtraSpent(userId, lines, base)
-    if (!ok) {
-      throw new Error('使用できるコインがありません。')
     }
   }
 

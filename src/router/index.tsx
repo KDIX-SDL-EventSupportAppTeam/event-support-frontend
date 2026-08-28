@@ -11,6 +11,9 @@ import { AuditLogPage } from '@/features/admin/pages/AuditLogPage'
 import { BoothCommentsPage } from '@/features/admin/pages/BoothCommentsPage'
 import { ExhibitorBulkRegisterPage } from '@/features/admin/pages/ExhibitorBulkRegisterPage'
 import { LegacyPlaceholderPage } from '@/features/admin/pages/LegacyPlaceholderPage'
+import { GachaponIntroPage } from '@/features/gachapon/pages/GachaponIntroPage'
+import { GachaponUsePage } from '@/features/gachapon/pages/GachaponUsePage'
+import { GachaponCompletePage } from '@/features/gachapon/pages/GachaponCompletePage'
 import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage/VerifyEmailPage'
 import { isAdminUser, useAuthStore } from '@/shared/auth/authStore'
 import { RequireAppOpen } from '@/shared/access/RequireAppOpen'
@@ -133,7 +136,7 @@ export function AppRoutes() {
           path="/gachapon"
           element={
             <RequireAuth>
-              <LegacyPlaceholderPage title="ガチャポン（準備中）" />
+              <GachaponIntroPage />
             </RequireAuth>
           }
         />
@@ -141,7 +144,7 @@ export function AppRoutes() {
           path="/gachapon/use"
           element={
             <RequireAuth>
-              <LegacyPlaceholderPage title="ガチャポン（準備中）" />
+              <GachaponUsePage />
             </RequireAuth>
           }
         />
@@ -149,7 +152,7 @@ export function AppRoutes() {
           path="/gachapon/complete"
           element={
             <RequireAuth>
-              <LegacyPlaceholderPage title="ガチャポン（準備中）" />
+              <GachaponCompletePage />
             </RequireAuth>
           }
         />

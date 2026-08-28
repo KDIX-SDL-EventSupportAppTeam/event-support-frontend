@@ -55,6 +55,25 @@
   height: 40px;
 }
 
+/* 注意事項画面の警告アイコン（icon/status/warning.png）。
+   素材は正方形なので幅・高さを固定し、読み込み前後でレイアウトがずれないようにする。 */
+.gachapon-container .gachapon-notice-icon {
+  display: block;
+  margin-inline: auto;
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+}
+
+/* 完了画面のキャラ（mascot/mascot-with-coin.png）。 */
+.gachapon-container .gachapon-complete-mascot {
+  display: block;
+  margin-inline: auto;
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+}
+
 .reader-container {
   padding: 1rem;
   text-align: center;
