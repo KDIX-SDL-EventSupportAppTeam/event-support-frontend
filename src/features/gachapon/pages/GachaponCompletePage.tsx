@@ -22,10 +22,10 @@ export function GachaponCompletePage() {
     <div className="gachapon-container">
       <div className="card p-4 text-center">
         <img
-          src="/brand/logo-protofes.png"
-          alt="ProtoFes"
-          className="logo mb-4 pf-logo"
-          style={{ width: 150 }}
+          src="/mascot/mascot-with-coin.png"
+          alt=""
+          className="gachapon-complete-mascot mb-3"
+          decoding="async"
         />
         <h1 className="mb-3 h3">ガチャポンコイン使用済</h1>
 

@@ -7,6 +7,7 @@ import { useAuthStore } from '@/shared/auth/authStore'
 import { fetchPublicEvent } from '@/shared/api/publicEvent'
 import { useUnlockAnimationQueue } from '@/shared/hooks/useUnlockAnimationQueue'
 import { consumeBingoCelebration } from '@/shared/lib/bingoCelebration'
+import { hasSeenCoinComplete, markCoinCompleteSeen } from '@/shared/lib/coinCelebration'
 import { BingoCardView } from '@/features/home/components/bingo/BingoCardView'
 import { createGachaClient, type GachaCoins } from '@/features/gachapon/api/gachaClient'
 import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
@@ -76,6 +77,7 @@ export function HomePage() {
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [feedbackConfirmOpen, setFeedbackConfirmOpen] = useState(false)
   const [bingoModalOpen, setBingoModalOpen] = useState(false)
+  const [coinCompleteOpen, setCoinCompleteOpen] = useState(false)
   const [tweetsComingSoonOpen, setTweetsComingSoonOpen] = useState(false)
   const [surveyUrl, setSurveyUrl] = useState<string | null>(null)
 
@@ -99,6 +101,20 @@ export function HomePage() {
     if (lines > 0) setBingoModalOpen(true)
   }, [])
 
+  // コイン上限到達の祝福。この端末で1回だけ出す。
+  // - ビンゴ達成モーダルとは重ねない（閉じたあとに出す。bingoModalOpen を依存に入れている）
+  // - 準備中（is_enabled=false）のときは出さない。使えないものの獲得を祝っても混乱するため
+  // - 判定は earned >= max_coins。bonus_coins > 0 の運用では上限より少し早く出るが、
+  //   確定値（1枚/ライン・上限4・ボーナス0）では上限到達と一致する
+  useEffect(() => {
+    if (!eventId || !userId || !gachaCoins || bingoModalOpen) return
+    if (!gachaCoins.is_enabled || gachaCoins.max_coins <= 0) return
+    if (gachaCoins.earned < gachaCoins.max_coins) return
+    if (hasSeenCoinComplete(eventId, userId)) return
+    markCoinCompleteSeen(eventId, userId)
+    setCoinCompleteOpen(true)
+  }, [eventId, userId, gachaCoins, bingoModalOpen])
+
   return (
     <div className="legacy-home container py-3 px-2">
       {bingoModalOpen ? (
@@ -109,6 +125,25 @@ export function HomePage() {
           </h2>
           <p className="bingo-celebration-message">おめでとうございます！</p>
           <button type="button" className="btn btn-primary" onClick={() => setBingoModalOpen(false)}>
+            閉じる
+          </button>
+        </Modal>
+      ) : null}
+
+      {coinCompleteOpen ? (
+        <Modal
+          titleId="coin-complete-modal-title"
+          onClose={() => setCoinCompleteOpen(false)}
+          contentClassName="text-center"
+        >
+          <img src="/feedback/popup-coin-complete.png" alt="" className="modal-popup-image" decoding="async" />
+          <h2 id="coin-complete-modal-title" className="visually-hidden">
+            ガチャポンコインを全て獲得しました
+          </h2>
+          <p className="bingo-celebration-message">
+            コインが{gachaCoins?.max_coins ?? 0}枚たまりました！
+          </p>
+          <button type="button" className="btn btn-primary" onClick={() => setCoinCompleteOpen(false)}>
             閉じる
           </button>
         </Modal>
@@ -209,12 +244,16 @@ export function HomePage() {
               onClick={() => navigate('/gachapon')}
               disabled={gachaCoins != null && gachaCoins.available <= 0}
             >
-              <img src="/gacha/coin.png" alt="" className="gachapon-icon" />
+              <img
+                src="/icon/action/gacha-bag-on-primary.png"
+                alt=""
+                className="gachapon-icon"
+                decoding="async"
+              />
               <span>
                 ガチャポンコインを使う
                 {gachaCoins != null ? `（残り${gachaCoins.available}枚）` : ''}
               </span>
-              <img src="/gacha/coin.png" alt="" className="gachapon-icon" />
             </button>
           </div>
         </div>

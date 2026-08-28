@@ -10,7 +10,12 @@ export function GachaponIntroPage() {
   return (
     <div className="gachapon-container">
       <div className="card p-4">
-        <h1 className="text-center display-1 mb-3">⚠️</h1>
+        <img
+          src="/icon/status/warning.png"
+          alt=""
+          className="gachapon-notice-icon mb-3"
+          decoding="async"
+        />
         <h4 className="text-center mb-4">
           ガチャポンコイン
           <br />
