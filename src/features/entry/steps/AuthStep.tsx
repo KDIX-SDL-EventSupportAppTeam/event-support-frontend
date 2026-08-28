@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { EntryLayout } from '@/features/entry/components/EntryLayout'
+import { ApiError } from '@/shared/api/unwrap'
 
 /**
  * S1 ── サインイン / サインアップ。
@@ -14,17 +15,34 @@ export function AuthStep({ eventId, onAuthenticated }: { eventId: string; onAuth
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  /** 登録済みメールでの登録試行など、エラーではなく案内として出すメッセージ */
+  const [notice, setNotice] = useState<string | null>(null)
 
   const isSignUp = mode === 'signup'
 
+  function switchMode(next: 'signin' | 'signup') {
+    setMode(next)
+    setNotice(null)
+    setPassword('')
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
+    setNotice(null)
     try {
       if (isSignUp) await register(eventId, email, password, displayName)
       else await login(eventId, email, password)
       onAuthenticated()
-    } catch {
-      // エラー表示は useAuth の error state に任せる
+    } catch (e) {
+      // 登録済みのメールで登録しようとした場合（409）。この入口は初回・再訪の区別が
+      // 付かないまま踏まれるため、失敗として突き放さずサインインへ引き継ぐ。
+      if (isSignUp && e instanceof ApiError && e.code === 'CONFLICT') {
+        setMode('signin')
+        setPassword('')
+        setNotice('このメールアドレスは登録済みです。パスワードを入力してサインインしてください。')
+        return
+      }
+      // それ以外の表示は useAuth の error state に任せる
     }
   }
 
@@ -80,7 +98,8 @@ export function AuthStep({ eventId, onAuthenticated }: { eventId: string; onAuth
             autoComplete={isSignUp ? 'new-password' : 'current-password'}
           />
         </div>
-        {error ? <p className="text-danger text-center">{error}</p> : null}
+        {notice ? <p className="text-center text-body-secondary">{notice}</p> : null}
+        {error && !notice ? <p className="text-danger text-center">{error}</p> : null}
         <div className="d-grid mt-4">
           <button type="submit" className="btn btn-primary btn-lg" disabled={loading}>
             {loading ? '送信中…' : isSignUp ? '登録して次へ' : 'サインイン'}
@@ -91,7 +110,7 @@ export function AuthStep({ eventId, onAuthenticated }: { eventId: string; onAuth
         <button
           type="button"
           className="btn btn-link p-0"
-          onClick={() => setMode(isSignUp ? 'signin' : 'signup')}
+          onClick={() => switchMode(isSignUp ? 'signin' : 'signup')}
         >
           {isSignUp ? 'すでに登録済みの方はこちら' : 'はじめての方はこちら'}
         </button>
