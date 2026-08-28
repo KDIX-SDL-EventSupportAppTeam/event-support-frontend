@@ -19,6 +19,7 @@ import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimatio
 import { useAuthStore } from '@/shared/auth/authStore'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
 import type { CheckInResult } from '@/shared/types/checkin'
+import { entryPathForRedirect } from '@/shared/lib/lastEventId'
 
 // チェックイン成功モーダルの順序（docs/specs/bingo-dynamic-unlock/03-checkin-flow.md）:
 //   1. 評価ステップ（pending_rating が非 null のときだけ、前のブースの評価を先頭で聞く）
@@ -202,7 +203,7 @@ export function CheckInPage() {
     return (
       <div className="reader-container container py-3">
         <p className="mb-3">ユーザー情報が取得できません。再ログインしてください。</p>
-        <button type="button" className="checkin-home-button" onClick={() => navigate('/login')}>
+        <button type="button" className="checkin-home-button" onClick={() => navigate(entryPathForRedirect())}>
           ログインへ
         </button>
       </div>

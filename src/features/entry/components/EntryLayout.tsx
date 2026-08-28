@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 
 /**
- * 事前アンケート各画面の共通枠（中央寄せのカード）。
+ * 配布リンク（`/e/:eventId`）配下の各段階に共通の枠（中央寄せのカード）。
  * Bootstrap のクラスのみを使い、feature 外に依存を持たない。
  */
-export function PreSurveyLayout({
+export function EntryLayout({
   title,
   subtitle,
   children,

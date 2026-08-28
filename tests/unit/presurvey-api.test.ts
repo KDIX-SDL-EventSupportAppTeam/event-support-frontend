@@ -16,7 +16,7 @@ vi.mock('@/shared/api/client', () => ({
 }))
 
 const { fetchPreSurveyQuestions, submitPreSurveyAnswers } = await import(
-  '@/features/presurvey/api/presurveyApi'
+  '@/features/entry/api/presurveyApi'
 )
 const { ApiError } = await import('@/shared/api/unwrap')
 

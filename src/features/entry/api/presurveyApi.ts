@@ -6,7 +6,7 @@ import type {
   PreSurveyAnswers,
   PreSurveyQuestion,
   PreSurveySubmission,
-} from '@/features/presurvey/types/presurvey'
+} from '@/features/entry/types/presurvey'
 
 /**
  * 事前アンケートのデータアクセス層。画面はこのモジュールの関数だけを呼ぶ。

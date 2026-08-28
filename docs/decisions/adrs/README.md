@@ -20,8 +20,9 @@ NNNN-kebab-case-title.md
 | 番号 | ファイル | 概要 | ステータス |
 |------|----------|------|------------|
 | 0001 | [0001-features-shared-directory.md](./0001-features-shared-directory.md) | features + shared ディレクトリ移行 | 採用 |
-| 0002 | [0002-top-redirects-to-organizer-login.md](./0002-top-redirects-to-organizer-login.md) | トップ `/` をオーガナイザーログインにリダイレクト | 採用 |
+| 0002 | [0002-top-redirects-to-organizer-login.md](./0002-top-redirects-to-organizer-login.md) | トップ `/` をオーガナイザーログインにリダイレクト | 一部置換（ADR-0004） |
 | 0003 | [0003-move-auth-session-to-shared.md](./0003-move-auth-session-to-shared.md) | 認証セッションを shared/auth に配置 | 採用 |
+| 0004 | [0004-single-entry-url-state-machine.md](./0004-single-entry-url-state-machine.md) | 参加者の入口を配布 URL 1 本に統合し状態機械にする | 採用 |
 
 ## レガシー
 

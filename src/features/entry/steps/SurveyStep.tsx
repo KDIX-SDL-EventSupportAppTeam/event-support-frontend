@@ -1,27 +1,18 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import {
   fetchPreSurveyQuestions,
   submitPreSurveyAnswers,
-} from '@/features/presurvey/api/presurveyApi'
-import { PreSurveyLayout } from '@/features/presurvey/components/PreSurveyLayout'
-import { PreSurveyQuestionField } from '@/features/presurvey/components/PreSurveyQuestionField'
-import { useAuthStore } from '@/shared/auth/authStore'
+} from '@/features/entry/api/presurveyApi'
+import { EntryLayout } from '@/features/entry/components/EntryLayout'
+import { PreSurveyQuestionField } from '@/features/entry/components/PreSurveyQuestionField'
 import { ApiError } from '@/shared/api/unwrap'
-import type {
-  PreSurveyAnswers,
-  PreSurveyQuestion,
-} from '@/features/presurvey/types/presurvey'
+import type { PreSurveyAnswers, PreSurveyQuestion } from '@/features/entry/types/presurvey'
 
 /**
- * /pre-survey/:eventId/form
- * ラフ集合分析に使う属性を入力する画面。質問はサーバー配信（P-11）から描画する。
+ * S3 ── 事前アンケート回答。
+ * 設問はサーバー配信（P-11）。フロントに設問をハードコードしない。
  */
-export function PreSurveyFormPage() {
-  const { eventId = '' } = useParams<{ eventId: string }>()
-  const navigate = useNavigate()
-  const token = useAuthStore((s) => s.token)
-
+export function SurveyStep({ eventId, onAnswered }: { eventId: string; onAnswered: () => void }) {
   const [questions, setQuestions] = useState<PreSurveyQuestion[]>([])
   const [isPreSurveyOpen, setIsPreSurveyOpen] = useState(true)
   const [answers, setAnswers] = useState<PreSurveyAnswers>({})
@@ -41,11 +32,6 @@ export function PreSurveyFormPage() {
     }
   }, [eventId])
 
-  // 未サインインでこの URL を直接開いた場合は入口へ戻す（回答送信には Bearer が必須）
-  if (!token) {
-    return <Navigate to={`/pre-survey/${eventId}`} replace />
-  }
-
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     const missing = questions.find((q) => q.required && isEmptyAnswer(answers[q.question_key]))
@@ -57,7 +43,7 @@ export function PreSurveyFormPage() {
     setError(null)
     try {
       await submitPreSurveyAnswers({ eventId, answers, questions })
-      navigate(`/pre-survey/${eventId}/thanks`, { replace: true })
+      onAnswered()
     } catch (e) {
       if (e instanceof ApiError && e.code === 'PRE_SURVEY_CLOSED') {
         setIsPreSurveyOpen(false)
@@ -71,7 +57,7 @@ export function PreSurveyFormPage() {
   }
 
   return (
-    <PreSurveyLayout title="事前アンケート" subtitle="ご回答をお願いします">
+    <EntryLayout title="事前アンケート" subtitle="ご回答をお願いします">
       {!isPreSurveyOpen ? (
         <p className="text-danger text-center mb-0">事前アンケートの回答受付は終了しました。</p>
       ) : (
@@ -94,7 +80,7 @@ export function PreSurveyFormPage() {
           </div>
         </form>
       )}
-    </PreSurveyLayout>
+    </EntryLayout>
   )
 }
 

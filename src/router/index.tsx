@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { AdminLoginPage } from '@/features/admin/pages/AdminLoginPage'
 import { AdminMenuPage } from '@/features/admin/pages/AdminMenuPage'
 import { BoothManagePage } from '@/features/admin/pages/BoothManagePage'
@@ -14,13 +14,10 @@ import { LegacyPlaceholderPage } from '@/features/admin/pages/LegacyPlaceholderP
 import { GachaponIntroPage } from '@/features/gachapon/pages/GachaponIntroPage'
 import { GachaponUsePage } from '@/features/gachapon/pages/GachaponUsePage'
 import { GachaponCompletePage } from '@/features/gachapon/pages/GachaponCompletePage'
-import { LoginPage } from '@/features/auth/pages/LoginPage/LoginPage'
-import { RegisterPage } from '@/features/auth/pages/RegisterPage/RegisterPage'
-import { JoinPage } from '@/features/auth/pages/JoinPage/JoinPage'
 import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage/VerifyEmailPage'
-import { VerifyEmailSentPage } from '@/features/auth/pages/VerifyEmailSentPage/VerifyEmailSentPage'
 import { isAdminUser, useAuthStore } from '@/shared/auth/authStore'
 import { RequireAppOpen } from '@/shared/access/RequireAppOpen'
+import { entryPathForRedirect } from '@/shared/lib/lastEventId'
 import { ParticipantLayout } from '@/shared/components/layout/ParticipantLayout'
 import { OrganizerLoginPage } from '@/features/organizer/pages/OrganizerLoginPage'
 import { OrganizerEventCreatePage } from '@/features/organizer/pages/OrganizerEventCreatePage'
@@ -31,19 +28,16 @@ import { BoothListPage } from '@/features/booth/pages/BoothListPage/BoothListPag
 import { CheckInPage } from '@/features/checkin/pages/CheckInPage'
 import { ExhibitorDashboardPage } from '@/features/exhibitor/pages/ExhibitorDashboardPage'
 import { HomePage } from '@/features/home/pages/HomePage/HomePage'
-import { OnboardingPage } from '@/features/onboarding/pages/OnboardingPage'
-import { PreSurveyEntryPage } from '@/features/presurvey/pages/PreSurveyEntryPage'
-import { PreSurveyFormPage } from '@/features/presurvey/pages/PreSurveyFormPage'
-import { PreSurveySignInPage } from '@/features/presurvey/pages/PreSurveySignInPage'
-import { PreSurveySignUpPage } from '@/features/presurvey/pages/PreSurveySignUpPage'
-import { PreSurveyThanksPage } from '@/features/presurvey/pages/PreSurveyThanksPage'
+import { EntryPage } from '@/features/entry/pages/EntryPage'
 import { QaPage } from '@/features/qa/pages/QaPage'
 import { SchedulePage } from '@/features/schedule/pages/SchedulePage'
 import { VenueMapPage } from '@/features/venue-map/pages/VenueMapPage'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token)
-  if (!token) return <Navigate to="/login" replace />
+  // 参加者向けのログイン画面は独立して存在しないため、配布リンクへ戻す（R3）。
+  // どのイベントか分からなければ案内ページ（/e）が受け止める。
+  if (!token) return <Navigate to={entryPathForRedirect()} replace />
   return children
 }
 
@@ -55,39 +49,35 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
   return children
 }
 
-/** 旧 Vue `router/index.js` と同一ルート（画面は段階的に React 化） */
+/** URL 内の `:eventId` を保ったまま新しい入口へ送る（旧 URL の受け皿）。 */
+function LegacyEntryRedirect() {
+  const { eventId } = useParams<{ eventId: string }>()
+  return <Navigate to={eventId ? `/e/${eventId}` : entryPathForRedirect()} replace />
+}
+
+/** 参加者は `/e/:eventId` 1 本、運営・管理は従来どおり別系統。 */
 export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/organizer/login" replace />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/join/:eventId" element={<JoinPage />} />
-      {/* 事前アンケート（参加者に配布する URL は /pre-survey/:eventId） */}
-      <Route path="/pre-survey/:eventId" element={<PreSurveyEntryPage />} />
-      <Route path="/pre-survey/:eventId/signup" element={<PreSurveySignUpPage />} />
-      <Route path="/pre-survey/:eventId/signin" element={<PreSurveySignInPage />} />
-      <Route path="/pre-survey/:eventId/form" element={<PreSurveyFormPage />} />
-      <Route path="/pre-survey/:eventId/thanks" element={<PreSurveyThanksPage />} />
+      {/* 参加者が触る唯一の URL。段階は持たず、GET /me/state の戻り値で表示が変わる */}
+      <Route path="/e" element={<EntryPage />} />
+      <Route path="/e/:eventId" element={<EntryPage />} />
+      {/* 統合前に配布・ブックマークされた URL の受け皿 */}
+      <Route path="/login" element={<Navigate to={entryPathForRedirect()} replace />} />
+      <Route path="/register" element={<Navigate to={entryPathForRedirect()} replace />} />
+      <Route path="/join/:eventId" element={<LegacyEntryRedirect />} />
+      <Route path="/pre-survey/:eventId" element={<LegacyEntryRedirect />} />
+      <Route path="/pre-survey/:eventId/*" element={<LegacyEntryRedirect />} />
       <Route path="/pre-register" element={<LegacyPlaceholderPage title="プレ登録" />} />
       <Route path="/forgot-password" element={<LegacyPlaceholderPage title="パスワードを忘れた場合" />} />
       <Route path="/reset-password/:token" element={<LegacyPlaceholderPage title="パスワード再設定" />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
-      <Route path="/verify-email/sent" element={<VerifyEmailSentPage />} />
       <Route
         path="/exhibitor"
         element={
           <RequireAuth>
             <ExhibitorDashboardPage />
-          </RequireAuth>
-        }
-      />
-      {/* ボトムナビを出さないため ParticipantLayout の外に置く（/login, /register と同様） */}
-      <Route
-        path="/onboarding"
-        element={
-          <RequireAuth>
-            <OnboardingPage />
           </RequireAuth>
         }
       />
@@ -281,8 +271,10 @@ export function AppRoutes() {
       <Route path="/booths" element={<Navigate to="/booth-list" replace />} />
       <Route path="/booths/:id" element={<Navigate to="/booth-list" replace />} />
       <Route path="/survey" element={<Navigate to="/home" replace />} />
+      <Route path="/onboarding" element={<Navigate to={entryPathForRedirect()} replace />} />
       <Route path="/scan" element={<Navigate to="/checkin" replace />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* 未定義 URL は参加者を運営ログインに落とさず、配布リンク（無ければ案内）へ送る */}
+      <Route path="*" element={<Navigate to={entryPathForRedirect()} replace />} />
     </Routes>
   )
 }
