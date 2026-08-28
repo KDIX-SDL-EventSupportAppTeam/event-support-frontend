@@ -4,7 +4,7 @@ import * as authApi from '@/features/auth/api/auth'
 import { useResendVerification } from '@/features/auth/hooks/useResendVerification'
 import { ApiError } from '@/shared/api/unwrap'
 import { formatClientError } from '@/shared/lib/formatClientError'
-import { useAuthStore } from '@/shared/auth/authStore'
+import { entryPathForRedirect } from '@/shared/lib/lastEventId'
 
 type VerifyStatus =
   | { kind: 'verifying' }
@@ -19,7 +19,6 @@ type VerifyStatus =
 export function VerifyEmailPage() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
-  const authToken = useAuthStore((s) => s.token)
   const [status, setStatus] = useState<VerifyStatus>({ kind: 'verifying' })
   const started = useRef(false)
   const { canResend, state: resendState, message: resendMessage, resend } = useResendVerification()
@@ -67,15 +66,11 @@ export function VerifyEmailPage() {
               {status.kind === 'success' ? (
                 <>
                   <div className="alert alert-success mb-4">メールアドレスの確認が完了しました</div>
-                  {authToken ? (
-                    <Link to="/home" className="btn btn-primary">
-                      ホームへ
-                    </Link>
-                  ) : (
-                    <Link to="/login" className="btn btn-primary">
-                      ログインへ
-                    </Link>
-                  )}
+                  {/* 確認リンクは別タブで開かれることが多い。ここからは必ず入口へ戻し、
+                      続き（アンケート以降）は入口側の状態判定に任せる */}
+                  <Link to={entryPathForRedirect()} className="btn btn-primary">
+                    続きへ進む
+                  </Link>
                 </>
               ) : null}
 
@@ -104,7 +99,7 @@ export function VerifyEmailPage() {
                     </div>
                   ) : (
                     <p className="mb-0">
-                      <Link to="/login">ログインして再送</Link>
+                      <Link to={entryPathForRedirect()}>サインインして再送</Link>
                     </p>
                   )}
                 </>
@@ -137,7 +132,7 @@ export function VerifyEmailPage() {
                     </div>
                   ) : (
                     <p className="mb-0">
-                      <Link to="/login">ログインして再送</Link>
+                      <Link to={entryPathForRedirect()}>サインインして再送</Link>
                     </p>
                   )}
                 </>

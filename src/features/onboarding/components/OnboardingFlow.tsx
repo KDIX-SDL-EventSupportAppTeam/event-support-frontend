@@ -1,21 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { ONBOARDING_SLIDES } from '@/features/onboarding/config/slides'
-import { markOnboardingSeen } from '@/shared/lib/onboardingSeen'
 import '@/features/onboarding/styles/onboarding.scss'
 
 const LAST_INDEX = ONBOARDING_SLIDES.length - 1
 
 /**
- * 初回ログイン後に自動で1回だけ表示するオンボーディング（横スワイプ4枚）。
+ * アプリ本体へ初めて入るときに1回だけ表示するオンボーディング（横スワイプ4枚）。
  * 仕様: docs/specs/design-refresh-2026/06-onboarding.md
  *
  * ライブラリを増やさず CSS の scroll-snap でスワイプを実現する。
  * スワイプできない利用者のために「次へ」ボタンだけで最後まで進められる。
- * ボトムナビは出さないため ParticipantLayout の外（router/index.tsx）に置くこと。
+ *
+ * 単一 URL（`/e/:eventId`）の中の一段階なので、自分では遷移せず完了を呼び出し側へ返す。
+ * 既読の記録もサーバー側（`POST me/onboarding`）で行うため、ここでは扱わない。
  */
-export function OnboardingPage() {
-  const navigate = useNavigate()
+export function OnboardingFlow({ onFinish }: { onFinish: () => void }) {
   const trackRef = useRef<HTMLDivElement>(null)
   const [current, setCurrent] = useState(0)
 
@@ -35,8 +34,7 @@ export function OnboardingPage() {
   }, [])
 
   function finish() {
-    markOnboardingSeen()
-    navigate('/home', { replace: true })
+    onFinish()
   }
 
   function goNext() {

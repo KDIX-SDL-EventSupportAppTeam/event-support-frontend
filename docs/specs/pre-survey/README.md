@@ -1,6 +1,6 @@
 ---
-状態: 草案
-最終更新: 2026-08-24
+状態: 確定
+最終更新: 2026-08-28
 ---
 
 # 事前アンケートとアプリ公開ゲート（UI 仕様）
@@ -15,42 +15,26 @@
 
 ## 現状
 
-`src/features/presurvey/` に **localStorage ベースのモック実装**がある（develop にマージ済み）。
-5画面の遷移とルーティング（`/pre-survey/:eventId` 配下）は動く。**サーバー連携が未実装。**
+**実装済み。** サーバー連携・アプリ公開ゲートに加え、参加者の入口を配布 URL 1 本に統合した
+（[ADR 0004](../../decisions/adrs/0004-single-entry-url-state-machine.md)）。
+実装は `src/features/entry/`（旧 `features/presurvey/` は廃止）。
 
 ## 画面遷移
 
+配布 URL `/e/:eventId` 1 本。URL は段階を持たず、`GET /me/state` の戻り値が表示を決める。
+
 ```
-配布URL /pre-survey/:eventId
-   ├ 初回      → /signup  アカウント作成 → /form 回答 → /thanks
-   └ 2回目以降 → /signin
-                   ├ 回答済み → /thanks
-                   └ 未回答   → /form → /thanks
-
-/thanks
-   └ [アプリに移動する]
-        ├ is_open === true   → 有効。押すと /home へ
-        └ is_open === false  → 無効 + 「開放予定 10/16 09:30（あと 3 時間 12 分）」
+/e/:eventId
+  ├ token 無し                  → サインイン / サインアップ
+  ├ email_verified: false       → メール確認待ち
+  ├ survey_answered: false      → アンケート回答
+  ├ app_access.is_open: false   → 開放待ち（30 秒ポーリング）
+  ├ onboarding_completed: false → オンボーディング
+  └ すべて済み                   → /home（出展者は /exhibitor）
 ```
 
-## モックからの差し替え
-
-| 対象 | 対応 |
-|---|---|
-| `api/presurveyLocalStore.ts` | **削除** |
-| `api/presurveyApi.ts` | 中身を実 API 呼び出しに置き換える |
-| `store/presurveySessionStore.ts` | **削除。** 認証は `shared/auth/authStore` に統合する |
-| `config/questions.ts` | **削除。** 設問はサーバー配信に完全移行する（サーバー側 P-11） |
-| `pages/*` | 遷移構造は維持。サインアップ／サインインを `features/auth/hooks/useAuth` 経由に変更 |
-| `README.md`（feature 内） | サーバー接続後の記述に更新する。**localStorage 前提の説明を残さない** |
-| `types/presurvey.ts` | サーバーレスポンスに合わせて調整（`question_key` の追加など） |
-
-| `presurveyApi.ts` の関数 | 置き換え先 |
-|---|---|
-| `fetchPreSurveyQuestions` | `GET /events/:event_id/pre-survey/questions` |
-| `signUpPreSurvey` | `useAuth().register` |
-| `signInPreSurvey` | `useAuth().login` |
-| `submitPreSurveyAnswers` | `POST /events/:event_id/survey/answers` |
+旧 URL（`/pre-survey/*` ・ `/login` ・ `/register` ・ `/join/:eventId` ・ `/onboarding`）は
+リダイレクトとして残す。配布済みの URL を 404 にしない。
 
 ## アプリ公開ゲート
 

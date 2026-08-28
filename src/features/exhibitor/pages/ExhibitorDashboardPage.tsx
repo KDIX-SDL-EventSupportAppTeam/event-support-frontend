@@ -4,6 +4,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useExhibitorStats } from '@/features/exhibitor/hooks/useExhibitorStats'
 import { useExhibitorStore } from '@/features/exhibitor/store/exhibitorStore'
 import { useAuthStore } from '@/shared/auth/authStore'
+import { entryPathForRedirect } from '@/shared/lib/lastEventId'
 
 /** 運営画面 AnalyticsWindow と同じ体裁の折りたたみカード（admin フィーチャーへの越境importを避け複製） */
 function ExhibitorWindow({
@@ -84,7 +85,7 @@ export function ExhibitorDashboardPage() {
   function onLogout() {
     clearSession()
     resetExhibitor()
-    navigate('/login')
+    navigate(entryPathForRedirect())
   }
 
   // 1. ロード中はスピナー（HomePage:150-155 と同じ形）

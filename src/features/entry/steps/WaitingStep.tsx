@@ -1,47 +1,39 @@
-import { useNavigate, useParams } from 'react-router-dom'
-import { useAuthStore } from '@/shared/auth/authStore'
-import { useAppAccess } from '@/shared/hooks/useAppAccess'
 import type { AppAccess } from '@/shared/api/appAccess'
-import { PreSurveyLayout } from '@/features/presurvey/components/PreSurveyLayout'
+import { EntryLayout } from '@/features/entry/components/EntryLayout'
 
 /**
- * /pre-survey/:eventId/thanks
- * 回答完了画面。アプリ本体への遷移ボタンは、アプリ公開ゲートの実効開放状態
- * （`is_open`）に従って有効・無効を切り替える（06-api.md）。
+ * S4 ── 開放待ち（回答完了画面）。
  *
- * WebSocket は使わず 30 秒ポーリング + サーバー時刻補正のローカルカウントダウンで、
- * 再読み込みなしに開放状態へ追随する（`useAppAccess`。P-4 / P-9）。
+ * 導線の中でここだけが数日〜数週間続く。開放時刻に達したら再読込なしで先へ進む必要があるため、
+ * 開放状態のポーリングは呼び出し側（EntryPage）の `useAppAccess` が持ち、
+ * この画面は受け取った値を表示するだけにしている。
  */
-export function PreSurveyThanksPage() {
-  const { eventId = '' } = useParams<{ eventId: string }>()
-  const navigate = useNavigate()
-  const token = useAuthStore((s) => s.token)
-  const { access, isOpen, remainingMs } = useAppAccess(eventId)
-
-  // アプリ本体にログイン済みならホーム、未ログインならイベント参加登録へ
-  const appPath = token ? '/home' : `/join/${eventId}`
-
+export function WaitingStep({
+  access,
+  remainingMs,
+}: {
+  access: AppAccess | null
+  remainingMs: number | null
+}) {
   return (
-    <PreSurveyLayout title="ご回答ありがとうございました">
+    <EntryLayout title="ご回答ありがとうございました">
       <p className="text-center mb-4">
         当日はいただいた内容を参考に、より楽しんでいただけるよう準備いたします。
       </p>
       <div className="d-grid">
-        <button
-          type="button"
-          className="btn btn-primary btn-lg"
-          disabled={!isOpen}
-          onClick={() => navigate(appPath)}
-        >
+        <button type="button" className="btn btn-primary btn-lg" disabled>
           アプリに移動する
         </button>
-        {!isOpen && access ? (
+        {access ? (
           <p className="text-muted text-center small mt-2 mb-0">
             {formatOpenSchedule(access, remainingMs)}
           </p>
         ) : null}
       </div>
-    </PreSurveyLayout>
+      <p className="text-muted text-center small mt-4 mb-0">
+        開放時刻になると、この画面から自動でアプリへ進みます。
+      </p>
+    </EntryLayout>
   )
 }
 

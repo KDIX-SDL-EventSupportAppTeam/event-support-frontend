@@ -13,6 +13,7 @@ import { HomeTutorialModal } from '@/features/home/pages/HomePage/HomeTutorialMo
 import { Modal } from '@/shared/components/modal/Modal'
 import '@/features/home/styles/legacy-home.scss'
 import '@/features/home/styles/bingo-card.scss'
+import { entryPathForRedirect } from '@/shared/lib/lastEventId'
 
 const FEEDBACK_FORM_URL =
   (import.meta.env.VITE_FEEDBACK_FORM_URL as string | undefined) ?? 'https://forms.gle/7jf7E6DVHvBmLNKA6'
@@ -156,7 +157,7 @@ export function HomePage() {
             className="btn btn-primary"
             onClick={() => {
               clearSession()
-              navigate('/login', { replace: true })
+              navigate(entryPathForRedirect(), { replace: true })
             }}
           >
             ログインへ

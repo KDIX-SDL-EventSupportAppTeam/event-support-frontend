@@ -1,7 +1,7 @@
 import type {
   PreSurveyAnswerValue,
   PreSurveyQuestion,
-} from '@/features/presurvey/types/presurvey'
+} from '@/features/entry/types/presurvey'
 
 /**
  * 質問 1 件の入力欄。`answer_type` に応じて描画を切り替える。
