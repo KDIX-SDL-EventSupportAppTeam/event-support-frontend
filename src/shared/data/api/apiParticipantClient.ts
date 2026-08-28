@@ -23,17 +23,8 @@ export class ApiParticipantClient implements ParticipantClient {
     }
   }
 
-  // ガチャ・アワード投票は準備中（event-support-server/docs/specs/gacha-and-award/）。
-  // ルートは LegacyPlaceholderPage に差し替え済みで、このクライアントからは呼ばれない。
-  // 旧 Flask 直接呼び出し（legacyParticipant.ts）は削除済みのため、器だけ残す。
-  async getAvailableGachaponCoins(): Promise<number> {
-    return 0
-  }
-
-  async postUseGachaponCoin(): Promise<void> {
-    /* 準備中 */
-  }
-
+  // ガチャコインは features/gachapon/api/gachaClient.ts に移設した（このクライアントは扱わない）。
+  // アワード投票は準備中（event-support-server/docs/specs/gacha-and-award/ の対象外）。
   async getAwardVoteSnapshot() {
     return { votingOpen: false, awards: [], checkedBooths: [], votes: {} }
   }

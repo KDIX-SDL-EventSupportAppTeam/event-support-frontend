@@ -72,7 +72,7 @@ public/
 | `mascot/mascot-cheering.png` | 両手を上げて喜ぶキャラ |
 | `mascot/mascot-with-qr.png` | QR カードを持つキャラ |
 | `mascot/mascot-with-map.png` | 地図とピンを持つキャラ |
-| `mascot/mascot-with-coin.png` | ガチャコインを掲げるキャラ |
+| `mascot/mascot-with-coin.png` | ガチャコインを掲げるキャラ。`/gachapon/complete` |
 
 ### ui
 
@@ -106,8 +106,8 @@ public/
 | `icon/action/menu.png` | ハンバーガーメニュー |
 | `icon/action/qr-grid.png` | チェックイン導線の4分割グリッド |
 | `icon/action/guide-book.png` | アプリ説明（開いた本） |
-| `icon/action/gacha-bag.png` | ガチャコイン袋（黄色の線画） |
-| `icon/action/gacha-bag-on-primary.png` | 同上・黄色ボタンに載せる白版 |
+| `icon/action/gacha-bag.png` | ガチャコイン袋（黄色の線画）。**未使用**（白版のみ使用中） |
+| `icon/action/gacha-bag-on-primary.png` | 同上・黄色ボタンに載せる白版。ホームのガチャポンボタン |
 | `icon/action/gesture-swipe.png` | 左右スワイプ操作の説明 |
 | `icon/action/gesture-tap-phone.png` | 画面タップ操作の説明 |
 
@@ -145,7 +145,7 @@ public/
 | `bingo/bingo-cell-stamp.png` | 埋まったマスのキャラスタンプ |
 | `bingo/bingo-cell-star.png` | 埋まったマスの星＋紙吹雪 |
 | `bingo/bingo-line-badge.png` | ビンゴ成立バッジ（星入りグリッド） |
-| `gacha/coin.png` | ガチャコイン（金） |
+| `gacha/coin.png` | ガチャコイン（金）。`/gachapon/use` の所持枚数表示 |
 | `map/booth-number-card.png` | ブース番号カード |
 
 ### onboarding
@@ -163,7 +163,7 @@ public/
 | パス | 用途 |
 |---|---|
 | `feedback/popup-bingo-complete.png` | 全ビンゴ達成 |
-| `feedback/popup-coin-complete.png` | 全ガチャコイン獲得 |
+| `feedback/popup-coin-complete.png` | 全ガチャコイン獲得（ホームで上限到達時に1回） |
 | `feedback/popup-vote-complete.png` | 投票完了 |
 
 ## legacy

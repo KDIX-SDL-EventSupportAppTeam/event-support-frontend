@@ -128,8 +128,14 @@
     border-color: var(--pf-ink-strong);
   }
 
+  /* ガチャポン袋（icon/action/gacha-bag-on-primary.png）。
+     コイン2枚を左右に置く旧レイアウトから、先頭に袋アイコン1つへ変更。
+     素材は正方形。幅・高さを固定して読み込み前後のレイアウトずれを防ぐ。 */
   .gachapon-icon {
-    height: 25px;
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    flex-shrink: 0;
   }
 
   .bingo-cell-empty {
