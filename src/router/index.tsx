@@ -95,6 +95,7 @@ export function AppRoutes() {
             </RequireAuth>
           }
         >
+          {/* participant-gated:start ── ここから下は自動でゲート配下 */}
           <Route path="/home" element={<HomePage />} />
           <Route path="/checkin" element={<CheckInPage />} />
           <Route
@@ -108,6 +109,7 @@ export function AppRoutes() {
           <Route path="/gachapon/use" element={<GachaponUsePage />} />
           <Route path="/gachapon/complete" element={<GachaponCompletePage />} />
           <Route path="/qa" element={<QaPage />} />
+          {/* participant-gated:end ── 参加者画面をこの外に書かない */}
         </Route>
       </Route>
       <Route path="/organizer/login" element={<OrganizerLoginPage />} />
