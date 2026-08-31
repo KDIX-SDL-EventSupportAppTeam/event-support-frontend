@@ -57,6 +57,10 @@ export function EntryPage() {
   const { access, isOpen: liveIsOpen, remainingMs } = useAppAccess(
     needsGateWatch ? eventId : undefined,
   )
+  // 開放判定はサーバーの評価値のみで決める。`meState.app_access.is_open` は入口を踏んだ
+  // 時点の値、`liveIsOpen` は 30 秒ポーリングが返す最新の `is_open`。どちらも server の
+  // `effective.is_open` 由来で一致するため、`/home` 側のゲート（RequireAppOpen）と食い違わない。
+  // 端末側の外挿は使わない（issue #80: 入口とホームの往復リダイレクト）。
   const isOpen = Boolean(meState?.app_access.is_open) || liveIsOpen
 
   const step = resolveEntryStep({

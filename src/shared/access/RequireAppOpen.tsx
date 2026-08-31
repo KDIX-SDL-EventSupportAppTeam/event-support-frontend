@@ -43,6 +43,9 @@ export function RequireAppOpen() {
   }, [eventId])
 
   if (!checked) return null
+  // 開放判定はここで見る `GET /events/:id/public` の `app_access.is_open`（サーバー評価値）が正本。
+  // EntryPage も同じ server の `effective.is_open` を見ており、端末側の外挿はしないため、
+  // 開放時刻ちょうどに入口とこのゲートが食い違って往復することはない（issue #80）。
   // app_access が取れなかった場合は締め出さない（取得失敗時と同じ方針）。
   // ここで undefined を踏んでアプリ全体が白画面になるのを防ぐ。
   if (eventId && event?.app_access?.is_open === false) {
