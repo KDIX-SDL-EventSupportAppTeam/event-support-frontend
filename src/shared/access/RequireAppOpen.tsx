@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, Outlet } from 'react-router-dom'
 import { fetchPublicEvent, type PublicEvent } from '@/shared/api/publicEvent'
 import { useAuthStore } from '@/shared/auth/authStore'
 
@@ -11,8 +11,11 @@ import { useAuthStore } from '@/shared/auth/authStore'
  * こちらは `GET /events/:event_id/public` が返す `app_access` ブロックを流用し、
  * ルーティングの入口で1回だけ判定する（ポーリングはしない — 開いた後に閉じ直す運用は
  * 想定されていない。P-8 の手動上書きは organizer 操作なので、閉じ直しは稀な運用対応）。
+ *
+ * `children` を渡さずレイアウトルートの `element` として使うと、配下の参加者ルートを
+ * まとめてゲート配下に入れられる（`app-access-gate-scope`。1画面ずつ書き足さない）。
  */
-export function RequireAppOpen({ children }: { children: ReactNode }) {
+export function RequireAppOpen({ children }: { children?: ReactNode }) {
   const eventId = useAuthStore((s) => s.user?.event_id)
   const [event, setEvent] = useState<PublicEvent | null>(null)
   const [checked, setChecked] = useState(false)
@@ -45,5 +48,5 @@ export function RequireAppOpen({ children }: { children: ReactNode }) {
   if (eventId && event?.app_access?.is_open === false) {
     return <Navigate to={`/pre-survey/${eventId}/thanks`} replace />
   }
-  return children
+  return children ?? <Outlet />
 }
