@@ -8,6 +8,8 @@ API 契約・DB スキーマ・ビジネスルールは `event-support-server/do
 |---|---|---|
 | [bingo-dynamic-unlock/](bingo-dynamic-unlock/) | 草案 | 動的段階解放カードの表示・解放演出・評価モーダル |
 | [pre-survey/](pre-survey/) | 草案 | 事前アンケート5画面とアプリ公開ゲート |
+| [admin-live-monitoring/](admin-live-monitoring/) | 確定 | **運営ダッシュボードの当日監視ブロック。** 評価回収率・推薦フェーズ・フォールバック率 |
+| [app-access-gate-scope/](app-access-gate-scope/) | 確定 | アプリ公開ゲートを参加者画面すべてに広げる |
 | [design-refresh-2026/](design-refresh-2026/) | 確定 | 2026年版アート素材の適用（トークン・ボトムナビ・ホーム・モーダル・オンボーディング） |
 
 ## 約束
