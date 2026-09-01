@@ -1,5 +1,6 @@
 import type { AppAccess } from '@/shared/api/appAccess'
 import { EntryLayout } from '@/features/entry/components/EntryLayout'
+import { formatOpenSchedule } from '@/features/entry/lib/formatOpenSchedule'
 
 /**
  * S4 ── 開放待ち（回答完了画面）。
@@ -11,9 +12,16 @@ import { EntryLayout } from '@/features/entry/components/EntryLayout'
 export function WaitingStep({
   access,
   remainingMs,
+  error,
 }: {
   access: AppAccess | null
   remainingMs: number | null
+  /**
+   * 直近のポーリングが失敗しているか（`useAppAccess` の `error`）。
+   * 開放判定はサーバーの応答だけを見るため、通信できていない間はここで足止めされる。
+   * 「まだ開放されていない」と「通信できていない」を利用者が見分けられるようにする（issue #80）。
+   */
+  error?: unknown
 }) {
   return (
     <EntryLayout title="ご回答ありがとうございました">
@@ -29,29 +37,16 @@ export function WaitingStep({
             {formatOpenSchedule(access, remainingMs)}
           </p>
         ) : null}
+        {/* 再試行ボタンは置かない。ポーリングは回り続けており、利用者が押すものは無い */}
+        {error ? (
+          <p className="text-warning text-center small mt-2 mb-0">
+            通信できていないため、開放状態を確認できていません。自動で再確認します。
+          </p>
+        ) : null}
       </div>
       <p className="text-muted text-center small mt-4 mb-0">
         開放時刻になると、この画面から自動でアプリへ進みます。
       </p>
     </EntryLayout>
   )
-}
-
-/** 開放予定時刻・残り時間の表示文字列を組み立てる（表示専用の整形。開放判定そのものは行わない） */
-function formatOpenSchedule(access: AppAccess, remainingMs: number | null): string {
-  if (access.mode !== 'scheduled' || !access.app_opens_at) {
-    return 'アプリは現在ご利用いただけません。'
-  }
-  const opensAt = new Date(access.app_opens_at)
-  const dateLabel = `${opensAt.getMonth() + 1}/${opensAt.getDate()} ${String(opensAt.getHours()).padStart(2, '0')}:${String(
-    opensAt.getMinutes(),
-  ).padStart(2, '0')}`
-
-  if (remainingMs === null) return `開放予定 ${dateLabel}`
-
-  const totalMinutes = Math.ceil(remainingMs / 60_000)
-  const hours = Math.floor(totalMinutes / 60)
-  const minutes = totalMinutes % 60
-  const remainingLabel = hours > 0 ? `あと ${hours} 時間 ${minutes} 分` : `あと ${minutes} 分`
-  return `開放予定 ${dateLabel}（${remainingLabel}）`
 }

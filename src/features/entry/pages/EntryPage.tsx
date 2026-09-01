@@ -54,9 +54,13 @@ export function EntryPage() {
    * それ以外の段階では待つ理由が無く、30 秒ポーリングは無駄な負荷になる。
    */
   const needsGateWatch = Boolean(meState?.survey_answered && !meState.app_access.is_open)
-  const { access, isOpen: liveIsOpen, remainingMs } = useAppAccess(
+  const { access, isOpen: liveIsOpen, remainingMs, error: gateError } = useAppAccess(
     needsGateWatch ? eventId : undefined,
   )
+  // 開放判定はサーバーの評価値のみで決める。`meState.app_access.is_open` は入口を踏んだ
+  // 時点の値、`liveIsOpen` は 30 秒ポーリングが返す最新の `is_open`。どちらも server の
+  // `effective.is_open` 由来で一致するため、`/home` 側のゲート（RequireAppOpen）と食い違わない。
+  // 端末側の外挿は使わない（issue #80: 入口とホームの往復リダイレクト）。
   const isOpen = Boolean(meState?.app_access.is_open) || liveIsOpen
 
   const step = resolveEntryStep({
@@ -97,7 +101,7 @@ export function EntryPage() {
       return <SurveyStep eventId={eventId} onAnswered={reload} />
 
     case 'waiting':
-      return <WaitingStep access={access} remainingMs={remainingMs} />
+      return <WaitingStep access={access} remainingMs={remainingMs} error={gateError} />
 
     case 'onboarding':
       return (
