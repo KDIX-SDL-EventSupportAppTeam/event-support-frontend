@@ -82,81 +82,35 @@ export function AppRoutes() {
         }
       />
       <Route element={<ParticipantLayout />}>
+        {/*
+          参加者が触る画面はすべてこのゲート配下に置く（docs/specs/app-access-gate-scope）。
+          1画面ずつ RequireAuth / RequireAppOpen を書き足さない。ここに Route を足せば
+          自動で「認証必須 + アプリ公開ゲート」が掛かる構造にしておく。
+          入口（/e, /e/:eventId）とメール確認（/verify-email）はこの外に置くこと。
+        */}
         <Route
-          path="/home"
           element={
             <RequireAuth>
-              <RequireAppOpen>
-                <HomePage />
-              </RequireAppOpen>
+              <RequireAppOpen />
             </RequireAuth>
           }
-        />
-        <Route
-          path="/checkin"
-          element={
-            <RequireAuth>
-              <CheckInPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/award-vote"
-          element={
-            <RequireAuth>
-              <LegacyPlaceholderPage title="アワード投票（準備中）" />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/schedule"
-          element={
-            <RequireAuth>
-              <SchedulePage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/booth-list"
-          element={
-            <RequireAuth>
-              <BoothListPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/venue-map"
-          element={
-            <RequireAuth>
-              <VenueMapPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/gachapon"
-          element={
-            <RequireAuth>
-              <GachaponIntroPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/gachapon/use"
-          element={
-            <RequireAuth>
-              <GachaponUsePage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/gachapon/complete"
-          element={
-            <RequireAuth>
-              <GachaponCompletePage />
-            </RequireAuth>
-          }
-        />
-        <Route path="/qa" element={<QaPage />} />
+        >
+          {/* participant-gated:start ── ここから下は自動でゲート配下 */}
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/checkin" element={<CheckInPage />} />
+          <Route
+            path="/award-vote"
+            element={<LegacyPlaceholderPage title="アワード投票（準備中）" />}
+          />
+          <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/booth-list" element={<BoothListPage />} />
+          <Route path="/venue-map" element={<VenueMapPage />} />
+          <Route path="/gachapon" element={<GachaponIntroPage />} />
+          <Route path="/gachapon/use" element={<GachaponUsePage />} />
+          <Route path="/gachapon/complete" element={<GachaponCompletePage />} />
+          <Route path="/qa" element={<QaPage />} />
+          {/* participant-gated:end ── 参加者画面をこの外に書かない */}
+        </Route>
       </Route>
       <Route path="/organizer/login" element={<OrganizerLoginPage />} />
       <Route
