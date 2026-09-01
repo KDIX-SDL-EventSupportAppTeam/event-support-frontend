@@ -54,7 +54,7 @@ export function EntryPage() {
    * それ以外の段階では待つ理由が無く、30 秒ポーリングは無駄な負荷になる。
    */
   const needsGateWatch = Boolean(meState?.survey_answered && !meState.app_access.is_open)
-  const { access, isOpen: liveIsOpen, remainingMs } = useAppAccess(
+  const { access, isOpen: liveIsOpen, remainingMs, error: gateError } = useAppAccess(
     needsGateWatch ? eventId : undefined,
   )
   // 開放判定はサーバーの評価値のみで決める。`meState.app_access.is_open` は入口を踏んだ
@@ -101,7 +101,7 @@ export function EntryPage() {
       return <SurveyStep eventId={eventId} onAnswered={reload} />
 
     case 'waiting':
-      return <WaitingStep access={access} remainingMs={remainingMs} />
+      return <WaitingStep access={access} remainingMs={remainingMs} error={gateError} />
 
     case 'onboarding':
       return (

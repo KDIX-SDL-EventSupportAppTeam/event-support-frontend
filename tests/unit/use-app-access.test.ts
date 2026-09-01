@@ -1,6 +1,4 @@
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { deriveAppAccessState } from '@/shared/hooks/useAppAccess'
 import type { AppAccess } from '@/shared/api/appAccess'
 
@@ -10,9 +8,9 @@ import type { AppAccess } from '@/shared/api/appAccess'
  * このリポジトリには React コンポーネント／フックのレンダリングテスト基盤
  * （@testing-library/react 等）が無いため、hook 本体から分離した純粋関数を直接検証する。
  *
- * issue #80: 開放判定の正本はサーバーの `access.is_open` ただ1つ。
- * 端末側で補正済みの「今」から `app_opens_at` を跨いで判定を先取りしない
- * （先取りすると入口 `/e/:eventId` と `/home` のゲートが食い違い往復する）。
+ * 守りたい不変条件は **「`app_opens_at` を `isOpen` の判定に使わないこと」**（issue #80）。
+ * 端末側で開放予定時刻を跨いで判定を先取りすると、入口 `/e/:eventId` と `/home` の
+ * ゲートが食い違い往復リダイレクトになる。開放判定の正本はサーバーの `is_open` ただ1つ。
  */
 
 function makeAccess(overrides: Partial<AppAccess>): AppAccess {
@@ -37,7 +35,11 @@ describe('deriveAppAccessState', () => {
   })
 
   it('isOpen はサーバーの is_open をそのまま返す（false）', () => {
-    const access = makeAccess({ mode: 'closed', is_open: false, app_opens_at: new Date().toISOString() })
+    const access = makeAccess({
+      mode: 'closed',
+      is_open: false,
+      app_opens_at: new Date().toISOString(),
+    })
     const state = deriveAppAccessState(access, Date.now())
     expect(state.isOpen).toBe(false)
     expect(state.remainingMs).toBeNull()
@@ -58,23 +60,24 @@ describe('deriveAppAccessState', () => {
     expect(state.remainingMs).toBe(10 * 60 * 1000)
   })
 
-  it('補正済みの「今」が開放予定時刻を過ぎていても、サーバーが is_open=false なら開かない（外挿しない）', () => {
-    const now = Date.now()
-    const opensAt = now - 1000 // 端末視点では1秒前に開放予定を過ぎている
+  it('開放予定時刻がとうに過去でも、端末の「今」が遥か未来でも、サーバーが false なら開かない', () => {
+    // 「app_opens_at を isOpen の判定に使わない」ことの本体。
+    // 実装が computeIsOpen を別名で復活させても、この期待値なら捕まえられる。
     const access = makeAccess({
-      mode: 'scheduled',
       is_open: false,
-      app_opens_at: new Date(opensAt).toISOString(),
+      mode: 'scheduled',
+      app_opens_at: '2020-01-01T00:00:00.000Z',
     })
 
-    const state = deriveAppAccessState(access, now)
+    const { isOpen } = deriveAppAccessState(
+      access,
+      Date.now() + 10 * 365 * 24 * 60 * 60 * 1000,
+    )
 
-    // かつては true に先取りしていた。いまはサーバーの is_open に従う。
-    expect(state.isOpen).toBe(false)
-    expect(state.remainingMs).toBe(0)
+    expect(isOpen).toBe(false)
   })
 
-  it('端末時計が進んでいても遅れていても isOpen は変わらない（サーバー評価値のみ）', () => {
+  it('端末時計が進んでいても遅れていても isOpen は変わらない（残り時間表示だけが動く）', () => {
     const opensAt = Date.now() + 5 * 60 * 1000
     const access = makeAccess({
       mode: 'scheduled',
@@ -87,8 +90,7 @@ describe('deriveAppAccessState', () => {
 
     expect(fast.isOpen).toBe(false)
     expect(slow.isOpen).toBe(false)
-    // 残り時間表示だけが「今」に追随する（クランプは 0 以上）
-    expect(fast.remainingMs).toBe(0)
+    expect(fast.remainingMs).toBe(0) // Math.max で 0 にクランプ
     expect(slow.remainingMs).toBeGreaterThan(5 * 60 * 1000)
   })
 
@@ -108,25 +110,5 @@ describe('deriveAppAccessState', () => {
     const state = deriveAppAccessState(access, Date.now())
     expect(state.isOpen).toBe(false)
     expect(state.remainingMs).toBeNull()
-  })
-})
-
-/**
- * 静的検査 ── 開放判定をフロントで再計算する外挿ロジックが復活していないこと（issue #80）。
- * レンダリングテスト基盤が無いため、hook のソースを機械的に見張る。
- */
-describe('useAppAccess のソース不変条件', () => {
-  const hookSrc = readFileSync(
-    fileURLToPath(new URL('../../src/shared/hooks/useAppAccess.ts', import.meta.url)),
-    'utf-8',
-  )
-
-  it('deriveAppAccessState の isOpen はサーバーの is_open をそのまま返す', () => {
-    expect(hookSrc).toMatch(/const isOpen = access\.is_open\b/)
-  })
-
-  it('端末側で開放予定時刻を跨いで判定する computeIsOpen を呼ばない／定義しない', () => {
-    expect(hookSrc).not.toMatch(/function\s+computeIsOpen/)
-    expect(hookSrc).not.toMatch(/computeIsOpen\s*\(/)
   })
 })
