@@ -71,3 +71,40 @@ describe('アプリ公開ゲートの適用範囲', () => {
     expect(first < startIndex || first > endIndex, `${decl} がゲート配下に入っている`).toBe(true)
   })
 })
+
+/**
+ * ゲート（`RequireAppOpen`）と入口（`EntryPage` の `useAppAccess`）が
+ * **同じエンドポイント** で開放状態を取ること（issue #80）。
+ *
+ * サーバー側の判定が一致していても、別々の口を叩いているとキャッシュ差・
+ * レプリカ遅延で食い違い、入口とアプリ本体の間で往復リダイレクトが起きうる。
+ * 「どのモジュールから取得するか」は配線の不変条件で純関数に落とせないため、
+ * ルータ構造と同じくソースを静的に検査する。
+ */
+describe('開放状態の取得口', () => {
+  const gateSrc = readFileSync(
+    fileURLToPath(new URL('../../src/shared/access/RequireAppOpen.tsx', import.meta.url)),
+    'utf-8',
+  )
+  const hookSrc = readFileSync(
+    fileURLToPath(new URL('../../src/shared/hooks/useAppAccess.ts', import.meta.url)),
+    'utf-8',
+  )
+
+  it('ゲートも入口も shared/api/appAccess から取得する', () => {
+    expect(gateSrc).toMatch(/import\s*\{[^}]*fetchAppAccess[^}]*\}\s*from\s*'@\/shared\/api\/appAccess'/)
+    expect(hookSrc).toMatch(/import\s*\{[^}]*fetchAppAccess[^}]*\}\s*from\s*'@\/shared\/api\/appAccess'/)
+  })
+
+  it('ゲートは /events/:id/public（publicEvent）から開放状態を読まない', () => {
+    expect(gateSrc).not.toMatch(/publicEvent/)
+  })
+
+  it('publicEvent は開放状態の写しを持たない（判定の口を増やさない）', () => {
+    const publicEventSrc = readFileSync(
+      fileURLToPath(new URL('../../src/shared/api/publicEvent.ts', import.meta.url)),
+      'utf-8',
+    )
+    expect(publicEventSrc).not.toMatch(/is_open/)
+  })
+})
