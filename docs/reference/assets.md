@@ -185,7 +185,7 @@ public/
 | 素材 | 仕様書の採番 | 現在の代用 |
 |---|---|---|
 | 会場全体簡略マップ | 3-6 | `bingo/bingo-grid-empty.png`（受領後 `map/venue-map.png` へ） |
-| スマホモックアップ枠 | 4-1-1 | `onboarding/award-screen-*.png` |
+| スマホモックアップ枠（ホーム / ビンゴカード / 会場マップ。#89 でアワード投票を出す場合はアワード投票画面も） | 4-1-1 | `onboarding/award-screen-*.png`（受領後 `onboarding/mockup-home.png` / `mockup-bingo-card.png` / `mockup-venue-map.png` / `mockup-award.png` へ） |
 | ファビコン | — | `mascot/mascot-cheering.png` から生成 |
 | つぶやき関連（鉛筆・ハート・吹き出し） | — | 使わない。`bootstrap-icons` で代替 |
 
