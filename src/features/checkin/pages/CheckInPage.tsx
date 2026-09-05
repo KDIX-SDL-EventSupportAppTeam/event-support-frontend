@@ -12,6 +12,7 @@ import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
 import { useLegacyBoothList } from '@/shared/hooks/useLegacyBoothList'
 import { formatClientError } from '@/shared/lib/formatClientError'
 import { resolveCheckInView, type CheckInStep } from '@/shared/lib/checkInFlowView'
+import { MANUAL_CODE_MAX_LENGTH, manualCheckInErrorMessage, toManualCodeForSubmit } from '@/features/checkin/lib/manualCheckIn'
 import { useUnlockAnimationQueue } from '@/shared/hooks/useUnlockAnimationQueue'
 import { recordBingoCelebration } from '@/shared/lib/bingoCelebration'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
@@ -48,8 +49,9 @@ export function CheckInPage() {
 
   const [step, setStep] = useState<Step>(boothIdParam ? 'booth' : 'scan')
   const [selectedBoothId, setSelectedBoothId] = useState(boothIdParam)
-  /** 'qr' = QR 読取または ?booth_id= 経由（一覧を出さない）／ 'list' = フォールバックの一覧選択 */
-  const [boothSource, setBoothSource] = useState<'qr' | 'list'>(boothIdParam ? 'qr' : 'list')
+  /** 'qr' = QR 読取または ?booth_id= 経由（一覧を出さない）／ 'list' = フォールバックの一覧選択／ 'manual' = コード入力 */
+  const [boothSource, setBoothSource] = useState<'qr' | 'list' | 'manual'>(boothIdParam ? 'qr' : 'list')
+  const [manualCode, setManualCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -114,6 +116,32 @@ export function CheckInPage() {
     return () => window.clearInterval(timer)
   }, [cooldownRemainingSec])
 
+  function applyCheckInSuccess(res: V1CheckInResponse) {
+    setCheckInResponse(res)
+    setCheckInResult({ checkin_id: res.checkin_id, booth: { booth_id: res.booth.id, name: res.booth.name, emoji: '🎪' } })
+    // ライン成立演出はホーム側で出す（サンプルモードと同じ sessionStorage 経由）
+    if (res.new_lines > 0) recordBingoCelebration(res.new_lines)
+    // 解放演出のキューに積む（正の経路）。中央3・4マス目の達成では複数ペアが同時成立するため、
+    // サーバーが返す unlocked_pairs をペアごとに積む（unlocked_positions は全ペア分の平坦な配列）
+    if (cardId) enqueuePairs(cardId, res.unlocked_pairs)
+    if (res.cooldown_remaining_sec > 0) setCooldownRemainingSec(res.cooldown_remaining_sec)
+    setStep(res.pending_rating ? 'rating' : 'result')
+  }
+
+  /** CONFLICT → 訪問済み、COOLDOWN → カウントダウン。それ以外は呼び出し側の文言関数で */
+  function handleCheckInFailure(e: unknown, toMessage: (e: unknown) => string) {
+    if (e instanceof ApiError && e.code === 'CONFLICT') {
+      // 同じブースへの2回目はエラーとして赤く出さない（同じ QR の再読み取りは正常な行動）
+      setStep('already_visited')
+    } else if (e instanceof ApiError && e.code === 'COOLDOWN') {
+      const match = /(\d+)/.exec(e.message)
+      setCooldownRemainingSec(match ? Number(match[1]) : 30)
+      setErrorMessage(e.message || 'クールダウン中です。しばらくお待ちください。')
+    } else {
+      setErrorMessage(toMessage(e))
+    }
+  }
+
   async function handleCheckInV1() {
     if (!eventId || !selectedBoothId) return
     setSubmitting(true)
@@ -124,26 +152,31 @@ export function CheckInPage() {
         booth_id: selectedBoothId,
         checked_in_at: new Date().toISOString(),
       })
-      setCheckInResponse(res)
-      setCheckInResult({ checkin_id: res.checkin_id, booth: { booth_id: res.booth.id, name: res.booth.name, emoji: '🎪' } })
-      // ライン成立演出はホーム側で出す（サンプルモードと同じ sessionStorage 経由）
-      if (res.new_lines > 0) recordBingoCelebration(res.new_lines)
-      // 解放演出のキューに積む（正の経路）。中央3・4マス目の達成では複数ペアが同時成立するため、
-      // サーバーが返す unlocked_pairs をペアごとに積む（unlocked_positions は全ペア分の平坦な配列）
-      if (cardId) enqueuePairs(cardId, res.unlocked_pairs)
-      if (res.cooldown_remaining_sec > 0) setCooldownRemainingSec(res.cooldown_remaining_sec)
-      setStep(res.pending_rating ? 'rating' : 'result')
+      applyCheckInSuccess(res)
     } catch (e) {
-      if (e instanceof ApiError && e.code === 'CONFLICT') {
-        // 同じブースへの2回目はエラーとして赤く出さない（同じ QR の再読み取りは正常な行動）
-        setStep('already_visited')
-      } else if (e instanceof ApiError && e.code === 'COOLDOWN') {
-        const match = /(\d+)/.exec(e.message)
-        setCooldownRemainingSec(match ? Number(match[1]) : 30)
-        setErrorMessage(e.message || 'クールダウン中です。しばらくお待ちください。')
-      } else {
-        setErrorMessage(formatClientError(e, 'チェックインに失敗しました'))
-      }
+      handleCheckInFailure(e, (e) => formatClientError(e, 'チェックインに失敗しました'))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleCheckInManual() {
+    if (!eventId) return
+    const code = toManualCodeForSubmit(manualCode)
+    if (!code) return
+    setSubmitting(true)
+    setErrorMessage(null)
+    try {
+      const res = await postV1CheckIn(eventId, {
+        method: 'manual',
+        manual_code: code,
+        checked_in_at: new Date().toISOString(),
+      })
+      setBoothSource('manual')
+      setSelectedBoothId(res.booth.id)
+      applyCheckInSuccess(res)
+    } catch (e) {
+      handleCheckInFailure(e, (e) => manualCheckInErrorMessage(e, 'チェックインに失敗しました'))
     } finally {
       setSubmitting(false)
     }
@@ -249,7 +282,40 @@ export function CheckInPage() {
             setErrorMessage(null)
             setStep('booth')
           }}
+          onManual={isV1Flow ? () => { setErrorMessage(null); setManualCode(''); setStep('manual') } : undefined}
         />
+      </div>
+    )
+  }
+
+  if (view === 'manual') {
+    const canSubmit = toManualCodeForSubmit(manualCode) !== null && !submitting && cooldownRemainingSec === 0
+    return (
+      <div className="reader-container container py-3">
+        <h2 className="result-title">コードでチェックイン</h2>
+        <p className="result-message mb-3">ブースに掲示されたコードを入力してください。</p>
+        <label htmlFor="checkin-manual-code" className="form-label">ブースのコード</label>
+        <input
+          id="checkin-manual-code"
+          className="form-control checkin-manual-code-input mb-2"
+          inputMode="text"
+          autoComplete="off"
+          autoCapitalize="characters"
+          maxLength={MANUAL_CODE_MAX_LENGTH}
+          value={manualCode}
+          onChange={(e) => { setManualCode(e.target.value); if (errorMessage) setErrorMessage(null) }}
+          onKeyDown={(e) => { if (e.key === 'Enter' && canSubmit) void handleCheckInManual() }}
+          disabled={submitting}
+        />
+        {errorMessage ? <p className="checkin-error-box">{errorMessage}</p> : null}
+        {cooldownRemainingSec > 0 ? <p className="text-muted mb-3">あと{cooldownRemainingSec}秒お待ちください</p> : null}
+        <div className="d-grid gap-2">
+          <button type="button" className="checkin-home-button" disabled={!canSubmit} onClick={() => void handleCheckInManual()}>
+            {submitting ? 'チェックイン中…' : 'このコードでチェックインする'}
+          </button>
+          <button type="button" className="btn btn-outline-secondary" onClick={() => { setErrorMessage(null); setStep('scan') }}>QRを読み取る</button>
+          <button type="button" className="btn btn-outline-secondary" onClick={() => navigate('/home')}>ホームに戻る</button>
+        </div>
       </div>
     )
   }
@@ -443,6 +509,11 @@ export function CheckInPage() {
         {boothSource === 'list' ? (
           <button type="button" className="btn btn-outline-secondary" onClick={() => setStep('scan')}>
             QRを読み取る
+          </button>
+        ) : null}
+        {boothSource === 'list' && isV1Flow ? (
+          <button type="button" className="btn btn-link btn-sm text-muted" onClick={() => { setErrorMessage(null); setManualCode(''); setStep('manual') }}>
+            QRが読めないときはコードを入力
           </button>
         ) : null}
         <button type="button" className="btn btn-outline-secondary" onClick={() => navigate('/home')}>
