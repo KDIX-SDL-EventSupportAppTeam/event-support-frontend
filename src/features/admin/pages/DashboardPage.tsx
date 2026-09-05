@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { AdminShell } from '@/features/admin/components/AdminShell'
+import { LiveMonitoringBlock } from '@/features/admin/components/LiveMonitoringBlock'
 import { useAuthStore } from '@/shared/auth/authStore'
 import {
   fetchAdminDashboard,
+  fetchRecommenderState,
   type AdminDashboard,
   type CheckinNewEvent,
+  type RecommenderState,
 } from '@/shared/api/v1Admin'
 import { connectSocket, disconnectSocket } from '@/shared/api/socket'
 import { formatClientError } from '@/shared/lib/formatClientError'
@@ -15,6 +18,8 @@ export function DashboardPage() {
   const [data, setData] = useState<AdminDashboard | null>(null)
   const [recent, setRecent] = useState<CheckinNewEvent[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [recState, setRecState] = useState<RecommenderState | null>(null)
+  const [recError, setRecError] = useState<string | null>(null)
   // rating:new は集計に影響するため再取得するが、評価ラッシュ時の連発を防ぐため 5 秒 trailing デバウンス
   const ratingDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -23,8 +28,20 @@ export function DashboardPage() {
     fetchAdminDashboard(eventId)
       .then(setData)
       .catch((e) => setError(formatClientError(e, 'ダッシュボードの取得に失敗しました')))
+    fetchRecommenderState(eventId)
+      .then((s) => {
+        setRecState(s)
+        setRecError(null)
+      })
+      .catch((e) => setRecError(formatClientError(e, '取得失敗')))
     const timer = setInterval(() => {
       fetchAdminDashboard(eventId).then(setData).catch(() => undefined)
+      fetchRecommenderState(eventId)
+        .then((s) => {
+          setRecState(s)
+          setRecError(null)
+        })
+        .catch((e) => setRecError(formatClientError(e, '取得失敗')))
     }, 60_000)
     return () => clearInterval(timer)
   }, [eventId])
@@ -59,6 +76,12 @@ export function DashboardPage() {
       ratingDebounce.current = setTimeout(() => {
         ratingDebounce.current = null
         fetchAdminDashboard(eventId).then(setData).catch(() => undefined)
+        fetchRecommenderState(eventId)
+          .then((s) => {
+            setRecState(s)
+            setRecError(null)
+          })
+          .catch((e) => setRecError(formatClientError(e, '取得失敗')))
       }, 5_000)
     }
     socket.on('checkin:new', onNew)
@@ -122,6 +145,8 @@ export function DashboardPage() {
           </div>
         ))}
       </div>
+
+      <LiveMonitoringBlock bingo={data.bingo} rec={recState} recError={recError} />
 
       <div className="row g-4 mb-4">
         {/* ブース別チェックイン バーチャート */}
