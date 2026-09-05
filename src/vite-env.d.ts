@@ -2,7 +2,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL?: string
-  /** ローカル専用: ログイン画面のイベント ID 初期値 */
+  /** 運営ログインの event_id。本番でも設定する（cloudbuild.yaml の `_DEV_EVENT_ID`） */
   readonly VITE_DEV_EVENT_ID?: string
   readonly VITE_DEV_LOGIN_EMAIL?: string
   readonly VITE_DEV_LOGIN_PASSWORD?: string
