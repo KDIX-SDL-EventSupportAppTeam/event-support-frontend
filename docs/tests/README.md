@@ -91,6 +91,7 @@ YYYY-MM-DD-kebab-case-summary.md
 | 2026-05-24 | [runs/2026-05-24-features-shared-refactor.md](./runs/2026-05-24-features-shared-refactor.md) | features/shared 移行後の lint/build/test | 全 unit + integration |
 | 2026-07-11 | [runs/2026-07-11-auth-exhibitor-unit-tests-restore.md](./runs/2026-07-11-auth-exhibitor-unit-tests-restore.md) | tests/ 実行復旧＋出展者・ログイン分岐の単体テスト追加 | resolve-landing-path, auth-role-helpers, exhibitor-store（新規）＋既存8ファイル |
 | 2026-09-05 | [runs/2026-09-05-checkin-qr-scan.md](./runs/2026-09-05-checkin-qr-scan.md) | チェックインのQR読み取り追加（#84）の単体テストと実機確認項目 | parseQrToBoothId（新規） |
+| 2026-09-05 | [runs/2026-09-05-checkin-manual-code.md](./runs/2026-09-05-checkin-manual-code.md) | 手動コード入力チェックイン追加（#86）の単体テストとT-1〜T-10確認項目 | manualCheckIn（新規） |
 
 ---
 

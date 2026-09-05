@@ -5,6 +5,8 @@ import { parseQrToBoothId } from '@/features/checkin/lib/parseQrToBoothId'
 type Props = {
   onDetected: (boothId: string) => void
   onFallback: () => void
+  /** 手動コード入力へ。サンプルモードでは渡さない（描画しない） */
+  onManual?: () => void
 }
 
 const CAMERA_FAILED_MSG = 'カメラを起動できませんでした。下の「ブース一覧から選ぶ」から進めます。'
@@ -18,7 +20,7 @@ const OUT_OF_SCOPE_MSG = 'このQRコードは読み取れませんでした。�
  */
 const FALLBACK_DELAY_MS = 8000
 
-export function CheckInQrScanView({ onDetected, onFallback }: Props) {
+export function CheckInQrScanView({ onDetected, onFallback, onManual }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [fallbackVisible, setFallbackVisible] = useState(false)
 
@@ -94,6 +96,11 @@ export function CheckInQrScanView({ onDetected, onFallback }: Props) {
       {error || fallbackVisible ? (
         <button type="button" className="checkin-qr-fallback-link" onClick={onFallback}>
           ブース一覧から選ぶ
+        </button>
+      ) : null}
+      {onManual ? (
+        <button type="button" className="btn btn-link btn-sm text-muted checkin-manual-link" onClick={onManual}>
+          QRが読めないときはコードを入力
         </button>
       ) : null}
     </div>

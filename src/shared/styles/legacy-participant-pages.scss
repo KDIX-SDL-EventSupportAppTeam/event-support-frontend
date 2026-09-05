@@ -216,6 +216,16 @@
   cursor: pointer;
 }
 
+.checkin-manual-code-input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.5rem;
+  letter-spacing: 0.25em;
+  text-align: center;
+}
+.checkin-manual-link {
+  text-decoration: underline;
+}
+
 .checkin-recommend-card {
   border: 2px solid #000;
   border-radius: 8px;
