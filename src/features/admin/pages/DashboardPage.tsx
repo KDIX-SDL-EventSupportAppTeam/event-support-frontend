@@ -1,11 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AdminShell } from '@/features/admin/components/AdminShell'
 import { LiveMonitoringBlock } from '@/features/admin/components/LiveMonitoringBlock'
+import { GachaUsageBlock } from '@/features/admin/components/GachaUsageBlock'
 import { useAuthStore } from '@/shared/auth/authStore'
 import {
   fetchAdminDashboard,
+  fetchAdminGachaStats,
   fetchRecommenderState,
   type AdminDashboard,
+  type AdminGachaStats,
   type CheckinNewEvent,
   type RecommenderState,
 } from '@/shared/api/v1Admin'
@@ -20,8 +23,27 @@ export function DashboardPage() {
   const [error, setError] = useState<string | null>(null)
   const [recState, setRecState] = useState<RecommenderState | null>(null)
   const [recError, setRecError] = useState<string | null>(null)
+  const [gacha, setGacha] = useState<AdminGachaStats | null>(null)
+  const [gachaError, setGachaError] = useState<string | null>(null)
+  const [gachaFetchedAt, setGachaFetchedAt] = useState<Date | null>(null)
+  const [gachaRefreshing, setGachaRefreshing] = useState(false)
   // rating:new は集計に影響するため再取得するが、評価ラッシュ時の連発を防ぐため 5 秒 trailing デバウンス
   const ratingDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const loadGacha = useCallback(async () => {
+    if (!eventId) return
+    setGachaRefreshing(true)
+    try {
+      const s = await fetchAdminGachaStats(eventId)
+      setGacha(s)
+      setGachaError(null)
+      setGachaFetchedAt(new Date())
+    } catch (e) {
+      setGachaError(formatClientError(e, '取得失敗')) // 直前の gacha は消さない（stale 表示のため）
+    } finally {
+      setGachaRefreshing(false)
+    }
+  }, [eventId])
 
   useEffect(() => {
     if (!eventId) return
@@ -34,6 +56,7 @@ export function DashboardPage() {
         setRecError(null)
       })
       .catch((e) => setRecError(formatClientError(e, '取得失敗')))
+    void loadGacha()
     const timer = setInterval(() => {
       fetchAdminDashboard(eventId).then(setData).catch(() => undefined)
       fetchRecommenderState(eventId)
@@ -42,9 +65,10 @@ export function DashboardPage() {
           setRecError(null)
         })
         .catch((e) => setRecError(formatClientError(e, '取得失敗')))
+      void loadGacha()
     }, 60_000)
     return () => clearInterval(timer)
-  }, [eventId])
+  }, [eventId, loadGacha])
 
   useEffect(() => {
     if (!token || !eventId) return
@@ -147,6 +171,14 @@ export function DashboardPage() {
       </div>
 
       <LiveMonitoringBlock bingo={data.bingo} rec={recState} recError={recError} />
+
+      <GachaUsageBlock
+        stats={gacha}
+        error={gachaError}
+        fetchedAt={gachaFetchedAt}
+        refreshing={gachaRefreshing}
+        onRefresh={() => void loadGacha()}
+      />
 
       <div className="row g-4 mb-4">
         {/* ブース別チェックイン バーチャート */}
