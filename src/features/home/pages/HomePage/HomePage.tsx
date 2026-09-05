@@ -275,19 +275,17 @@ export function HomePage() {
         </div>
       ) : null}
 
-      {/* 暫定UI: デザイン更新issueで差し替え予定（#48 暫定・survey_url 設定時のみ表示） */}
       {surveyUrl ? (
-        <div className="row g-3 mt-0">
+        <div className="row g-2 mt-2">
           <div className="col-12">
-            <div className="d-grid">
-              <button
-                type="button"
-                className="btn btn-light action-button"
-                onClick={() => window.open(surveyUrl, '_blank', 'noopener,noreferrer')}
-              >
-                <span>イベントアンケートに回答する</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              className="btn btn-sub-action w-100"
+              onClick={() => window.open(surveyUrl, '_blank', 'noopener,noreferrer')}
+            >
+              <i className="bi bi-clipboard-check me-1" aria-hidden="true" />
+              イベントアンケートに回答する
+            </button>
           </div>
         </div>
       ) : null}

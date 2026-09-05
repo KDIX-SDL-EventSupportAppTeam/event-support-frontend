@@ -44,7 +44,10 @@ const LAZY_WINDOWS: Record<
 function WindowPlaceholder({ label, icon }: { label: string; icon: string }) {
   return (
     <AnalyticsWindow title={label} icon={icon} minimized={false} onToggleMinimize={() => undefined}>
-      <div className="text-muted small py-2">準備中…</div>
+      <div className="text-muted small py-2 d-flex align-items-center gap-2">
+        <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+        読み込み中…
+      </div>
     </AnalyticsWindow>
   )
 }
