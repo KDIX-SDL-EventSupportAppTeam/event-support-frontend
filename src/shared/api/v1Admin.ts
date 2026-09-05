@@ -38,6 +38,16 @@ export type AdminParticipant = {
   created_at: string
 }
 
+export type AdminDashboardBingo = {
+  checkins: number
+  ratings: number
+  /** 0〜1。サーバーが小数3桁に丸めて返す */
+  rating_collection_rate: number
+  unlocks: { first: number; second: number; third: number }
+  /** 0〜1 */
+  fallback_rate_last_30min: number
+}
+
 export type AdminDashboard = {
   summary: {
     total_participants: number
@@ -51,6 +61,7 @@ export type AdminDashboard = {
     avg_rating: number | null
   }[]
   checkin_timeline: { time_slot: string; count: number }[]
+  bingo: AdminDashboardBingo
 }
 
 export async function fetchAdminEvent(eventId: string): Promise<AdminEvent> {
@@ -179,6 +190,25 @@ export async function deleteAdminParticipant(eventId: string, userId: string): P
 export async function fetchAdminDashboard(eventId: string): Promise<AdminDashboard> {
   const res = await apiClient.get<ApiResponse<AdminDashboard>>(
     `/admin/events/${encodeURIComponent(eventId)}/dashboard`,
+  )
+  return unwrapApiData(res)
+}
+
+// ---- 推薦エンジン状態の中継（server: docs/specs/recommender-phase-linkage/01-ops-state-relay.md） ----
+export type RecommenderStateReason = 'UNCONFIGURED' | 'UNAUTHORIZED' | 'UNREACHABLE' | 'BAD_RESPONSE'
+/** 推薦エンジン /ops/state のうち画面が使うキーだけを型にする（無いキーは書かない。T-10） */
+export type RecommenderOpsState = {
+  phase?: { current?: string; gate_detail?: { size?: boolean; rules?: boolean; gamma?: boolean; coverage?: boolean } }
+  snapshot?: { decision_table_size?: number | null; built_at?: string | null }
+  config?: { phase_similarity_min?: number; phase_drsa_min?: number }
+}
+export type RecommenderState =
+  | { available: true; fetched_at: string; state: RecommenderOpsState }
+  | { available: false; reason: RecommenderStateReason; fetched_at: string }
+
+export async function fetchRecommenderState(eventId: string): Promise<RecommenderState> {
+  const res = await apiClient.get<ApiResponse<RecommenderState>>(
+    `/admin/events/${encodeURIComponent(eventId)}/recommender/state`,
   )
   return unwrapApiData(res)
 }
