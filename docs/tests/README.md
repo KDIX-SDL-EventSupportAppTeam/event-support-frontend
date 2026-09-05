@@ -79,6 +79,7 @@ YYYY-MM-DD-kebab-case-summary.md
 | [tests/unit/exhibitor-store.test.ts](../../tests/unit/exhibitor-store.test.ts) | unit | `src/features/exhibitor/store/exhibitorStore.ts` |
 | [tests/integration/frontend-package.test.ts](../../tests/integration/frontend-package.test.ts) | integration | ルート `package.json`（build スクリプト） |
 | [tests/unit/recommender-state-view.test.ts](../../tests/unit/recommender-state-view.test.ts) | unit | `src/features/admin/lib/recommenderStateView.ts` |
+| [tests/unit/gacha-stats-view.test.ts](../../tests/unit/gacha-stats-view.test.ts) | unit | `src/features/admin/lib/gachaStatsView.ts` |
 
 新規テストを追加したら、この表も更新する。
 
@@ -91,6 +92,7 @@ YYYY-MM-DD-kebab-case-summary.md
 | 2026-05-24 | [runs/2026-05-24-features-shared-refactor.md](./runs/2026-05-24-features-shared-refactor.md) | features/shared 移行後の lint/build/test | 全 unit + integration |
 | 2026-07-11 | [runs/2026-07-11-auth-exhibitor-unit-tests-restore.md](./runs/2026-07-11-auth-exhibitor-unit-tests-restore.md) | tests/ 実行復旧＋出展者・ログイン分岐の単体テスト追加 | resolve-landing-path, auth-role-helpers, exhibitor-store（新規）＋既存8ファイル |
 | 2026-09-05 | [runs/2026-09-05-admin-live-monitoring.md](./runs/2026-09-05-admin-live-monitoring.md) | 運営ダッシュボードの当日監視ブロック（#75）追加。tsc/lint/unit test | recommender-state-view（新規）＋既存全ファイル |
+| 2026-09-05 | [runs/2026-09-05-admin-gacha-stats.md](./runs/2026-09-05-admin-gacha-stats.md) | 運営ダッシュボードのガチャ使用状況（#87・Phase A）追加。tsc/lint/unit test | gacha-stats-view（新規）＋既存全ファイル |
 
 ---
 
