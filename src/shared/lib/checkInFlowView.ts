@@ -1,6 +1,7 @@
 /**
  * チェックイン成功モーダルで「今どの画面を出すか」の判定。
  * 仕様: docs/specs/bingo-dynamic-unlock/03-checkin-flow.md
+ * `scan` はチェックイン前のカメラ画面（QR読み取り）で、上の 1〜3 の前段に置く。
  *
  *   1. 評価ステップ（pending_rating が非 null のときだけ）
  *   2. チェックイン成功ステップ
@@ -10,7 +11,7 @@
  * 解放演出を先に流して評価を後ろへ押しやってはいけない。解放演出は成功ステップよりも後ろ
  * （参加者が成功ステップを閉じた後 = `resultAcknowledged`）に置く。
  */
-export type CheckInStep = 'booth' | 'rating' | 'already_visited' | 'result'
+export type CheckInStep = 'scan' | 'booth' | 'rating' | 'already_visited' | 'result'
 export type CheckInView = CheckInStep | 'unlock'
 
 export function resolveCheckInView(input: {
