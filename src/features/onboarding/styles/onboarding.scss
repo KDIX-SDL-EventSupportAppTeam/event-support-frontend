@@ -35,7 +35,7 @@
   padding: 1rem 1.25rem 0;
 }
 
-// 透明余白の切り落としは .pf-logo（shared/styles/brand-logo.scss）が持つ
+// 縦横比の保証は .pf-logo（shared/styles/brand-logo.scss）が持つ
 .onboarding-logo {
   height: 1.75rem;
 }
@@ -101,8 +101,11 @@
 }
 
 .onboarding-feature-icon {
+  // 素材は正方形キャンバスに絵柄がほぼ一杯（docs/reference/assets.md）。
+  // 固定の正方形ボックスに contain で収めれば、どのアイコンも同じ大きさに見える
   width: 3rem;
   height: 3rem;
+  object-fit: contain;
 }
 
 .onboarding-flow-image,
@@ -132,8 +135,10 @@
 
 .onboarding-gesture-hint {
   margin-top: 1rem;
+  // feature アイコンと同じ寸法にして、オンボーディング内の絵柄の大きさを揃える
   width: 3rem;
-  height: auto;
+  height: 3rem;
+  object-fit: contain;
   opacity: 0.8;
 }
 

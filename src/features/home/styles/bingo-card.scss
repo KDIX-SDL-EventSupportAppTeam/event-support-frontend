@@ -4,7 +4,7 @@
 
 @use 'sass:math';
 
-// 透明余白の切り落としは .pf-logo（shared/styles/brand-logo.scss）が持つ
+// 縦横比の保証は .pf-logo（shared/styles/brand-logo.scss）が持つ
 .bingo-logo {
   height: 1.4em;
   display: block;

@@ -11,6 +11,10 @@
 }
 
 .bottom-nav {
+  // 側の4項目と中央FABの2種類だけで、ボトムナビのアイコン寸法を決める
+  --pf-nav-icon-size: 1.9rem;
+  --pf-nav-fab-size: 3.2rem;
+
   position: fixed;
   left: 0;
   right: 0;
@@ -67,18 +71,21 @@
   }
 
   img {
-    width: auto;
-    max-width: 100%;
-    // アイコン素材が正方形いっぱいに描画されているため、幅基準のままだと
-    // ナビバーの高さいっぱいまで拡大され、フッターが不自然に大きく見える。
-    // 高さの上限を固定し、余白を持たせる。
-    max-height: 2.3rem;
+    // 素材はすべて「正方形キャンバスに絵柄がほぼ一杯」へ揃えてある
+    // （docs/reference/assets.md）。したがって固定の正方形ボックスに contain で
+    // 収めるだけで、どの項目も同じ大きさに見える。max-height だけで効かせていた
+    // 頃は、素材ごとの透明余白の差がそのまま見た目の大小になっていた。
+    width: var(--pf-nav-icon-size);
+    height: var(--pf-nav-icon-size);
+    object-fit: contain;
+    flex: none;
   }
 }
 
 .bottom-nav__item--fab .bottom-nav__link img {
   // 中央FABだけは飛び出す演出のため、他項目よりひとまわり大きく見せる
-  max-height: 3.2rem;
+  width: var(--pf-nav-fab-size);
+  height: var(--pf-nav-fab-size);
 }
 
 .bottom-nav__label {
