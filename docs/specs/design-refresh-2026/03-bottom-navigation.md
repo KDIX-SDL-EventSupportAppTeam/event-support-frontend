@@ -1,6 +1,6 @@
 ---
 状態: 確定
-最終更新: 2026-08-26
+最終更新: 2026-09-07
 ---
 
 # ボトムナビゲーションと参加者レイアウト
@@ -38,20 +38,29 @@
 |---|---|
 | バーの背景 | `/ui/nav/nav-bar-notched.png` |
 | ホーム（非選択 / 選択中） | `/icon/nav/nav-home.png` / `/icon/nav/nav-home-active.png` |
-| ブース一覧 | `/icon/nav/nav-map.png` |
+| ブース一覧 | `/icon/feature/feature-booth-list.png`。`nav-map.png` は「会場マップ」の文字が焼き込まれており、別導線の `/venue-map` と紛らわしいため使わない |
 | スケジュール | `/icon/nav/nav-schedule.png` |
-| アワード投票 | `/icon/nav/nav-fab-award.png` を非 FAB 用に縮小、または `/icon/feature/feature-award.png` |
+| アワード投票 | `/icon/feature/feature-award.png`（文字なし）。`nav-fab-award.png` は「アワード投票」の文字が焼き込まれており、側の項目の寸法まで縮めると読めなくなるため使わない |
 | 中央 FAB（チェックイン） | `/icon/nav/nav-fab-checkin.png` |
 
 **使わない素材**（このナビ構成では出番が無い。消さずに `public/` に残す）:
 
 - `/icon/nav/nav-set-home-checkin-guide.png` — 3項目の合成画像。押下領域を分けられない
+  （`nav-home.png` / `nav-guide.png` のグリフを切り出す元としてのみ使う）
 - `/icon/nav/nav-guide.png` — 参加ガイドはナビに載せない
+- `/icon/nav/nav-map.png` — 上記のとおり文言が紛らわしい
+- `/icon/nav/nav-fab-award.png` — 上記のとおり文字が焼き込まれている
 - `/icon/action/menu.png` — メニュー画面を作らない
 
-各アイコン素材には**ラベル文字（「ホーム」等）が焼き込まれている。**
-テキストを別途重ねると二重になる。**画像をそのまま置き、テキストは足さない。**
-その代わり `alt` とスクリーンリーダー向けのラベルは必ず付ける。
+**ラベル文字が焼き込まれた素材を使うのは中央 FAB だけ。**
+側の 4 項目は文字なしのグリフに揃え、ラベルは HTML のテキストで出す
+（`BottomNav` の `showLabel`）。焼き込みと HTML が混在すると、文字の大きさも位置も揃わない。
+`alt` とスクリーンリーダー向けのラベルは、焼き込みの有無にかかわらず必ず付ける。
+
+**アイコンの寸法は固定の正方形ボックス＋`object-fit: contain` で決める**
+（側4項目 1.9rem / 中央FAB 3.2rem）。`max-height` だけの指定はしない。
+素材側の前提は [reference/assets.md「寸法の規約」](../../reference/assets.md)、
+経緯は [ADR 0005](../../decisions/adrs/0005-icon-canvas-normalization.md)。
 
 `/icon/nav/nav-bar-flat.png`（影なし）は影ありで問題が出たときの予備。通常は使わない。
 
