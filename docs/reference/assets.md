@@ -212,7 +212,7 @@ public/
 | `1-/修正版/PROTOFES　修正.png` | `brand/logo-protofes.png` | 1024×1536（約92%が透明余白）→ 905×127 の余白なし版 |
 | `1-/修正版/1-7b-checkin-qr-final.png` | `icon/nav/nav-fab-checkin.png` | 合成画像からの 400×300 切り出し → 1254×1254 の単体素材。QR の潰れが解消 |
 | `1-/修正版/1-7-navigation-items-checkin-qr-final.png` | `icon/nav/nav-set-home-checkin-guide.png` | 1200×300 → 2400×600 |
-| `2-/修正版/01-phone-tap.png` | `icon/action/gesture-tap-phone.png` | 線画の最終版 |
+| `2-/修正版/01-phone-tap.png` | `icon/action/gesture-tap-phone.png` | **背景の透過**（下記） |
 | `2-/修正版/02-star.png` | `bingo/bingo-cell-star.png` | 同上 |
 | `2-/修正版/03-menu.png` | `icon/action/menu.png` | 同上 |
 | `2-/修正版/04-white-bag.png` | `icon/action/gacha-bag-on-primary.png` | 同上 |
@@ -223,8 +223,24 @@ public/
 | `2-/修正版/09-swipe.png` | `icon/action/gesture-swipe.png` | 同上 |
 | `2-/修正版/10-g-bag.png` | `icon/action/gacha-bag.png` | 同上 |
 | `2-/修正版/11-four-grid.png` | `icon/action/qr-grid.png` | 同上 |
-| `2-/修正版/12-bingo-card.png` | `bingo/bingo-grid-filled.png` | 1254×1254 → 1327×1185 |
-| `2-/修正版/13-g-coin.png` | `gacha/coin.png` | 線画の最終版 |
+| `2-/修正版/12-bingo-card.png` | `bingo/bingo-grid-filled.png` | 同上 ＋ 1254×1254 → 1327×1185 |
+| `2-/修正版/13-g-coin.png` | `gacha/coin.png` | 同上 |
+
+### いちばん効いた変更: 背景の透過
+
+**旧素材 11 点は背景が透明ではなく、`#fdfdfd` 前後の不透明な白で塗り潰されていた**
+（アルファ値が全ピクセル 255）。クリーム地（`--pf-cream-light`）の上に置くと、
+絵柄の周りに白い四角が出る状態だった。修正版はいずれも完全な透過で届いている。
+
+| 素材 | 旧: 完全透明なピクセルの割合 | 新 |
+|---|---|---|
+| `icon/action/menu.png` | 0% | 86% |
+| `bingo/bingo-cell-star.png` | 0% | 92% |
+| `icon/action/close.png` | 0% | 37% |
+| `gacha/coin.png` | 0% | 33% |
+
+副次効果としてファイルサイズも大きく減った（例: `logo-protofes.png` 656KB → 64KB、
+`icon/action/menu.png` 727KB → 101KB）。16 点合計で 11.6MB → 6.0MB。
 
 取り込まなかったもの:
 
@@ -261,6 +277,7 @@ public/
 
 | 素材 | 欲しい理由 |
 |---|---|
+| `feedback/popup-coin-complete.png` の透過版 | 3 枚あるポップアップ用イラストのうち、これだけ背景が `#f4f4f4` の不透明な塗りのまま（他の 2 枚は透過済み）。2026-09 の修正版には含まれていなかった |
 | ホーム／スケジュールの円形アイコン | ボトムナビ側 4 項目のうち、ブース一覧とアワード投票だけが `feature-*` の円枠つき、ホームとスケジュールは枠なしのグリフで、絵柄のトーンが揃っていない。寸法は揃ったが、枠の有無は素材が無いと揃えられない |
 | ボトムナビ用の参加ガイド項目 | `icon/nav/nav-guide.png` は用意してあるが、現在ボトムナビに参加ガイドの項目が無く未使用。項目を足すかどうかは UI 仕様の判断待ち |
 
