@@ -26,6 +26,12 @@ describe('toManualCodeForSubmit', () => {
   it('5 文字（運営画面の例 AI001）も送れる', () => {
     expect(toManualCodeForSubmit('AI001')).toBe('AI001')
   })
+  // 入力欄の maxLength をコード長ちょうどにすると、ブラウザが trim 前に切り詰めるため
+  // 前後に空白のあるコードを貼った参加者が永久に通らなくなる。長さの判定はここが担う
+  it('上限ちょうどの長さでも、前後に空白があれば trim して送れる', () => {
+    expect(toManualCodeForSubmit(' ABC123 ')).toBe('ABC123')
+    expect(toManualCodeForSubmit('  123456  ')).toBe('123456')
+  })
 })
 
 describe('manualCheckInErrorMessage', () => {

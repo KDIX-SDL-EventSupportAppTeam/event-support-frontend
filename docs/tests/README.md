@@ -79,6 +79,7 @@ YYYY-MM-DD-kebab-case-summary.md
 | [tests/unit/exhibitor-store.test.ts](../../tests/unit/exhibitor-store.test.ts) | unit | `src/features/exhibitor/store/exhibitorStore.ts` |
 | [tests/integration/frontend-package.test.ts](../../tests/integration/frontend-package.test.ts) | integration | ルート `package.json`（build スクリプト） |
 | [tests/unit/parseQrToBoothId.test.ts](../../tests/unit/parseQrToBoothId.test.ts) | unit | `src/features/checkin/lib/parseQrToBoothId.ts` |
+| [tests/unit/checkin-entry-paths.test.ts](../../tests/unit/checkin-entry-paths.test.ts) | unit | `src/features/checkin/pages/CheckInPage.tsx` / `CheckInQrScanView.tsx`（入口の静的検査） |
 
 新規テストを追加したら、この表も更新する。
 

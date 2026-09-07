@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   fetchV1BingoCard,
   postV1CheckIn,
@@ -32,8 +32,6 @@ type Step = CheckInStep
 
 export function CheckInPage() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const boothIdParam = searchParams.get('booth_id')?.trim() ?? ''
 
   const userId = useAuthStore((s) => s.user?.id)
   const eventId = useAuthStore((s) => s.user?.event_id)
@@ -47,10 +45,11 @@ export function CheckInPage() {
     reload: reloadBooths,
   } = useLegacyBoothList(eventId, userId)
 
-  const [step, setStep] = useState<Step>(boothIdParam ? 'booth' : 'scan')
-  const [selectedBoothId, setSelectedBoothId] = useState(boothIdParam)
-  /** 'qr' = QR 読取または ?booth_id= 経由（一覧を出さない）／ 'list' = フォールバックの一覧選択／ 'manual' = コード入力 */
-  const [boothSource, setBoothSource] = useState<'qr' | 'list' | 'manual'>(boothIdParam ? 'qr' : 'list')
+  // 入口は常にカメラ。?booth_id= を読んで確定させる経路は塞いだ（読まずにチェックインできてしまうため）
+  const [step, setStep] = useState<Step>('scan')
+  const [selectedBoothId, setSelectedBoothId] = useState('')
+  /** 'qr' = QR 読取／ 'manual' = コード入力。ブース一覧から選ぶ経路は今年は持たない */
+  const [boothSource, setBoothSource] = useState<'qr' | 'manual'>('qr')
   const [manualCode, setManualCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -72,11 +71,7 @@ export function CheckInPage() {
 
   const alreadyCheckedIn = selectedBoothId ? checkedInBoothIds.includes(selectedBoothId) : false
 
-  useEffect(() => {
-    if (boothIdParam) setSelectedBoothId(boothIdParam)
-  }, [boothIdParam])
-
-  // QR / ?booth_id= 経由で既にチェックイン済みのブースに来たときは、赤いエラーではなく
+  // QR 経由で既にチェックイン済みのブースに来たときは、赤いエラーではなく
   // 「訪問済みです」を出す（同じ QR の再読み取りは正常な行動）。サーバー往復は不要。
   useEffect(() => {
     if (step !== 'booth' || boothSource !== 'qr' || !selectedBoothId || boothsLoading) return
@@ -276,12 +271,6 @@ export function CheckInPage() {
             setErrorMessage(null)
             setStep('booth')
           }}
-          onFallback={() => {
-            setBoothSource('list')
-            setSelectedBoothId('')
-            setErrorMessage(null)
-            setStep('booth')
-          }}
           onManual={isV1Flow ? () => { setErrorMessage(null); setManualCode(''); setStep('manual') } : undefined}
         />
       </div>
@@ -301,7 +290,10 @@ export function CheckInPage() {
           inputMode="text"
           autoComplete="off"
           autoCapitalize="characters"
-          maxLength={MANUAL_CODE_MAX_LENGTH}
+          // maxLength は trim より先に効くため、ここでコード長ちょうどに絞らない。
+          // " ABC123 " を貼ると " ABC12" に切られ、正しいコードが永久に通らなくなる。
+          // 長さの判定は toManualCodeForSubmit（trim 後）に任せる
+          maxLength={MANUAL_CODE_MAX_LENGTH + 4}
           value={manualCode}
           onChange={(e) => { setManualCode(e.target.value); if (errorMessage) setErrorMessage(null) }}
           onKeyDown={(e) => { if (e.key === 'Enter' && canSubmit) void handleCheckInManual() }}
@@ -388,9 +380,7 @@ export function CheckInPage() {
   return (
     <div className="reader-container container py-3">
       <h2 className="result-title">チェックイン</h2>
-      <p className="result-message mb-3">
-        {boothSource === 'qr' ? 'このブースにチェックインします。' : 'ブースを選んでチェックインしてください。'}
-      </p>
+      <p className="result-message mb-3">このブースにチェックインします。</p>
 
       {boothsLoading ? (
         <div className="py-4 text-center">
@@ -398,33 +388,6 @@ export function CheckInPage() {
             <span className="visually-hidden">読み込み中</span>
           </div>
         </div>
-      ) : boothSource === 'list' ? (
-        booths.length === 0 ? (
-          <p className="text-muted">ブースがありません。</p>
-        ) : (
-          <div className="checkin-booth-picker d-grid gap-2 mb-4">
-            {booths.map((booth) => {
-              const checked = checkedInBoothIds.includes(booth.booth_id)
-              const active = selectedBoothId === booth.booth_id
-              return (
-                <button
-                  key={booth.booth_id}
-                  type="button"
-                  className={`btn text-start checkin-booth-option ${active ? 'active' : ''} ${checked ? 'disabled' : ''}`}
-                  disabled={checked}
-                  onClick={() => setSelectedBoothId(booth.booth_id)}
-                >
-                  <span className="me-2">{booth.booth_emoji}</span>
-                  <strong>{booth.booth_name}</strong>
-                  <span className="ms-2 small text-muted">
-                    {(booth.booth_display_code ?? booth.booth_id).toUpperCase()}
-                  </span>
-                  {checked ? <span className="ms-2 small text-success">済</span> : null}
-                </button>
-              )
-            })}
-          </div>
-        )
       ) : booths.length === 0 ? (
         // ブースが1件も取れていない = 通信断・サーバー障害。QR が違うわけではないので
         // 「このイベントのブースではありません」を出してはいけない（読み直させてしまう）
@@ -457,16 +420,19 @@ export function CheckInPage() {
           >
             もう一度読み取る
           </button>
-          <button
-            type="button"
-            className="btn btn-outline-secondary w-100"
-            onClick={() => {
-              setBoothSource('list')
-              setSelectedBoothId('')
-            }}
-          >
-            ブース一覧から選ぶ
-          </button>
+          {isV1Flow ? (
+            <button
+              type="button"
+              className="btn btn-outline-secondary w-100"
+              onClick={() => {
+                setErrorMessage(null)
+                setManualCode('')
+                setStep('manual')
+              }}
+            >
+              コードを入力する
+            </button>
+          ) : null}
         </div>
       ) : null}
 
@@ -504,16 +470,6 @@ export function CheckInPage() {
         {boothSource === 'qr' && selectedBooth ? (
           <button type="button" className="btn btn-outline-secondary" onClick={() => setStep('scan')}>
             別のブースを読み取る
-          </button>
-        ) : null}
-        {boothSource === 'list' ? (
-          <button type="button" className="btn btn-outline-secondary" onClick={() => setStep('scan')}>
-            QRを読み取る
-          </button>
-        ) : null}
-        {boothSource === 'list' && isV1Flow ? (
-          <button type="button" className="btn btn-link btn-sm text-muted" onClick={() => { setErrorMessage(null); setManualCode(''); setStep('manual') }}>
-            QRが読めないときはコードを入力
           </button>
         ) : null}
         <button type="button" className="btn btn-outline-secondary" onClick={() => navigate('/home')}>
