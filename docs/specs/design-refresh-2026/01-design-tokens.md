@@ -77,7 +77,7 @@
   --pf-shadow-card: 0 2px 8px rgb(39 22 3 / 8%);
   --pf-shadow-nav: 0 -2px 12px rgb(39 22 3 / 10%);
 
-  --pf-nav-height: 4.5rem;   // 03-bottom-navigation.md が参照する
+  --pf-nav-height: 5.6rem;   // 03-bottom-navigation.md が参照する
 }
 ```
 
