@@ -58,7 +58,8 @@
 `alt` とスクリーンリーダー向けのラベルは、焼き込みの有無にかかわらず必ず付ける。
 
 **アイコンの寸法は固定の正方形ボックス＋`object-fit: contain` で決める**
-（側4項目 1.9rem / 中央FAB 3.2rem）。`max-height` だけの指定はしない。
+（側4項目 2.5rem / 中央FAB 4.2rem。360px 以下では 2.1rem / 3.6rem）。
+`max-height` だけの指定はしない。バー自体の高さは `--pf-nav-height`（5.6rem）。
 素材側の前提は [reference/assets.md「寸法の規約」](../../reference/assets.md)、
 経緯は [ADR 0005](../../decisions/adrs/0005-icon-canvas-normalization.md)。
 

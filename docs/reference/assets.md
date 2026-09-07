@@ -65,8 +65,8 @@ public/
 
 | 描画箇所 | 寸法 |
 |---|---|
-| ボトムナビ 側の4項目 | `--pf-nav-icon-size` = 1.9rem（`shared/components/layout/bottom-nav.scss`） |
-| ボトムナビ 中央FAB | `--pf-nav-fab-size` = 3.2rem |
+| ボトムナビ 側の4項目 | `--pf-nav-icon-size` = 2.5rem（360px 以下では 2.1rem。`shared/components/layout/bottom-nav.scss`） |
+| ボトムナビ 中央FAB | `--pf-nav-fab-size` = 4.2rem（360px 以下では 3.6rem） |
 | オンボーディングの機能アイコン・スワイプ説明 | 3rem 角（`.onboarding-feature-icon` / `.onboarding-gesture-hint`） |
 | ホームのガチャポン袋 | 32px 角（`.gachapon-icon`） |
 | ガチャコイン | 40px 角（`.coins-display img`） |
@@ -108,7 +108,7 @@ public/
 | `ui/button/button-surface.png` | 白の塗り潰しボタン背景 |
 | `ui/button/bottom-bar-primary.png` | 画面下端に敷く黄色の帯（上辺がカーブ） |
 | `ui/nav/nav-bar-flat.png` | ボトムナビの帯（中央に丸の切り欠き・影なし） |
-| `ui/nav/nav-bar-notched.png` | 同上・中央の丸が飛び出し＋影あり |
+| `ui/nav/nav-bar-notched.png` | 同上・中央の丸が飛び出し＋影あり。**受領時は 1536×1024 のうち帯が写っているのは y=355〜729 だけで、上下が透明な余白だった。** `object-fit: fill` で伸ばしても帯がナビの高さの 37% ほどにしかならずアイコンが帯からはみ出すため、余白を切り落として 1451×375 にしてある |
 
 ### icon/nav
 

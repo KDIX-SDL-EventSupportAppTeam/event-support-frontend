@@ -12,8 +12,8 @@
 
 .bottom-nav {
   // 側の4項目と中央FABの2種類だけで、ボトムナビのアイコン寸法を決める
-  --pf-nav-icon-size: 1.9rem;
-  --pf-nav-fab-size: 3.2rem;
+  --pf-nav-icon-size: 2.5rem;
+  --pf-nav-fab-size: 4.2rem;
 
   position: fixed;
   left: 0;
@@ -89,10 +89,24 @@
 }
 
 .bottom-nav__label {
-  margin-top: 0.1rem;
-  font-size: 0.65rem;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
   font-weight: 500;
   color: var(--pf-ink);
   line-height: 1.1;
   white-space: nowrap;
+}
+
+// 5項目 + 「アワード投票」の6文字が入りきらない幅（iPhone SE 相当の 320px 等）では、
+// バーの高さはそのままにアイコンとラベルだけ詰める。折り返させると項目ごとに
+// 高さが変わってアイコンの位置が上下にずれる
+@media (max-width: 360px) {
+  .bottom-nav {
+    --pf-nav-icon-size: 2.1rem;
+    --pf-nav-fab-size: 3.6rem;
+  }
+
+  .bottom-nav__label {
+    font-size: 0.62rem;
+  }
 }
