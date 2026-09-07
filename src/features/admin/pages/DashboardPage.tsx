@@ -30,6 +30,34 @@ export function DashboardPage() {
   // rating:new は集計に影響するため再取得するが、評価ラッシュ時の連発を防ぐため 5 秒 trailing デバウンス
   const ratingDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  /**
+   * 集計の取得。`reportError` が false のときは失敗を画面に出さず、前回値を残したまま黙る
+   * （ポーリングの一時的な失敗で当日の画面から数字が消えないようにするため）。
+   */
+  const loadDashboard = useCallback(
+    async (reportError: boolean) => {
+      if (!eventId) return
+      try {
+        setData(await fetchAdminDashboard(eventId))
+        setError(null)
+      } catch (e) {
+        if (reportError) setError(formatClientError(e, 'ダッシュボードの取得に失敗しました'))
+      }
+    },
+    [eventId],
+  )
+
+  /** 推薦エンジンの状態の中継取得。失敗しても他の集計は表示し続ける（issue #75） */
+  const loadRecState = useCallback(async () => {
+    if (!eventId) return
+    try {
+      setRecState(await fetchRecommenderState(eventId))
+      setRecError(null)
+    } catch (e) {
+      setRecError(formatClientError(e, '取得失敗'))
+    }
+  }, [eventId])
+
   const loadGacha = useCallback(async () => {
     if (!eventId) return
     setGachaRefreshing(true)
@@ -47,28 +75,16 @@ export function DashboardPage() {
 
   useEffect(() => {
     if (!eventId) return
-    fetchAdminDashboard(eventId)
-      .then(setData)
-      .catch((e) => setError(formatClientError(e, 'ダッシュボードの取得に失敗しました')))
-    fetchRecommenderState(eventId)
-      .then((s) => {
-        setRecState(s)
-        setRecError(null)
-      })
-      .catch((e) => setRecError(formatClientError(e, '取得失敗')))
+    void loadDashboard(true)
+    void loadRecState()
     void loadGacha()
     const timer = setInterval(() => {
-      fetchAdminDashboard(eventId).then(setData).catch(() => undefined)
-      fetchRecommenderState(eventId)
-        .then((s) => {
-          setRecState(s)
-          setRecError(null)
-        })
-        .catch((e) => setRecError(formatClientError(e, '取得失敗')))
+      void loadDashboard(false)
+      void loadRecState()
       void loadGacha()
     }, 60_000)
     return () => clearInterval(timer)
-  }, [eventId, loadGacha])
+  }, [eventId, loadDashboard, loadRecState, loadGacha])
 
   useEffect(() => {
     if (!token || !eventId) return
@@ -99,13 +115,8 @@ export function DashboardPage() {
       if (ratingDebounce.current) clearTimeout(ratingDebounce.current)
       ratingDebounce.current = setTimeout(() => {
         ratingDebounce.current = null
-        fetchAdminDashboard(eventId).then(setData).catch(() => undefined)
-        fetchRecommenderState(eventId)
-          .then((s) => {
-            setRecState(s)
-            setRecError(null)
-          })
-          .catch((e) => setRecError(formatClientError(e, '取得失敗')))
+        void loadDashboard(false)
+        void loadRecState()
       }, 5_000)
     }
     socket.on('checkin:new', onNew)
@@ -119,7 +130,7 @@ export function DashboardPage() {
       }
       disconnectSocket()
     }
-  }, [token, eventId])
+  }, [token, eventId, loadDashboard, loadRecState])
 
   if (error) {
     return (
