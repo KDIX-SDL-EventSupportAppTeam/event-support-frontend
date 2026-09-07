@@ -69,4 +69,11 @@ describe('Q&A（今年の仕様）', () => {
   it('T-4c 「立会い」は否定形でしか使われていない（去年の立会い前提が紛れ込んでいない）', () => {
     expect(allText()).not.toMatch(/立会い(?!はありません)/)
   })
+  // 今年のチェックインは QR と手動コードの2方式で、ブース一覧から選ぶ経路は撤去する。
+  // Q&A が存在しない導線を案内すると、カメラが使えない参加者が詰まる
+  it('T-4d カメラが使えないときの案内が「コードを入力」を指している', () => {
+    const item = QA_2026.find((q) => q.question.includes('チェックインができません'))
+    expect(item?.answer).toContain('コードを入力')
+    expect(item?.answer).not.toContain('ブース一覧')
+  })
 })

@@ -23,7 +23,8 @@ NNNN-kebab-case-title.md
 | 0002 | [0002-top-redirects-to-organizer-login.md](./0002-top-redirects-to-organizer-login.md) | トップ `/` をオーガナイザーログインにリダイレクト | 一部置換（ADR-0004） |
 | 0003 | [0003-move-auth-session-to-shared.md](./0003-move-auth-session-to-shared.md) | 認証セッションを shared/auth に配置 | 採用 |
 | 0004 | [0004-single-entry-url-state-machine.md](./0004-single-entry-url-state-machine.md) | 参加者の入口を配布 URL 1 本に統合し状態機械にする | 採用 |
-| 0005 | [0005-schedule-and-qa-are-static-this-year.md](./0005-schedule-and-qa-are-static-this-year.md) | スケジュール・Q&A は今年も静的な定数で持つ | 採用 |
+| 0005 | [0005-icon-canvas-normalization.md](./0005-icon-canvas-normalization.md) | アイコン素材を正方形キャンバスへ正規化し、描画サイズを揃える | 採用 |
+| 0006 | [0006-schedule-and-qa-are-static-this-year.md](./0006-schedule-and-qa-are-static-this-year.md) | スケジュール・Q&A は今年も静的な定数で持つ | 採用 |
 
 ## レガシー
 
