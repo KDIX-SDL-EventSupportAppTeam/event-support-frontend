@@ -11,7 +11,7 @@
  * 解放演出を先に流して評価を後ろへ押しやってはいけない。解放演出は成功ステップよりも後ろ
  * （参加者が成功ステップを閉じた後 = `resultAcknowledged`）に置く。
  */
-export type CheckInStep = 'scan' | 'booth' | 'rating' | 'already_visited' | 'result'
+export type CheckInStep = 'scan' | 'manual' | 'booth' | 'rating' | 'already_visited' | 'result'
 export type CheckInView = CheckInStep | 'unlock'
 
 export function resolveCheckInView(input: {
