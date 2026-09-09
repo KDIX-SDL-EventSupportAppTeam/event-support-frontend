@@ -1,5 +1,4 @@
 import { fetchV1Booths, fetchV1Checkins } from '@/shared/api/v1Participant'
-import { fetchAwardVoteSnapshot } from '@/shared/api/v1Awards'
 import { buildRandomBingoGrid, countCompletedBingoLines } from '@/shared/data/sample/bingoRandom'
 import { mapV1BoothListItemToLegacy } from '@/shared/data/api/mapV1Booth'
 import type { EventDataSource } from '@/shared/data/EventDataSource'
@@ -35,10 +34,5 @@ export class ApiEventDataSource implements EventDataSource {
     void _eventId
     void _userId
     return 0
-  }
-
-  async getAwards(eventId: string) {
-    const snap = await fetchAwardVoteSnapshot(eventId)
-    return snap.awards
   }
 }
