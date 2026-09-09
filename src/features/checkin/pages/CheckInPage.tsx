@@ -350,9 +350,11 @@ export function CheckInPage() {
                 >
                   <span className="me-2">{booth.booth_emoji}</span>
                   <strong>{booth.booth_name}</strong>
-                  <span className="ms-2 small text-muted">
-                    {(booth.booth_display_code ?? booth.booth_id).toUpperCase()}
-                  </span>
+                  {booth.booth_display_code ? (
+                    <span className="ms-2 small text-muted">
+                      {booth.booth_display_code.toUpperCase()}
+                    </span>
+                  ) : null}
                   {checked ? <span className="ms-2 small text-success">済</span> : null}
                 </button>
               )

@@ -4,7 +4,7 @@
  */
 export type LegacyBooth = {
   booth_id: string
-  /** ビンゴ・一覧の表示用（v1 の manual_code など）。未設定時は booth_id を表示 */
+  /** ビンゴ・一覧の表示用（v1 の display_code。公開してよいブース番号）。未設定なら「—」表示 */
   booth_display_code?: string
   booth_name: string
   booth_emoji: string
