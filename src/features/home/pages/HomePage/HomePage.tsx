@@ -12,6 +12,9 @@ import { BingoCardView } from '@/features/home/components/bingo/BingoCardView'
 import { createGachaClient, type GachaCoins } from '@/features/gachapon/api/gachaClient'
 import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
 import { HomeTutorialModal } from '@/features/home/pages/HomePage/HomeTutorialModal'
+import { XShareButton } from '@/features/home/components/XShareButton'
+import { buildSharePost } from '@/features/home/share/sharePostTemplate'
+import { openXShare } from '@/shared/lib/xShare'
 import { Modal } from '@/shared/components/modal/Modal'
 import '@/features/home/styles/legacy-home.scss'
 import '@/features/home/styles/bingo-card.scss'
@@ -19,6 +22,9 @@ import { entryPathForRedirect } from '@/shared/lib/lastEventId'
 
 const FEEDBACK_FORM_URL =
   (import.meta.env.VITE_FEEDBACK_FORM_URL as string | undefined) ?? 'https://forms.gle/7jf7E6DVHvBmLNKA6'
+
+/** X ポストに併記する URL（未設定なら本文のみ）。文面本体は sharePostTemplate.ts */
+const X_SHARE_URL = (import.meta.env.VITE_X_SHARE_URL as string | undefined)?.trim() || undefined
 
 export function HomePage() {
   const navigate = useNavigate()
@@ -80,14 +86,19 @@ export function HomePage() {
   const [bingoModalOpen, setBingoModalOpen] = useState(false)
   const [coinCompleteOpen, setCoinCompleteOpen] = useState(false)
   const [tweetsComingSoonOpen, setTweetsComingSoonOpen] = useState(false)
+  const [xShareConfirmOpen, setXShareConfirmOpen] = useState(false)
   const [surveyUrl, setSurveyUrl] = useState<string | null>(null)
+  const [eventName, setEventName] = useState<string | null>(null)
 
   useEffect(() => {
     if (!eventId) return
     let active = true
     fetchPublicEvent(eventId)
       .then((e) => {
-        if (active) setSurveyUrl(e.survey_url)
+        if (active) {
+          setSurveyUrl(e.survey_url)
+          setEventName(e.name)
+        }
       })
       .catch(() => {
         /* 未設定扱いで非表示（モック/サンプルモード・通信失敗時も壊さない） */
@@ -170,6 +181,36 @@ export function HomePage() {
               onClick={() => {
                 window.open(FEEDBACK_FORM_URL, '_blank', 'noopener,noreferrer')
                 setFeedbackConfirmOpen(false)
+              }}
+            >
+              はい
+            </button>
+          </div>
+        </Modal>
+      ) : null}
+
+      {xShareConfirmOpen ? (
+        <Modal
+          titleId="x-share-confirm-title"
+          onClose={() => setXShareConfirmOpen(false)}
+          contentClassName="text-center"
+        >
+          <h5 id="x-share-confirm-title" className="modal-title">
+            X にポストします
+          </h5>
+          <p className="modal-body-text">
+            X の投稿画面を新しいタブで開きます。文面はあとから編集できます。よろしいですか？
+          </p>
+          <div className="modal-footer-buttons">
+            <button type="button" className="btn-custom-secondary" onClick={() => setXShareConfirmOpen(false)}>
+              キャンセル
+            </button>
+            <button
+              type="button"
+              className="btn-custom-primary-red"
+              onClick={() => {
+                openXShare(buildSharePost({ eventName: eventName ?? undefined, shareUrl: X_SHARE_URL }))
+                setXShareConfirmOpen(false)
               }}
             >
               はい
@@ -289,6 +330,12 @@ export function HomePage() {
           </div>
         </div>
       ) : null}
+
+      <div className="row g-2 mt-2">
+        <div className="col-12">
+          <XShareButton onClick={() => setXShareConfirmOpen(true)} />
+        </div>
+      </div>
 
       <div className="row row-cols-5 g-2 mt-2 sub-actions">
         <div className="col">
