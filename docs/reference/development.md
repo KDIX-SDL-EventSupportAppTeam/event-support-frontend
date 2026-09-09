@@ -112,13 +112,60 @@ cp .env.production.example .env.production
 npm run build
 ```
 
-| 変数 | 本番での想定値 |
-|---|---|
-| `VITE_DATA_SOURCE` | `api` |
-| `VITE_MOCK_API` | `false` |
-| `VITE_API_BASE_URL` | `https://event-support-server-xxxxxx-an.a.run.app/api/v1`（Cloud Run の URL） |
+| 変数 | 本番での値 | 備考 |
+|---|---|---|
+| `VITE_DATA_SOURCE` | `api`（必須・明示） | 未設定・`sample` はビルド失敗 |
+| `VITE_MOCK_API` | `false`（必須・明示） | それ以外はビルド失敗 |
+| `VITE_API_BASE_URL` | `https://…run.app/api/v1` | `https://` 以外はビルド失敗（ローカル preview の `http://127.0.0.1` のみ許可） |
+| `VITE_DEV_EVENT_ID` | 本番イベントの UUID（必須） | **名前に反して本番でも必要**（運営ログインの event_id。`cloudbuild.yaml` の `_DEV_EVENT_ID`） |
+| `VITE_DEV_LOGIN_EMAIL` / `VITE_DEV_LOGIN_PASSWORD` / `VITE_DEV_DISPLAY_NAME` | 設定しない | 設定されているとビルド失敗 |
+| `VITE_CD_TEST` | 任意 | `index.html` のコメントに埋まる |
+| `VITE_FEEDBACK_FORM_URL` | 任意 | |
 
 > `VITE_` 接頭辞付きの値は **クライアントバンドルに埋め込まれて公開される**。秘密情報は絶対に置かない。
+
+### ビルドが失敗する条件
+
+本番ビルド（`vite build` の mode=production、つまり `npm run build`）は、上表の必須変数が不正だと
+`src/shared/config/productionEnvGuard.ts` の検査で `vite.config.ts` が `throw` し、exit code が非0になる
+（Cloud Build・CI とも止まる。issue #90）。`npm run dev` や `vite build --mode development` は検査対象外。
+
+#### ローカルで `npm run build` を試すとき
+
+**検査は「本番デプロイのビルド」と「手元で成果物を確認するビルド」を区別しない。**
+`npm run build` はローカルでも mode=production なので、そのまま叩くと落ちる。
+
+`.env.example` どおりの開発セットアップでは `VITE_DEV_EVENT_ID` がコメントアウトされているため、
+まずここで止まる。ローカルの動作確認は `npm run dev` で足りる（検査は走らない）。
+どうしても成果物を作りたいときだけ、その場で渡す:
+
+```bash
+VITE_DEV_EVENT_ID=20000000-0000-4000-8000-000000000001 npm run build
+```
+
+`20000000-…-000000000001` は server の `db:seed` が作る開発用イベントの UUID。
+**ローカル確認に本番の UUID を使う必要はない。**
+
+もう1つ、`.env` に `VITE_DEV_LOGIN_EMAIL` / `VITE_DEV_LOGIN_PASSWORD` /
+`VITE_DEV_DISPLAY_NAME` を設定していると、それも検査に引っかかって落ちる。
+`loadEnv` はモードに関わらずベースの `.env` を読むためで、**検査の誤りではない**
+（本番相当のビルドに開発用の資格情報が混ざることを止めている）。
+その場合はそのビルドに限り空で上書きする:
+
+```bash
+VITE_DEV_LOGIN_EMAIL= VITE_DEV_LOGIN_PASSWORD= VITE_DEV_DISPLAY_NAME= VITE_DEV_EVENT_ID=20000000-0000-4000-8000-000000000001 npm run build
+```
+
+Cloud Build・GitHub Actions は毎回フレッシュチェックアウトで `.env` が無いため、この現象は起きない。
+
+### デプロイ後の確認
+
+```bash
+curl -s https://event-support-app.web.app/ | grep -o 'build-env:[^>]*'
+# → build-env: data-source=api mock-api=false
+```
+
+運営画面（`/admin/*`）のサイドバー最下部にも「データ取得元: api」が表示される（`sample` の場合は赤バッジ「サンプル（本番データではない）」）。
 
 ### デプロイ先
 

@@ -25,6 +25,11 @@ jobs:
         run: npm ci
       - name: Build (tsc + vite)
         run: npm run build
+        env:
+          VITE_DATA_SOURCE: api
+          VITE_MOCK_API: "false"
+          VITE_API_BASE_URL: https://ci.invalid/api/v1
+          VITE_DEV_EVENT_ID: 20000000-0000-4000-8000-000000000001
       - name: Lint
         run: npm run lint
       - name: Unit tests
