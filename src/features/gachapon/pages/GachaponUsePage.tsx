@@ -108,8 +108,11 @@ export function GachaponUsePage() {
           </>
         ) : !coins.is_enabled ? (
           <>
-            <p className="lead">ただいまガチャポンは準備中です。</p>
-            <p className="text-muted">しばらくたってからもう一度お試しください。</p>
+            {/* issue #104: 「準備中」「終了」と読める文言にしない。コインが消えたと誤解される */}
+            <p className="lead">ただいまガチャを停止しています。</p>
+            <p className="text-muted">
+              コインは無くなりませんので、しばらくしてからもう一度お試しください。
+            </p>
             <div className="d-grid">{backButton}</div>
           </>
         ) : coins.available <= 0 ? (

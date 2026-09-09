@@ -201,8 +201,12 @@ export async function fetchAdminDashboard(eventId: string): Promise<AdminDashboa
  * `is_enabled` / `total_earned` はこのエンドポイントには含まれない（別 issue の範囲）。
  */
 export type AdminGachaStats = {
+  /** 現在ガチャが有効か（issue #122。false = 当日停止中） */
+  is_enabled: boolean
   /** 使用済みコインの総数 */
   total_used: number
+  /** 換算後の獲得コイン総数（participant のカードのみ）。available = total_earned - total_used */
+  total_earned: number
   /** 換算後 earned > 0 の参加者数（コインを持っている人数） */
   users_with_coins: number
   /** 実際にコインを使用した参加者の実人数 */
@@ -214,6 +218,18 @@ export type AdminGachaStats = {
 export async function fetchAdminGachaStats(eventId: string): Promise<AdminGachaStats> {
   const res = await apiClient.get<ApiResponse<AdminGachaStats>>(
     `/admin/events/${encodeURIComponent(eventId)}/gacha/stats`,
+  )
+  return unwrapApiData(res)
+}
+
+/**
+ * 当日の緊急停止／再開（issue #122 / #104）。`manager` 限定（`viewer` は server が 403）。
+ * `is_enabled` だけを変える。coins_per_line / max_coins / bonus_coins は触らない。
+ */
+export async function patchAdminGachaEnabled(eventId: string, isEnabled: boolean): Promise<{ is_enabled: boolean }> {
+  const res = await apiClient.patch<ApiResponse<{ is_enabled: boolean }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/gacha/enabled`,
+    { is_enabled: isEnabled },
   )
   return unwrapApiData(res)
 }

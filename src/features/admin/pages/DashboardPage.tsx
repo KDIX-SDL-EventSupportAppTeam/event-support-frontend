@@ -2,10 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { AdminShell } from '@/features/admin/components/AdminShell'
 import { LiveMonitoringBlock } from '@/features/admin/components/LiveMonitoringBlock'
 import { GachaUsageBlock } from '@/features/admin/components/GachaUsageBlock'
-import { useAuthStore } from '@/shared/auth/authStore'
+import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
 import {
   fetchAdminDashboard,
   fetchAdminGachaStats,
+  patchAdminGachaEnabled,
   fetchRecommenderState,
   type AdminDashboard,
   type AdminGachaStats,
@@ -18,6 +19,7 @@ import { formatClientError } from '@/shared/lib/formatClientError'
 export function DashboardPage() {
   const token = useAuthStore((s) => s.token)
   const eventId = useAuthStore((s) => s.user?.event_id)
+  const canManageGacha = isManagerUser(useAuthStore((s) => s.user))
   const [data, setData] = useState<AdminDashboard | null>(null)
   const [recent, setRecent] = useState<CheckinNewEvent[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -177,7 +179,19 @@ export function DashboardPage() {
 
       <LiveMonitoringBlock bingo={data.bingo} rec={recState} recError={recError} />
 
-      <GachaUsageBlock stats={gachaStats} error={gachaError} />
+      <GachaUsageBlock
+        stats={gachaStats}
+        error={gachaError}
+        canManage={canManageGacha}
+        onToggleEnabled={async (next) => {
+          try {
+            await patchAdminGachaEnabled(eventId as string, next)
+          } catch (e) {
+            throw new Error(formatClientError(e, 'ガチャの切り替えに失敗しました'))
+          }
+          await loadGachaStats()
+        }}
+      />
 
       <div className="row g-4 mb-4">
         {/* ブース別チェックイン バーチャート */}
