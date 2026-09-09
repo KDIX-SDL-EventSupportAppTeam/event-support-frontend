@@ -130,6 +130,34 @@ npm run build
 `src/shared/config/productionEnvGuard.ts` の検査で `vite.config.ts` が `throw` し、exit code が非0になる
 （Cloud Build・CI とも止まる。issue #90）。`npm run dev` や `vite build --mode development` は検査対象外。
 
+#### ローカルで `npm run build` を試すとき
+
+**検査は「本番デプロイのビルド」と「手元で成果物を確認するビルド」を区別しない。**
+`npm run build` はローカルでも mode=production なので、そのまま叩くと落ちる。
+
+`.env.example` どおりの開発セットアップでは `VITE_DEV_EVENT_ID` がコメントアウトされているため、
+まずここで止まる。ローカルの動作確認は `npm run dev` で足りる（検査は走らない）。
+どうしても成果物を作りたいときだけ、その場で渡す:
+
+```bash
+VITE_DEV_EVENT_ID=20000000-0000-4000-8000-000000000001 npm run build
+```
+
+`20000000-…-000000000001` は server の `db:seed` が作る開発用イベントの UUID。
+**ローカル確認に本番の UUID を使う必要はない。**
+
+もう1つ、`.env` に `VITE_DEV_LOGIN_EMAIL` / `VITE_DEV_LOGIN_PASSWORD` /
+`VITE_DEV_DISPLAY_NAME` を設定していると、それも検査に引っかかって落ちる。
+`loadEnv` はモードに関わらずベースの `.env` を読むためで、**検査の誤りではない**
+（本番相当のビルドに開発用の資格情報が混ざることを止めている）。
+その場合はそのビルドに限り空で上書きする:
+
+```bash
+VITE_DEV_LOGIN_EMAIL= VITE_DEV_LOGIN_PASSWORD= VITE_DEV_DISPLAY_NAME= VITE_DEV_EVENT_ID=20000000-0000-4000-8000-000000000001 npm run build
+```
+
+Cloud Build・GitHub Actions は毎回フレッシュチェックアウトで `.env` が無いため、この現象は起きない。
+
 ### デプロイ後の確認
 
 ```bash
