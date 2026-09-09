@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createParticipantClient } from '@/shared/data/createParticipantClient'
 import { ApiError } from '@/shared/api/unwrap'
@@ -26,6 +26,14 @@ export function AwardVotePage() {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  /** 保存成功後にホームへ遷移するタイマー。アンマウント時に解除する */
+  const goHomeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (goHomeTimer.current) clearTimeout(goHomeTimer.current)
+    }
+  }, [])
 
   useEffect(() => {
     if (!eventId || !userId) {
@@ -78,7 +86,7 @@ export function AwardVotePage() {
       const snap = await client.saveVotes(eventId, userId, payload)
       setVotes(snap.votes)
       setSaved(true)
-      setTimeout(() => navigate('/home'), 700)
+      goHomeTimer.current = setTimeout(() => navigate('/home'), 700)
     } catch (e) {
       if (e instanceof ApiError && e.code === 'VOTING_CLOSED') {
         setVotingClosed(true)
