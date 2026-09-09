@@ -18,7 +18,13 @@ export type AdminBoothInput = {
   name: string
   description?: string
   category_id?: string | null
-  manual_code: string
+  /** 公開してよいブース番号（issue #121）。任意 */
+  display_code?: string | null
+  /**
+   * 手動コード（6桁数字）。**新規作成では送らない**（サーバーが自動採番する）。
+   * 編集では「刷り済みの紙に合わせる」逃げ道として手入力を受け付ける
+   */
+  manual_code?: string
   tags?: string[]
 }
 
@@ -273,6 +279,12 @@ export type AdminBoothSort = 'checkin_count' | 'avg_rating' | 'name'
 export type AdminBoothSummary = {
   id: string
   name: string
+  /** 公開してよいブース番号・小間番号（issue #121）。null あり */
+  display_code: string | null
+  /** 手動チェックインの照合コード（6桁数字・秘匿）。運営にだけ返る */
+  manual_code: string
+  /** 掲示用チェックイン URL（booth_id で確定。作成時点で決まる） */
+  checkin_url: string
   checkin_count: number
   avg_rating: number | null
   comment_count: number
@@ -286,6 +298,20 @@ export async function fetchAdminBoothSummaries(
     { params },
   )
   return unwrapApiData(res).booths
+}
+
+/**
+ * 手動コードの再発番（issue #121 / #103）。`manager` 限定（server は 403）。
+ * 掲示物を刷り直す前提の操作。旧コードでのチェックインは以後 404 になる。
+ */
+export async function regenerateBoothManualCode(
+  eventId: string,
+  boothId: string,
+): Promise<{ id: string; manual_code: string; checkin_url: string }> {
+  const res = await apiClient.post<ApiResponse<{ booth: { id: string; manual_code: string; checkin_url: string } }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/booths/${encodeURIComponent(boothId)}/manual-code/regenerate`,
+  )
+  return unwrapApiData(res).booth
 }
 
 // ---- ブース別コメント（server #54: GET /admin/events/:event_id/booths/:booth_id/comments） ----

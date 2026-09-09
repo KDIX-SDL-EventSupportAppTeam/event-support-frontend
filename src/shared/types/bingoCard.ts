@@ -10,7 +10,7 @@
 export type BingoCellZone = 'CENTER' | 'OUTER'
 export type BingoCellSource = 'PRESURVEY' | 'FREE_VISIT' | 'RECOMMEND' | null
 
-export type BingoCellBooth = { id: string; name: string; manual_code: string; description: string }
+export type BingoCellBooth = { id: string; name: string; display_code: string | null; description: string }
 
 export type BingoCell = {
   position: number // 0..15（行優先）

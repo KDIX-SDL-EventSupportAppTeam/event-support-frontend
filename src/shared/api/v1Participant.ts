@@ -6,7 +6,8 @@ import type { BingoCard } from '@/shared/types/bingoCard'
 export type V1BoothListItem = {
   id: string
   name: string
-  manual_code: string | null
+  /** 公開してよいブース番号・小間番号（issue #121）。秘匿の manual_code は参加者向けには返らない */
+  display_code: string | null
   description: string
   category: { id: string; name: string } | null
   tags: string[]
