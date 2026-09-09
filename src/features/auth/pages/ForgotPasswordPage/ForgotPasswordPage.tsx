@@ -18,6 +18,10 @@ export function ForgotPasswordPage() {
   const queryEventId = searchParams.get('event') ?? ''
   const eventId = queryEventId || resolveLoginEventId()
   const usingFallback = !queryEventId
+  // ログイン画面は独立して存在せず入口（/e/:eventId）に統合されている。
+  // /login 経由だと lastEventId（localStorage）頼みになり、別端末で控えが無いと /e で行き止まる。
+  // eventId はこの画面が必ず持っているので、入口 URL を直接指す。
+  const entryPath = `/e/${encodeURIComponent(eventId)}`
 
   const [publicEvent, setPublicEvent] = useState<PublicEvent | null>(null)
   const [eventLookupFailed, setEventLookupFailed] = useState(false)
@@ -95,7 +99,7 @@ export function ForgotPasswordPage() {
                   メールが届かない場合は迷惑メールフォルダもご確認ください。
                 </div>
                 <p className="mb-0 text-center">
-                  <Link to={`/login`}>ログインに戻る</Link>
+                  <Link to={entryPath}>ログインに戻る</Link>
                 </p>
               </>
             ) : (
@@ -121,7 +125,7 @@ export function ForgotPasswordPage() {
                   </button>
                 </div>
                 <p className="mt-3 mb-0 text-center">
-                  <Link to={`/login`}>ログインに戻る</Link>
+                  <Link to={entryPath}>ログインに戻る</Link>
                 </p>
               </form>
             )}

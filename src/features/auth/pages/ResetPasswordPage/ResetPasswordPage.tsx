@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { resetPassword } from '@/features/auth/api/passwordReset'
 import { ApiError } from '@/shared/api/unwrap'
 import { formatClientError } from '@/shared/lib/formatClientError'
@@ -14,9 +14,20 @@ const MIN_LENGTH = 8
  * - 成功したらログイン画面へ送り、その旨を出す
  * - 無効・期限切れトークン（410）は真っ白にせず、再申請の導線を出す
  * - 公開ゲートの外側（未認証で開ける）
+ *
+ * 戻り先: `?event=<eventId>` があれば入口（/e/:eventId）へ直接送る。
+ * 無ければ従来どおり `/login`（= lastEventId を控えていれば入口へ、無ければ /e）。
+ * server のリセットリンク（`buildResetPasswordUrl` = `/reset-password/:token`）には
+ * 現状 `?event=` が含まれない（event-support-server docs/specs/password-reset）。
+ * 別端末でリンクを開くと `/login` フォールバックになるため、リンク本文には
+ * 「同じ端末で開いてください」の注意を server 側で添える前提。将来 server が
+ * `?event=` を付けたときにこの画面がそのまま拾えるよう受け口だけ用意しておく。
  */
 export function ResetPasswordPage() {
   const { token } = useParams<{ token: string }>()
+  const [searchParams] = useSearchParams()
+  const eventId = searchParams.get('event')?.trim() ?? ''
+  const backToLoginPath = eventId ? `/e/${encodeURIComponent(eventId)}` : '/login'
 
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -63,7 +74,7 @@ export function ResetPasswordPage() {
                   パスワードを変更しました。新しいパスワードでログインしてください。
                 </div>
                 <div className="d-grid">
-                  <Link to="/login" className="btn btn-primary">
+                  <Link to={backToLoginPath} className="btn btn-primary">
                     ログインする
                   </Link>
                 </div>
@@ -74,7 +85,7 @@ export function ResetPasswordPage() {
                   {expired}
                 </div>
                 <p className="mb-0 text-center">
-                  <Link to="/forgot-password">もう一度申請する</Link>
+                  <Link to={eventId ? `/forgot-password?event=${encodeURIComponent(eventId)}` : "/forgot-password"}>もう一度申請する</Link>
                 </p>
               </>
             ) : (
@@ -121,7 +132,7 @@ export function ResetPasswordPage() {
                   </button>
                 </div>
                 <p className="mt-3 mb-0 text-center">
-                  <Link to="/login">ログインに戻る</Link>
+                  <Link to={backToLoginPath}>ログインに戻る</Link>
                 </p>
               </form>
             )}
