@@ -1,6 +1,6 @@
 ---
 状態: 確定
-最終更新: 2026-08-28
+最終更新: 2026-09-05
 ---
 
 # 事前アンケートとアプリ公開ゲート（UI 仕様）
@@ -66,5 +66,5 @@ socket は JWT 必須で `/thanks` に向かない（サーバー側 P-9）。
 - [ ] 締切後の送信で 409 を受け、その旨が表示される
 - [ ] 必須設問が未回答だと送信できない
 - [ ] 関心分野の選択肢がサーバーから来た値である（ハードコードされていない）
-- [ ] `presurveyLocalStore` / `presurveySessionStore` / `config/questions.ts` が存在しない
+- [x] `presurveyLocalStore` / `presurveySessionStore` / `config/questions.ts` が存在しない（`docs/tests/runs/2026-09-05-pre-survey-gate-acceptance.md` T-9）
 - [ ] `/thanks` の遷移先が、ゲートの `is_open` に従う（現状はログイン状態だけで分岐している）
