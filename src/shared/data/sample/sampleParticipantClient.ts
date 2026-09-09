@@ -53,13 +53,14 @@ export class SampleParticipantClient implements ParticipantClient {
   }
 
   async getAwardVoteSnapshot(eventId: string, userId: string) {
-    void eventId
     const checkedIds = new Set(this.sample.getCheckedInBoothIds(eventId, userId))
     const checkedBooths = SAMPLE_LEGACY_BOOTHS.filter((b) => checkedIds.has(b.booth_id))
     const persisted = readSampleVotes(userId)
-    const votes: Record<string, string | null> = {}
+    // キーは award_id（issue #89）。チェックイン済みでない票は落とす（サーバーと同じ扱い）
+    const votes: Record<string, string> = {}
     for (const a of SAMPLE_VOTE_AWARDS) {
-      votes[a.name] = persisted[a.name] ?? null
+      const boothId = persisted[a.id]
+      if (boothId && checkedIds.has(boothId)) votes[a.id] = boothId
     }
     return {
       votingOpen: true,
@@ -69,8 +70,13 @@ export class SampleParticipantClient implements ParticipantClient {
     }
   }
 
-  async saveVotes(userId: string, votes: Record<string, string | null>): Promise<void> {
-    writeSampleVotes(userId, { ...votes })
+  async saveVotes(eventId: string, userId: string, votes: Record<string, string | null>) {
+    const next: Record<string, string> = {}
+    for (const [awardId, boothId] of Object.entries(votes)) {
+      if (boothId) next[awardId] = boothId
+    }
+    writeSampleVotes(userId, next)
+    return this.getAwardVoteSnapshot(eventId, userId)
   }
 
   async getSchedule() {

@@ -1,4 +1,5 @@
 import { postV1CheckIn } from '@/shared/api/v1Participant'
+import { fetchAwardVoteSnapshot, postAwardVotes } from '@/shared/api/v1Awards'
 import type { ParticipantClient } from '@/shared/data/participantTypes'
 import { QA_2026, SCHEDULE_2026 } from '@/shared/data/content/eventContent2026'
 
@@ -23,13 +24,14 @@ export class ApiParticipantClient implements ParticipantClient {
   }
 
   // ガチャコインは features/gachapon/api/gachaClient.ts に移設した（このクライアントは扱わない）。
-  // アワード投票は準備中（event-support-server/docs/specs/gacha-and-award/ の対象外）。
-  async getAwardVoteSnapshot() {
-    return { votingOpen: false, awards: [], checkedBooths: [], votes: {} }
+  async getAwardVoteSnapshot(eventId: string, _userId: string) {
+    void _userId
+    return fetchAwardVoteSnapshot(eventId)
   }
 
-  async saveVotes(): Promise<void> {
-    /* 準備中 */
+  async saveVotes(eventId: string, _userId: string, votes: Record<string, string | null>) {
+    void _userId
+    return postAwardVotes(eventId, votes)
   }
 
   async getSchedule() {
