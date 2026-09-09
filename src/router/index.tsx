@@ -15,6 +15,8 @@ import { GachaponIntroPage } from '@/features/gachapon/pages/GachaponIntroPage'
 import { GachaponUsePage } from '@/features/gachapon/pages/GachaponUsePage'
 import { GachaponCompletePage } from '@/features/gachapon/pages/GachaponCompletePage'
 import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage/VerifyEmailPage'
+import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage/ForgotPasswordPage'
+import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage/ResetPasswordPage'
 import { isAdminUser, useAuthStore } from '@/shared/auth/authStore'
 import { RequireAppOpen } from '@/shared/access/RequireAppOpen'
 import { entryPathForRedirect } from '@/shared/lib/lastEventId'
@@ -70,8 +72,9 @@ export function AppRoutes() {
       <Route path="/pre-survey/:eventId" element={<LegacyEntryRedirect />} />
       <Route path="/pre-survey/:eventId/*" element={<LegacyEntryRedirect />} />
       <Route path="/pre-register" element={<LegacyPlaceholderPage title="プレ登録" />} />
-      <Route path="/forgot-password" element={<LegacyPlaceholderPage title="パスワードを忘れた場合" />} />
-      <Route path="/reset-password/:token" element={<LegacyPlaceholderPage title="パスワード再設定" />} />
+      {/* 公開ゲートの外側。未認証で開ける（issue #107） */}
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route
         path="/exhibitor"
