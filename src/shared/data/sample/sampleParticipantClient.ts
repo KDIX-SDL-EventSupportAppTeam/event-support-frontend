@@ -2,8 +2,7 @@ import { countCompletedBingoLines } from '@/shared/data/sample/bingoRandom'
 import type { ParticipantClient } from '@/shared/data/participantTypes'
 import { pickCheckedInBoothIds, SampleEventData } from '@/shared/data/sample/SampleEventData'
 import { SAMPLE_LEGACY_BOOTHS } from '@/shared/data/sample/sampleBooths'
-import { SAMPLE_QA_ITEMS } from '@/shared/data/sample/sampleQa'
-import { SAMPLE_SCHEDULE } from '@/shared/data/sample/sampleSchedule'
+import { QA_2026, SCHEDULE_2026 } from '@/shared/data/content/eventContent2026'
 import {
   appendSampleCheckedId,
   readSampleExtraCheckedIds,
@@ -75,13 +74,13 @@ export class SampleParticipantClient implements ParticipantClient {
   }
 
   async getSchedule() {
-    return SAMPLE_SCHEDULE.map((d) => ({
+    return SCHEDULE_2026.map((d) => ({
       dayTitle: d.dayTitle,
       events: d.events.map((e) => ({ ...e })),
     }))
   }
 
   async getQa() {
-    return SAMPLE_QA_ITEMS.map((q) => ({ ...q }))
+    return QA_2026.map((q) => ({ ...q }))
   }
 }
