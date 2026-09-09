@@ -329,7 +329,10 @@ export function CheckInPage() {
             pattern="[0-9]*"
             autoComplete="one-time-code"
             autoCapitalize="off"
-            maxLength={12}
+            // コード長ちょうど（6）にはしない。ブラウザは貼り付けを trim 前に切り詰めるため、
+            // 前後に空白のある「 481502 」を貼ると 5 桁に欠ける（#103 起きてはいけないこと・PR #100）。
+            // 桁数の担保は「ちょうど6桁でないと送信不可」の側で行う（下の disabled と handleManualCheckIn）。
+            maxLength={8}
             placeholder="例: 481502"
             value={manualCode}
             onChange={(e) => setManualCode(e.target.value.replace(/[^0-9]/g, ''))}
@@ -343,7 +346,7 @@ export function CheckInPage() {
             <button
               type="submit"
               className="checkin-home-button"
-              disabled={submitting || manualCode.trim().length < 6 || cooldownRemainingSec > 0}
+              disabled={submitting || !/^[0-9]{6}$/.test(manualCode.trim()) || cooldownRemainingSec > 0}
             >
               {submitting ? 'チェックイン中…' : 'チェックインする'}
             </button>
