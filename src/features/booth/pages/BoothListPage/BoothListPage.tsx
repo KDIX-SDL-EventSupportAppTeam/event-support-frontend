@@ -114,7 +114,10 @@ export function BoothListPage() {
                     className="btn btn-primary w-100 mt-3"
                     onClick={() => {
                       setSelected(null)
-                      navigate(`/checkin?booth_id=${encodeURIComponent(selected.booth_id)}`)
+                      // booth_id を渡さず QR 読み取り画面へ送る。ここで booth_id を渡すと
+                      // カメラを起動せずに任意のブースへチェックインできてしまい、
+                      // 「チェックイン＝実訪問」という前提が崩れる（issue #84）
+                      navigate('/checkin')
                     }}
                   >
                     チェックイン
