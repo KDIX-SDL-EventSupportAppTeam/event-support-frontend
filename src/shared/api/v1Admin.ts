@@ -468,6 +468,29 @@ export async function fetchAdminAuditLogs(
   )
   return unwrapApiData(res)
 }
+// ---- ガチャコイン使用状況（server: docs/specs/gacha-and-award/04-api/organizer-api.md） ----
+/**
+ * 当日モニタ用のガチャ使用状況。server: docs/specs/gacha-and-award/04-api/organizer-api.md
+ * サーバーが返す 4 項目だけを書く（T-9）。獲得総数・is_enabled は Phase B（server 追加後）に足す。
+ */
+export type AdminGachaStats = {
+  /** 使用済みコインの総数（gacha_coin_uses の行数） */
+  total_used: number
+  /** 換算後 earned > 0 の参加者数（スタッフ・出展者は含まない） */
+  users_with_coins: number
+  /** 1 枚以上使った参加者の実人数 */
+  users_who_used: number
+  /** 時間帯別の使用数。hour は ISO 8601（UTC）で 1 時間刻み */
+  used_by_hour: { hour: string; count: number }[]
+}
+
+export async function fetchAdminGachaStats(eventId: string): Promise<AdminGachaStats> {
+  const res = await apiClient.get<ApiResponse<AdminGachaStats>>(
+    `/admin/events/${encodeURIComponent(eventId)}/gacha/stats`,
+  )
+  return unwrapApiData(res)
+}
+
 export type ExhibitorBulkAccount = { email: string; password: string; booth_id: string }
 export type ExhibitorBulkRowResult = {
   index: number
