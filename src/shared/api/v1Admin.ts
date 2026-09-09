@@ -194,6 +194,30 @@ export async function fetchAdminDashboard(eventId: string): Promise<AdminDashboa
   return unwrapApiData(res)
 }
 
+// ---- ガチャコイン使用状況（server: docs/specs/gacha-and-award/04-api/organizer-api.md
+//      GET /admin/events/:event_id/gacha/stats。運営スタッフ manager/viewer 共通の読み取り専用） ----
+/**
+ * サーバーが返すキーだけを型にする（issue #87: サーバーが返さないフィールドを書かない）。
+ * `is_enabled` / `total_earned` はこのエンドポイントには含まれない（別 issue の範囲）。
+ */
+export type AdminGachaStats = {
+  /** 使用済みコインの総数 */
+  total_used: number
+  /** 換算後 earned > 0 の参加者数（コインを持っている人数） */
+  users_with_coins: number
+  /** 実際にコインを使用した参加者の実人数 */
+  users_who_used: number
+  /** 時間帯別の使用数（ピーク把握用）。hour は ISO8601 */
+  used_by_hour: { hour: string; count: number }[]
+}
+
+export async function fetchAdminGachaStats(eventId: string): Promise<AdminGachaStats> {
+  const res = await apiClient.get<ApiResponse<AdminGachaStats>>(
+    `/admin/events/${encodeURIComponent(eventId)}/gacha/stats`,
+  )
+  return unwrapApiData(res)
+}
+
 // ---- 推薦エンジン状態の中継（server: docs/specs/recommender-phase-linkage/01-ops-state-relay.md） ----
 export type RecommenderStateReason = 'UNCONFIGURED' | 'UNAUTHORIZED' | 'UNREACHABLE' | 'BAD_RESPONSE'
 /** 推薦エンジン /ops/state のうち画面が使うキーだけを型にする（無いキーは書かない。T-10） */
