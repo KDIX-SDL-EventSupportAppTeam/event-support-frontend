@@ -15,6 +15,7 @@ import { resolveCheckInView, type CheckInStep } from '@/shared/lib/checkInFlowVi
 import { useUnlockAnimationQueue } from '@/shared/hooks/useUnlockAnimationQueue'
 import { recordBingoCelebration } from '@/shared/lib/bingoCelebration'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
+import { CheckInQrScanView } from '@/features/checkin/pages/CheckInQrScanView'
 import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
 import { useAuthStore } from '@/shared/auth/authStore'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
@@ -37,10 +38,18 @@ export function CheckInPage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
   const isV1Flow = resolveEventDataSourceMode() === 'api'
 
-  const { booths, checkedInBoothIds, loading: boothsLoading } = useLegacyBoothList(eventId, userId)
+  const {
+    booths,
+    checkedInBoothIds,
+    loading: boothsLoading,
+    error: boothsError,
+    reload: reloadBooths,
+  } = useLegacyBoothList(eventId, userId)
 
-  const [step, setStep] = useState<Step>('booth')
+  const [step, setStep] = useState<Step>(boothIdParam ? 'booth' : 'scan')
   const [selectedBoothId, setSelectedBoothId] = useState(boothIdParam)
+  /** 'qr' = QR 読取または ?booth_id= 経由（一覧を出さない）／ 'list' = フォールバックの一覧選択 */
+  const [boothSource, setBoothSource] = useState<'qr' | 'list'>(boothIdParam ? 'qr' : 'list')
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -64,6 +73,13 @@ export function CheckInPage() {
   useEffect(() => {
     if (boothIdParam) setSelectedBoothId(boothIdParam)
   }, [boothIdParam])
+
+  // QR / ?booth_id= 経由で既にチェックイン済みのブースに来たときは、赤いエラーではなく
+  // 「訪問済みです」を出す（同じ QR の再読み取りは正常な行動）。サーバー往復は不要。
+  useEffect(() => {
+    if (step !== 'booth' || boothSource !== 'qr' || !selectedBoothId || boothsLoading) return
+    if (checkedInBoothIds.includes(selectedBoothId)) setStep('already_visited')
+  }, [step, boothSource, selectedBoothId, boothsLoading, checkedInBoothIds])
 
   // rating_scale / card_id は事前にカードを1回取得しておく（ハードコードしない）
   useEffect(() => {
@@ -217,6 +233,27 @@ export function CheckInPage() {
     resultAcknowledged,
   })
 
+  if (view === 'scan') {
+    return (
+      <div className="reader-container container py-3">
+        <CheckInQrScanView
+          onDetected={(id) => {
+            setBoothSource('qr')
+            setSelectedBoothId(id)
+            setErrorMessage(null)
+            setStep('booth')
+          }}
+          onFallback={() => {
+            setBoothSource('list')
+            setSelectedBoothId('')
+            setErrorMessage(null)
+            setStep('booth')
+          }}
+        />
+      </div>
+    )
+  }
+
   if (view === 'rating' && checkInResponse?.pending_rating) {
     return (
       <CheckInRatingModal
@@ -285,7 +322,9 @@ export function CheckInPage() {
   return (
     <div className="reader-container container py-3">
       <h2 className="result-title">チェックイン</h2>
-      <p className="result-message mb-3">ブースを選んでチェックインしてください。</p>
+      <p className="result-message mb-3">
+        {boothSource === 'qr' ? 'このブースにチェックインします。' : 'ブースを選んでチェックインしてください。'}
+      </p>
 
       {boothsLoading ? (
         <div className="py-4 text-center">
@@ -293,32 +332,77 @@ export function CheckInPage() {
             <span className="visually-hidden">読み込み中</span>
           </div>
         </div>
+      ) : boothSource === 'list' ? (
+        booths.length === 0 ? (
+          <p className="text-muted">ブースがありません。</p>
+        ) : (
+          <div className="checkin-booth-picker d-grid gap-2 mb-4">
+            {booths.map((booth) => {
+              const checked = checkedInBoothIds.includes(booth.booth_id)
+              const active = selectedBoothId === booth.booth_id
+              return (
+                <button
+                  key={booth.booth_id}
+                  type="button"
+                  className={`btn text-start checkin-booth-option ${active ? 'active' : ''} ${checked ? 'disabled' : ''}`}
+                  disabled={checked}
+                  onClick={() => setSelectedBoothId(booth.booth_id)}
+                >
+                  <span className="me-2">{booth.booth_emoji}</span>
+                  <strong>{booth.booth_name}</strong>
+                  <span className="ms-2 small text-muted">
+                    {(booth.booth_display_code ?? booth.booth_id).toUpperCase()}
+                  </span>
+                  {checked ? <span className="ms-2 small text-success">済</span> : null}
+                </button>
+              )
+            })}
+          </div>
+        )
       ) : booths.length === 0 ? (
-        <p className="text-muted">ブースがありません。</p>
-      ) : (
-        <div className="checkin-booth-picker d-grid gap-2 mb-4">
-          {booths.map((booth) => {
-            const checked = checkedInBoothIds.includes(booth.booth_id)
-            const active = selectedBoothId === booth.booth_id
-            return (
-              <button
-                key={booth.booth_id}
-                type="button"
-                className={`btn text-start checkin-booth-option ${active ? 'active' : ''} ${checked ? 'disabled' : ''}`}
-                disabled={checked}
-                onClick={() => setSelectedBoothId(booth.booth_id)}
-              >
-                <span className="me-2">{booth.booth_emoji}</span>
-                <strong>{booth.booth_name}</strong>
-                <span className="ms-2 small text-muted">
-                  {(booth.booth_display_code ?? booth.booth_id).toUpperCase()}
-                </span>
-                {checked ? <span className="ms-2 small text-success">済</span> : null}
-              </button>
-            )
-          })}
+        // ブースが1件も取れていない = 通信断・サーバー障害。QR が違うわけではないので
+        // 「このイベントのブースではありません」を出してはいけない（読み直させてしまう）
+        <div className="mb-3">
+          <p className="checkin-error-box">
+            {boothsError ?? 'ブース情報を取得できませんでした。通信状況を確認してください。'}
+          </p>
+          <button
+            type="button"
+            className="btn btn-outline-secondary w-100 mb-2"
+            onClick={() => void reloadBooths()}
+          >
+            再読み込み
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline-secondary w-100"
+            onClick={() => setStep('scan')}
+          >
+            もう一度読み取る
+          </button>
         </div>
-      )}
+      ) : !selectedBooth ? (
+        <div className="mb-3">
+          <p className="checkin-error-box">このQRコードは、このイベントのブースではありません。</p>
+          <button
+            type="button"
+            className="btn btn-outline-secondary w-100 mb-2"
+            onClick={() => setStep('scan')}
+          >
+            もう一度読み取る
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline-secondary w-100"
+            onClick={() => {
+              setBoothSource('list')
+              setSelectedBoothId('')
+            }}
+          >
+            ブース一覧から選ぶ
+          </button>
+        </div>
+      ) : null}
 
       {selectedBooth ? (
         <div className="checkin-selected-summary mb-3 p-3 border rounded">
@@ -339,11 +423,28 @@ export function CheckInPage() {
         <button
           type="button"
           className="checkin-home-button"
-          disabled={!selectedBoothId || submitting || alreadyCheckedIn || boothsLoading || cooldownRemainingSec > 0}
+          disabled={
+            !selectedBoothId ||
+            submitting ||
+            alreadyCheckedIn ||
+            boothsLoading ||
+            cooldownRemainingSec > 0 ||
+            (boothSource === 'qr' && !selectedBooth)
+          }
           onClick={() => void handleCheckIn()}
         >
           {submitting ? 'チェックイン中…' : 'チェックインする'}
         </button>
+        {boothSource === 'qr' && selectedBooth ? (
+          <button type="button" className="btn btn-outline-secondary" onClick={() => setStep('scan')}>
+            別のブースを読み取る
+          </button>
+        ) : null}
+        {boothSource === 'list' ? (
+          <button type="button" className="btn btn-outline-secondary" onClick={() => setStep('scan')}>
+            QRを読み取る
+          </button>
+        ) : null}
         <button type="button" className="btn btn-outline-secondary" onClick={() => navigate('/home')}>
           ホームに戻る
         </button>

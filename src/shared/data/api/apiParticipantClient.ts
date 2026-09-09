@@ -1,7 +1,6 @@
 import { postV1CheckIn } from '@/shared/api/v1Participant'
 import type { ParticipantClient } from '@/shared/data/participantTypes'
-import { SAMPLE_QA_ITEMS } from '@/shared/data/sample/sampleQa'
-import { SAMPLE_SCHEDULE } from '@/shared/data/sample/sampleSchedule'
+import { QA_2026, SCHEDULE_2026 } from '@/shared/data/content/eventContent2026'
 
 const DEFAULT_CHECKIN_EMOJI = '🎪'
 
@@ -34,13 +33,13 @@ export class ApiParticipantClient implements ParticipantClient {
   }
 
   async getSchedule() {
-    return SAMPLE_SCHEDULE.map((d) => ({
+    return SCHEDULE_2026.map((d) => ({
       dayTitle: d.dayTitle,
       events: d.events.map((e) => ({ ...e })),
     }))
   }
 
   async getQa() {
-    return SAMPLE_QA_ITEMS.map((q) => ({ ...q }))
+    return QA_2026.map((q) => ({ ...q }))
   }
 }
