@@ -134,6 +134,8 @@ export function BoothManagePage() {
   const [newForm, setNewForm] = useState<BoothForm>(EMPTY_FORM)
   const [editId, setEditId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<BoothForm>(EMPTY_FORM)
+  /** 編集開始時点の手動コード。onSaveEdit で「変わったときだけ」送るための比較元 */
+  const [editOriginalManualCode, setEditOriginalManualCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
 
@@ -185,6 +187,7 @@ export function BoothManagePage() {
 
   function startEdit(b: BoothRow) {
     setEditId(b.id)
+    setEditOriginalManualCode(b.manual_code ?? '')
     setEditForm({
       name: b.name,
       displayCode: b.display_code ?? '',
@@ -198,7 +201,9 @@ export function BoothManagePage() {
   async function onSaveEdit(boothId: string) {
     if (!eventId || !editForm.name.trim()) return
     const manual = editForm.manualCode.trim()
-    if (manual && !MANUAL_CODE_RE.test(manual)) {
+    // 開始時点から変わったときだけ検証・送信する（未変更なら手動コードは触らない）
+    const manualChanged = manual !== editOriginalManualCode.trim()
+    if (manualChanged && !MANUAL_CODE_RE.test(manual)) {
       setError('手動コードは6桁の数字で入力してください')
       return
     }
@@ -209,8 +214,8 @@ export function BoothManagePage() {
         description: editForm.description.trim() || undefined,
         category_id: editForm.categoryId || null,
         tags: editForm.tags.split(',').map((t) => t.trim()).filter(Boolean),
-        // 変更があったときだけ送る（未変更なら再発番されない）
-        ...(manual && manual !== '' ? { manual_code: manual } : {}),
+        // 変更があったときだけ送る（未変更なら手入力の上書きも再発番も起きない）
+        ...(manualChanged ? { manual_code: manual } : {}),
       })
       setEditId(null)
       setError(null)
