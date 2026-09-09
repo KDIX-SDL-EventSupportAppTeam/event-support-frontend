@@ -152,17 +152,6 @@
   font-size: 3rem;
 }
 
-.checkin-booth-option {
-  border: 2px solid #dee2e6;
-  border-radius: 8px;
-  background: #fff;
-
-  &.active {
-    border-color: #000;
-    background: #fff9e6;
-  }
-}
-
 .checkin-rating-modal {
   max-width: 360px;
   margin: 0 auto;
@@ -204,16 +193,14 @@
   }
 }
 
-.checkin-qr-fallback-link {
-  display: inline-block;
-  margin-top: 1rem;
-  background: none;
-  border: none;
-  padding: 0;
-  color: #000;
+.checkin-manual-code-input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 1.5rem;
+  letter-spacing: 0.25em;
+  text-align: center;
+}
+.checkin-manual-link {
   text-decoration: underline;
-  font-size: 0.95rem;
-  cursor: pointer;
 }
 
 .checkin-recommend-card {
