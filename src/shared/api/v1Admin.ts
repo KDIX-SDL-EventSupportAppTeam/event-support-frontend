@@ -492,3 +492,89 @@ export async function bulkRegisterExhibitors(
   )
   return unwrapApiData(res)
 }
+
+// ---- アワード（server #124: docs/specs/gacha-and-award/06-api/award-api.md） ----
+// 閲覧（一覧・集計）は viewer 可、変更・開閉は manager 限定（server が 403）。
+export type AdminAward = {
+  id: string
+  name: string
+  description: string
+  color: string
+  sort_order: number
+  vote_count: number
+}
+export type AdminAwardsResponse = { voting_open: boolean; awards: AdminAward[] }
+export type AdminAwardTally = {
+  award: { id: string; name: string }
+  total_votes: number
+  /** 降順。同数はそのまま（順位は付けない） */
+  booths: { booth_id: string; booth_name: string; votes: number }[]
+}
+export type AdminAwardInput = {
+  name?: string
+  description?: string | null
+  color?: string
+  sort_order?: number
+}
+
+export async function fetchAdminAwards(eventId: string): Promise<AdminAwardsResponse> {
+  const res = await apiClient.get<ApiResponse<AdminAwardsResponse>>(
+    `/admin/events/${encodeURIComponent(eventId)}/awards`,
+  )
+  return unwrapApiData(res)
+}
+
+export async function createAdminAward(
+  eventId: string,
+  body: { name: string; description?: string; color?: string; sort_order?: number },
+): Promise<AdminAward> {
+  const res = await apiClient.post<ApiResponse<{ award: AdminAward }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/awards`,
+    body,
+  )
+  return unwrapApiData(res).award
+}
+
+export async function updateAdminAward(
+  eventId: string,
+  awardId: string,
+  body: AdminAwardInput,
+): Promise<AdminAward> {
+  const res = await apiClient.patch<ApiResponse<{ award: AdminAward }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/awards/${encodeURIComponent(awardId)}`,
+    body,
+  )
+  return unwrapApiData(res).award
+}
+
+export async function deleteAdminAward(
+  eventId: string,
+  awardId: string,
+): Promise<{ deleted_votes: number }> {
+  const res = await apiClient.delete<ApiResponse<{ deleted: boolean; deleted_votes: number }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/awards/${encodeURIComponent(awardId)}`,
+  )
+  return unwrapApiData(res)
+}
+
+/** 投票の開閉（manager 限定）。 */
+export async function patchAdminAwardVoting(
+  eventId: string,
+  isOpen: boolean,
+): Promise<{ is_open: boolean }> {
+  const res = await apiClient.patch<ApiResponse<{ is_open: boolean }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/awards/voting`,
+    { is_open: isOpen },
+  )
+  return unwrapApiData(res)
+}
+
+export async function fetchAdminAwardTally(
+  eventId: string,
+  awardId: string,
+): Promise<AdminAwardTally> {
+  const res = await apiClient.get<ApiResponse<AdminAwardTally>>(
+    `/admin/events/${encodeURIComponent(eventId)}/awards/${encodeURIComponent(awardId)}/tally`,
+  )
+  return unwrapApiData(res)
+}

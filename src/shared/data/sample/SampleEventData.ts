@@ -11,8 +11,8 @@ import { readSampleExtraCheckedIds, readSampleGachaponExtraSpent } from '@/share
 import { MAX_GACHAPON_COINS } from '@/shared/config/gachapon'
 
 const SAMPLE_AWARDS: Award[] = [
-  { id: 'award-1', name: '来場者投票', description: '当日投票で決定' },
-  { id: 'award-2', name: 'スタッフ賞', description: '運営おすすめ' },
+  { id: 'award-1', name: '来場者投票', description: '当日投票で決定', color: 'pink', sort_order: 0 },
+  { id: 'award-2', name: 'スタッフ賞', description: '運営おすすめ', color: 'purple', sort_order: 1 },
 ]
 
 export function pickCheckedInBoothIds(booths: LegacyBooth[], eventId: string, userId: string): string[] {
