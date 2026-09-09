@@ -15,33 +15,43 @@ export function AdminLoginPage() {
   // ?event= クエリパラメータからイベント ID を取得（主催者ポータル発行の URL。
   // 存在すればそのイベント宛てにログインし、無ければ既定イベントにフォールバック）
   const queryEventId = searchParams.get('event') ?? ''
+  // 実際にログインに使う event_id。?event= が無いときはビルド時に焼き込んだ既定イベント
+  // （VITE_DEV_EVENT_ID）に解決される。**どちらの経路でも画面に出す。**
+  // 出さないと、既定イベントが古いまま（例: 開発用のテストイベント）でも
+  // 見た目は正常にログインでき、別イベントのデータを触っていることに気づけない
+  const effectiveEventId = queryEventId || resolveLoginEventId()
+  const usingFallback = !queryEventId
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   // 公開イベント情報でイベント名・日程を表示。取得失敗時は UUID 表示にフォールバック
   const [publicEvent, setPublicEvent] = useState<PublicEvent | null>(null)
+  const [eventLookupFailed, setEventLookupFailed] = useState(false)
 
   useEffect(() => {
-    if (!queryEventId) return
+    if (!effectiveEventId) return
     let active = true
-    fetchPublicEvent(queryEventId)
+    setPublicEvent(null)
+    setEventLookupFailed(false)
+    fetchPublicEvent(effectiveEventId)
       .then((e) => {
         if (active) setPublicEvent(e)
       })
       .catch(() => {
-        /* 失敗時は UUID 表示のまま（導線は止めない） */
+        // 見つからない = 既定イベントが消えている / ID が古い。導線は止めないが警告は出す
+        if (active) setEventLookupFailed(true)
       })
     return () => {
       active = false
     }
-  }, [queryEventId])
+  }, [effectiveEventId])
 
   if (token && isAdminUser(user)) return <Navigate to="/admin/menu" replace />
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     try {
-      await login(queryEventId || resolveLoginEventId(), email, password)
+      await login(effectiveEventId, email, password)
       const current = useAuthStore.getState().user
       if (isAdminUser(current)) {
         navigate('/admin/menu', { replace: true })
@@ -60,23 +70,38 @@ export function AdminLoginPage() {
         <div className="col-md-6">
           <div className="card p-4">
             <h1 className="h4 mb-3">運営ログイン</h1>
-            {queryEventId && (
-              <div className="alert alert-info small mb-3">
-                <i className="bi bi-info-circle me-1" />
-                {publicEvent ? (
-                  <>
-                    イベント: <strong>{publicEvent.name}</strong>
-                    <span className="text-muted ms-1">
-                      （{new Date(publicEvent.date_start).toLocaleDateString('ja-JP')}）
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    イベント: <strong>{queryEventId}</strong>
-                  </>
-                )}
-              </div>
-            )}
+            <div
+              className={`alert small mb-3 ${eventLookupFailed ? 'alert-danger' : 'alert-info'}`}
+            >
+              <i
+                className={`bi me-1 ${eventLookupFailed ? 'bi-exclamation-triangle-fill' : 'bi-info-circle'}`}
+              />
+              {publicEvent ? (
+                <>
+                  イベント: <strong>{publicEvent.name}</strong>
+                  <span className="text-muted ms-1">
+                    （{new Date(publicEvent.date_start).toLocaleDateString('ja-JP')}）
+                  </span>
+                </>
+              ) : eventLookupFailed ? (
+                <>
+                  <strong>このイベントが見つかりません。</strong>
+                  <span className="d-block text-break">{effectiveEventId}</span>
+                  <span className="d-block mt-1">
+                    運営に配られた URL（<code>?event=</code> 付き）から開き直してください。
+                  </span>
+                </>
+              ) : (
+                <>
+                  イベント: <strong className="text-break">{effectiveEventId}</strong>
+                </>
+              )}
+              {usingFallback && !eventLookupFailed ? (
+                <span className="d-block text-muted mt-1">
+                  URL にイベントの指定がないため、アプリに設定された既定のイベントを使います。
+                </span>
+              ) : null}
+            </div>
             <form onSubmit={onSubmit}>
               <div className="mb-3">
                 <label className="form-label">メールアドレス</label>
