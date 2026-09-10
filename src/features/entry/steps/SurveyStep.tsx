@@ -5,6 +5,10 @@ import {
 } from '@/features/entry/api/presurveyApi'
 import { EntryLayout } from '@/features/entry/components/EntryLayout'
 import { PreSurveyQuestionField } from '@/features/entry/components/PreSurveyQuestionField'
+import {
+  deriveDisplayQuestions,
+  reconcileAnswers,
+} from '@/features/entry/lib/deriveSurveyQuestions'
 import { ApiError } from '@/shared/api/unwrap'
 import type { PreSurveyAnswers, PreSurveyQuestion } from '@/features/entry/types/presurvey'
 
@@ -31,6 +35,9 @@ export function SurveyStep({ eventId, onAnswered }: { eventId: string; onAnswere
       active = false
     }
   }, [eventId])
+
+  /** 表示用に絞り込んだ設問。連動の判断はすべて純粋関数側にある */
+  const displayQuestions = deriveDisplayQuestions(questions, answers)
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
@@ -62,13 +69,15 @@ export function SurveyStep({ eventId, onAnswered }: { eventId: string; onAnswere
         <p className="text-danger text-center mb-0">事前アンケートの回答受付は終了しました。</p>
       ) : (
         <form onSubmit={onSubmit}>
-          {questions.map((question) => (
+          {displayQuestions.map((question) => (
             <PreSurveyQuestionField
               key={question.id}
               question={question}
               value={answers[question.question_key]}
               onChange={(value) =>
-                setAnswers((prev) => ({ ...prev, [question.question_key]: value }))
+                setAnswers((prev) =>
+                  reconcileAnswers(questions, { ...prev, [question.question_key]: value }),
+                )
               }
             />
           ))}

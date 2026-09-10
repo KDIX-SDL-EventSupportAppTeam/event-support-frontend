@@ -28,6 +28,7 @@
 | パス | 責務 |
 |------|------|
 | `lib/resolveEntryStep.ts` | **段階の判定。導線そのもの。** 純粋関数なので分岐の追加はここだけを見る |
+| `lib/deriveSurveyQuestions.ts` | **設問間の連動。** 表示用の設問リストの導出と、外れた回答の掃除 |
 | `api/meState.ts` | `GET me/state` と `POST me/onboarding` |
 | `api/presurveyApi.ts` | 設問取得と回答送信 |
 | `pages/EntryPage.tsx` | 単一 URL の器。判定結果に応じて steps を出し分ける |
@@ -40,3 +41,8 @@
 - 開放ゲートの 30 秒ポーリングは「回答済みかつ未開放」のときだけ動かす（それ以外は待つ理由が無い）
 - 出展者・運営はアンケート導線に乗せない（`resolveEntryStep` が `app` を返す）
 - 設問をフロントにハードコードしない（サーバー配信。P-11）
+- **設問間の連動は `lib/deriveSurveyQuestions.ts` にだけ置く。** `top_interest_category`
+  （第1希望）は `interest_categories` で選ばれた分野からしか選べない。サーバーは両方に
+  全カテゴリを返すので絞り込みはフロントの責務で、判定は `question_key` だけで行う
+  （並び順・UUID に依存しない）。第1希望に選んだ分野を外したときは回答も落とす。
+  残すとサーバーが 400 を返す
