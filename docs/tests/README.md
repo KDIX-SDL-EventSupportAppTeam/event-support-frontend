@@ -7,6 +7,7 @@
 | [`tests/`](../../tests/) | Vitest のテストコード（`unit/`・`integration/`） |
 | `docs/tests/runs/` | 実行記録（何を・なぜ・結果） |
 | `docs/tests/fixtures/` | ダミーデータ・ログイン例・再現用の固定値 |
+| [`docs/tests/manual-e2e-checklist.md`](./manual-e2e-checklist.md) | 人が触って確認する通し手順（手動テスト仕様書） |
 
 テストコードは **`tests/` にまとめる**。`src/` 内に `*.test.ts` を置かない。
 実行後は必ず `docs/tests/runs/` に記録を残し、本ファイルの「記録一覧」を更新する。
@@ -40,6 +41,7 @@ PR 作成時は [AGENTS.md](../../AGENTS.md) の「次にやること」も合�
 |------|------|
 | [runs/](./runs/) | 実行記録（1 回の作業 = 1 ファイル） |
 | [fixtures/](./fixtures/) | 再現用の固定値（ログイン例・event_id 等） |
+| [manual-e2e-checklist.md](./manual-e2e-checklist.md) | 手動テスト仕様書。主催者のイベント作成から片付けまでを 1 周する |
 
 ### ファイル名（runs）
 
