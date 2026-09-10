@@ -62,7 +62,7 @@ export function BoothListPage() {
               <div className="card-body">
                 <div className="booth-identity-area">
                   <div className="booth-number-badge">
-                    {(booth.booth_display_code ?? booth.booth_id).toUpperCase()}
+                    {booth.booth_display_code ? booth.booth_display_code.toUpperCase() : '—'}
                   </div>
                   <span className="booth-emoji">{booth.booth_emoji}</span>
                 </div>

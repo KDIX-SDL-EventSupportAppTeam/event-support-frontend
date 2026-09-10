@@ -1,4 +1,3 @@
-import type { Award } from '@/shared/types/award'
 import type { BingoGridCell, LegacyBooth } from '@/shared/types/legacyBooth'
 import {
   buildRandomBingoGrid,
@@ -9,11 +8,6 @@ import {
 import { SAMPLE_LEGACY_BOOTHS } from '@/shared/data/sample/sampleBooths'
 import { readSampleExtraCheckedIds, readSampleGachaponExtraSpent } from '@/shared/data/sample/sampleSession'
 import { MAX_GACHAPON_COINS } from '@/shared/config/gachapon'
-
-const SAMPLE_AWARDS: Award[] = [
-  { id: 'award-1', name: '来場者投票', description: '当日投票で決定' },
-  { id: 'award-2', name: 'スタッフ賞', description: '運営おすすめ' },
-]
 
 export function pickCheckedInBoothIds(booths: LegacyBooth[], eventId: string, userId: string): string[] {
   if (booths.length === 0) return []
@@ -65,9 +59,5 @@ export class SampleEventData {
     const base = this.getGachaponBaseSpent(eventId, userId)
     const extra = readSampleGachaponExtraSpent(userId)
     return Math.min(lines, base + extra)
-  }
-
-  getAwards(): Award[] {
-    return SAMPLE_AWARDS.map((a) => ({ ...a }))
   }
 }

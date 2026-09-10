@@ -42,7 +42,7 @@ function boothInfo(b: LegacyBooth): BingoCellBooth {
   return {
     id: b.booth_id,
     name: b.booth_name,
-    manual_code: b.booth_display_code ?? b.booth_id,
+    display_code: b.booth_display_code ?? null,
     description: `${b.booth_name}のブースです。`,
   }
 }

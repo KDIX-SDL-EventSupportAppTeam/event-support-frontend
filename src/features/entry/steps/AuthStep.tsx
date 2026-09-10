@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { EntryLayout } from '@/features/entry/components/EntryLayout'
 import { ApiError } from '@/shared/api/unwrap'
@@ -98,6 +99,13 @@ export function AuthStep({ eventId, onAuthenticated }: { eventId: string; onAuth
             autoComplete={isSignUp ? 'new-password' : 'current-password'}
           />
         </div>
+        {!isSignUp ? (
+          <p className="text-center mb-3">
+            <Link className="small" to={`/forgot-password?event=${encodeURIComponent(eventId)}`}>
+              パスワードを忘れた場合
+            </Link>
+          </p>
+        ) : null}
         {notice ? <p className="text-center text-body-secondary">{notice}</p> : null}
         {error && !notice ? <p className="text-danger text-center">{error}</p> : null}
         <div className="d-grid mt-4">

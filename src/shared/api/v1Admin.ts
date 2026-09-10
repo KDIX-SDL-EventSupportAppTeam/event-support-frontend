@@ -18,7 +18,13 @@ export type AdminBoothInput = {
   name: string
   description?: string
   category_id?: string | null
-  manual_code: string
+  /** 公開してよいブース番号（issue #121）。任意 */
+  display_code?: string | null
+  /**
+   * 手動コード（6桁数字）。**新規作成では送らない**（サーバーが自動採番する）。
+   * 編集では「刷り済みの紙に合わせる」逃げ道として手入力を受け付ける
+   */
+  manual_code?: string
   tags?: string[]
 }
 
@@ -194,6 +200,46 @@ export async function fetchAdminDashboard(eventId: string): Promise<AdminDashboa
   return unwrapApiData(res)
 }
 
+// ---- ガチャコイン使用状況（server: docs/specs/gacha-and-award/04-api/organizer-api.md
+//      GET /admin/events/:event_id/gacha/stats。運営スタッフ manager/viewer 共通の読み取り専用） ----
+/**
+ * サーバーが返すキーだけを型にする（issue #87: サーバーが返さないフィールドを書かない）。
+ * `is_enabled` / `total_earned` はこのエンドポイントには含まれない（別 issue の範囲）。
+ */
+export type AdminGachaStats = {
+  /** 現在ガチャが有効か（issue #122。false = 当日停止中） */
+  is_enabled: boolean
+  /** 使用済みコインの総数 */
+  total_used: number
+  /** 換算後の獲得コイン総数（participant のカードのみ）。available = total_earned - total_used */
+  total_earned: number
+  /** 換算後 earned > 0 の参加者数（コインを持っている人数） */
+  users_with_coins: number
+  /** 実際にコインを使用した参加者の実人数 */
+  users_who_used: number
+  /** 時間帯別の使用数（ピーク把握用）。hour は ISO8601 */
+  used_by_hour: { hour: string; count: number }[]
+}
+
+export async function fetchAdminGachaStats(eventId: string): Promise<AdminGachaStats> {
+  const res = await apiClient.get<ApiResponse<AdminGachaStats>>(
+    `/admin/events/${encodeURIComponent(eventId)}/gacha/stats`,
+  )
+  return unwrapApiData(res)
+}
+
+/**
+ * 当日の緊急停止／再開（issue #122 / #104）。`manager` 限定（`viewer` は server が 403）。
+ * `is_enabled` だけを変える。coins_per_line / max_coins / bonus_coins は触らない。
+ */
+export async function patchAdminGachaEnabled(eventId: string, isEnabled: boolean): Promise<{ is_enabled: boolean }> {
+  const res = await apiClient.patch<ApiResponse<{ is_enabled: boolean }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/gacha/enabled`,
+    { is_enabled: isEnabled },
+  )
+  return unwrapApiData(res)
+}
+
 // ---- 推薦エンジン状態の中継（server: docs/specs/recommender-phase-linkage/01-ops-state-relay.md） ----
 export type RecommenderStateReason = 'UNCONFIGURED' | 'UNAUTHORIZED' | 'UNREACHABLE' | 'BAD_RESPONSE'
 /** 推薦エンジン /ops/state のうち画面が使うキーだけを型にする（無いキーは書かない。T-10） */
@@ -233,6 +279,12 @@ export type AdminBoothSort = 'checkin_count' | 'avg_rating' | 'name'
 export type AdminBoothSummary = {
   id: string
   name: string
+  /** 公開してよいブース番号・小間番号（issue #121）。null あり */
+  display_code: string | null
+  /** 手動チェックインの照合コード（6桁数字・秘匿）。運営にだけ返る */
+  manual_code: string
+  /** 掲示用チェックイン URL（booth_id で確定。作成時点で決まる） */
+  checkin_url: string
   checkin_count: number
   avg_rating: number | null
   comment_count: number
@@ -246,6 +298,20 @@ export async function fetchAdminBoothSummaries(
     { params },
   )
   return unwrapApiData(res).booths
+}
+
+/**
+ * 手動コードの再発番（issue #121 / #103）。`manager` 限定（server は 403）。
+ * 掲示物を刷り直す前提の操作。旧コードでのチェックインは以後 404 になる。
+ */
+export async function regenerateBoothManualCode(
+  eventId: string,
+  boothId: string,
+): Promise<{ id: string; manual_code: string; checkin_url: string }> {
+  const res = await apiClient.post<ApiResponse<{ booth: { id: string; manual_code: string; checkin_url: string } }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/booths/${encodeURIComponent(boothId)}/manual-code/regenerate`,
+  )
+  return unwrapApiData(res).booth
 }
 
 // ---- ブース別コメント（server #54: GET /admin/events/:event_id/booths/:booth_id/comments） ----
@@ -489,6 +555,92 @@ export async function bulkRegisterExhibitors(
   const res = await apiClient.post<ApiResponse<ExhibitorBulkResult>>(
     `/admin/events/${encodeURIComponent(eventId)}/exhibitors/bulk`,
     { accounts },
+  )
+  return unwrapApiData(res)
+}
+
+// ---- アワード（server #124: docs/specs/gacha-and-award/06-api/award-api.md） ----
+// 閲覧（一覧・集計）は viewer 可、変更・開閉は manager 限定（server が 403）。
+export type AdminAward = {
+  id: string
+  name: string
+  description: string
+  color: string
+  sort_order: number
+  vote_count: number
+}
+export type AdminAwardsResponse = { voting_open: boolean; awards: AdminAward[] }
+export type AdminAwardTally = {
+  award: { id: string; name: string }
+  total_votes: number
+  /** 降順。同数はそのまま（順位は付けない） */
+  booths: { booth_id: string; booth_name: string; votes: number }[]
+}
+export type AdminAwardInput = {
+  name?: string
+  description?: string | null
+  color?: string
+  sort_order?: number
+}
+
+export async function fetchAdminAwards(eventId: string): Promise<AdminAwardsResponse> {
+  const res = await apiClient.get<ApiResponse<AdminAwardsResponse>>(
+    `/admin/events/${encodeURIComponent(eventId)}/awards`,
+  )
+  return unwrapApiData(res)
+}
+
+export async function createAdminAward(
+  eventId: string,
+  body: { name: string; description?: string; color?: string; sort_order?: number },
+): Promise<AdminAward> {
+  const res = await apiClient.post<ApiResponse<{ award: AdminAward }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/awards`,
+    body,
+  )
+  return unwrapApiData(res).award
+}
+
+export async function updateAdminAward(
+  eventId: string,
+  awardId: string,
+  body: AdminAwardInput,
+): Promise<AdminAward> {
+  const res = await apiClient.patch<ApiResponse<{ award: AdminAward }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/awards/${encodeURIComponent(awardId)}`,
+    body,
+  )
+  return unwrapApiData(res).award
+}
+
+export async function deleteAdminAward(
+  eventId: string,
+  awardId: string,
+): Promise<{ deleted_votes: number }> {
+  const res = await apiClient.delete<ApiResponse<{ deleted: boolean; deleted_votes: number }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/awards/${encodeURIComponent(awardId)}`,
+  )
+  return unwrapApiData(res)
+}
+
+/** 投票の開閉（manager 限定）。 */
+export async function patchAdminAwardVoting(
+  eventId: string,
+  isOpen: boolean,
+): Promise<{ is_open: boolean }> {
+  const res = await apiClient.patch<ApiResponse<{ is_open: boolean }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/awards/voting`,
+    { is_open: isOpen },
+  )
+  return unwrapApiData(res)
+}
+
+export async function fetchAdminAwardTally(
+  eventId: string,
+  awardId: string,
+): Promise<AdminAwardTally> {
+  const res = await apiClient.get<ApiResponse<AdminAwardTally>>(
+    `/admin/events/${encodeURIComponent(eventId)}/awards/${encodeURIComponent(awardId)}/tally`,
   )
   return unwrapApiData(res)
 }

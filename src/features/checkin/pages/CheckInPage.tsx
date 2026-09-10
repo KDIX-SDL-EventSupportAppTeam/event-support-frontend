@@ -52,6 +52,9 @@ export function CheckInPage() {
   const [boothSource, setBoothSource] = useState<'qr' | 'list'>(boothIdParam ? 'qr' : 'list')
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  /** 手動コード入力（issue #86）。QR が使えない参加者の代替。6桁の数字 */
+  const [manualCode, setManualCode] = useState('')
+  const [manualError, setManualError] = useState<string | null>(null)
 
   const [checkInResult, setCheckInResult] = useState<CheckInResult | null>(null)
   const [checkInResponse, setCheckInResponse] = useState<V1CheckInResponse | null>(null)
@@ -114,6 +117,19 @@ export function CheckInPage() {
     return () => window.clearInterval(timer)
   }, [cooldownRemainingSec])
 
+  /** チェックイン成功レスポンスを画面状態へ反映する（QR / 手動コードで共通） */
+  function applyV1CheckInResponse(res: V1CheckInResponse) {
+    setCheckInResponse(res)
+    setCheckInResult({ checkin_id: res.checkin_id, booth: { booth_id: res.booth.id, name: res.booth.name, emoji: '🎪' } })
+    // ライン成立演出はホーム側で出す（サンプルモードと同じ sessionStorage 経由）
+    if (res.new_lines > 0) recordBingoCelebration(res.new_lines)
+    // 解放演出のキューに積む（正の経路）。中央3・4マス目の達成では複数ペアが同時成立するため、
+    // サーバーが返す unlocked_pairs をペアごとに積む（unlocked_positions は全ペア分の平坦な配列）
+    if (cardId) enqueuePairs(cardId, res.unlocked_pairs)
+    if (res.cooldown_remaining_sec > 0) setCooldownRemainingSec(res.cooldown_remaining_sec)
+    setStep(res.pending_rating ? 'rating' : 'result')
+  }
+
   async function handleCheckInV1() {
     if (!eventId || !selectedBoothId) return
     setSubmitting(true)
@@ -124,15 +140,7 @@ export function CheckInPage() {
         booth_id: selectedBoothId,
         checked_in_at: new Date().toISOString(),
       })
-      setCheckInResponse(res)
-      setCheckInResult({ checkin_id: res.checkin_id, booth: { booth_id: res.booth.id, name: res.booth.name, emoji: '🎪' } })
-      // ライン成立演出はホーム側で出す（サンプルモードと同じ sessionStorage 経由）
-      if (res.new_lines > 0) recordBingoCelebration(res.new_lines)
-      // 解放演出のキューに積む（正の経路）。中央3・4マス目の達成では複数ペアが同時成立するため、
-      // サーバーが返す unlocked_pairs をペアごとに積む（unlocked_positions は全ペア分の平坦な配列）
-      if (cardId) enqueuePairs(cardId, res.unlocked_pairs)
-      if (res.cooldown_remaining_sec > 0) setCooldownRemainingSec(res.cooldown_remaining_sec)
-      setStep(res.pending_rating ? 'rating' : 'result')
+      applyV1CheckInResponse(res)
     } catch (e) {
       if (e instanceof ApiError && e.code === 'CONFLICT') {
         // 同じブースへの2回目はエラーとして赤く出さない（同じ QR の再読み取りは正常な行動）
@@ -143,6 +151,44 @@ export function CheckInPage() {
         setErrorMessage(e.message || 'クールダウン中です。しばらくお待ちください。')
       } else {
         setErrorMessage(formatClientError(e, 'チェックインに失敗しました'))
+      }
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  /**
+   * 手動コードでのチェックイン（issue #86）。照合はサーバーが行う（フロントで正規化しない）。
+   * 前後の空白は zod 検証の前に落ちるため trim してから送る。
+   */
+  async function handleManualCheckIn() {
+    if (!eventId || submitting) return
+    const code = manualCode.trim()
+    if (!/^[0-9]{6}$/.test(code)) {
+      setManualError('6桁の数字を入力してください。')
+      return
+    }
+    setSubmitting(true)
+    setManualError(null)
+    try {
+      const res = await postV1CheckIn(eventId, {
+        method: 'manual',
+        manual_code: code,
+        checked_in_at: new Date().toISOString(),
+      })
+      void reloadBooths()
+      applyV1CheckInResponse(res)
+    } catch (e) {
+      if (e instanceof ApiError && e.code === 'CONFLICT') {
+        setStep('already_visited')
+      } else if (e instanceof ApiError && e.code === 'NOT_FOUND') {
+        setManualError('コードが違います。掲示された6桁の数字をもう一度ご確認ください。')
+      } else if (e instanceof ApiError && e.code === 'COOLDOWN') {
+        const match = /(\d+)/.exec(e.message)
+        setCooldownRemainingSec(match ? Number(match[1]) : 30)
+        setManualError(e.message || 'クールダウン中です。しばらくお待ちください。')
+      } else {
+        setManualError(formatClientError(e, 'チェックインに失敗しました'))
       }
     } finally {
       setSubmitting(false)
@@ -249,7 +295,73 @@ export function CheckInPage() {
             setErrorMessage(null)
             setStep('booth')
           }}
+          onManualCode={
+            isV1Flow
+              ? () => {
+                  setManualCode('')
+                  setManualError(null)
+                  setStep('manual')
+                }
+              : undefined
+          }
         />
+      </div>
+    )
+  }
+
+  if (view === 'manual') {
+    return (
+      <div className="reader-container container py-3">
+        <h2 className="result-title">コードを入力</h2>
+        <p className="result-message mb-3">
+          ブースに掲示された6桁の数字を入力してください。
+        </p>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            void handleManualCheckIn()
+          }}
+        >
+          <input
+            className="form-control form-control-lg text-center mb-2"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="one-time-code"
+            autoCapitalize="off"
+            // コード長ちょうど（6）にはしない。ブラウザは貼り付けを trim 前に切り詰めるため、
+            // 前後に空白のある「 481502 」を貼ると 5 桁に欠ける（#103 起きてはいけないこと・PR #100）。
+            // 桁数の担保は「ちょうど6桁でないと送信不可」の側で行う（下の disabled と handleManualCheckIn）。
+            maxLength={8}
+            placeholder="例: 481502"
+            value={manualCode}
+            onChange={(e) => setManualCode(e.target.value.replace(/[^0-9]/g, ''))}
+            aria-label="6桁の手動コード"
+          />
+          {manualError ? <p className="checkin-error-box">{manualError}</p> : null}
+          {cooldownRemainingSec > 0 ? (
+            <p className="text-muted mb-2">あと{cooldownRemainingSec}秒お待ちください</p>
+          ) : null}
+          <div className="d-grid gap-2 mt-2">
+            <button
+              type="submit"
+              className="checkin-home-button"
+              disabled={submitting || !/^[0-9]{6}$/.test(manualCode.trim()) || cooldownRemainingSec > 0}
+            >
+              {submitting ? 'チェックイン中…' : 'チェックインする'}
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => {
+                setManualError(null)
+                setStep('scan')
+              }}
+            >
+              QRを読み取る
+            </button>
+          </div>
+        </form>
       </div>
     )
   }
@@ -350,9 +462,11 @@ export function CheckInPage() {
                 >
                   <span className="me-2">{booth.booth_emoji}</span>
                   <strong>{booth.booth_name}</strong>
-                  <span className="ms-2 small text-muted">
-                    {(booth.booth_display_code ?? booth.booth_id).toUpperCase()}
-                  </span>
+                  {booth.booth_display_code ? (
+                    <span className="ms-2 small text-muted">
+                      {booth.booth_display_code.toUpperCase()}
+                    </span>
+                  ) : null}
                   {checked ? <span className="ms-2 small text-success">済</span> : null}
                 </button>
               )

@@ -39,6 +39,26 @@ const QUESTIONS = [
   },
 ]
 
+
+/** 本番の設問セット（`event-support-recommend/docs/specs/06-pre-survey-requirements.md` §3） */
+const PRODUCTION_QUESTIONS = (
+  [
+    ['interest_categories', 'multi', true],
+    ['top_interest_category', 'single', true],
+    ['age_range', 'single', true],
+    ['occupation', 'single', true],
+    ['gender', 'single', false],
+    ['exploration_disposition', 'single', true],
+  ] as const
+).map(([question_key, answer_type, required], i) => ({
+  id: `uuid-${i}`,
+  question_key,
+  label: question_key,
+  answer_type,
+  required,
+  options: [],
+}))
+
 describe('fetchPreSurveyQuestions', () => {
   it('公開クライアントで /pre-survey/questions を取得する', async () => {
     publicGetMock.mockResolvedValueOnce({
@@ -78,6 +98,54 @@ describe('submitPreSurveyAnswers', () => {
       custom_answers: { interest_categories: ['cat-1'] },
     })
     expect(result.answered_at).toBe('2026-10-15T05:00:00.000Z')
+  })
+
+
+  it('本番6問を専用列と custom_answers に振り分ける', async () => {
+    apiPostMock.mockResolvedValueOnce({
+      data: { success: true, data: { answered_at: '2026-10-15T05:00:00.000Z' } },
+    })
+
+    await submitPreSurveyAnswers({
+      eventId: 'evt-1',
+      answers: {
+        interest_categories: ['cat-ai', 'cat-iot'],
+        top_interest_category: 'cat-ai',
+        age_range: 'twenties',
+        occupation: 'engineer',
+        gender: 'prefer_not_to_say',
+        exploration_disposition: 'high',
+      },
+      questions: PRODUCTION_QUESTIONS,
+    })
+
+    expect(apiPostMock).toHaveBeenCalledWith('/events/evt-1/survey/answers', {
+      age_range: 'twenties',
+      occupation: 'engineer',
+      custom_answers: {
+        interest_categories: ['cat-ai', 'cat-iot'],
+        top_interest_category: 'cat-ai',
+        gender: 'prefer_not_to_say',
+        exploration_disposition: 'high',
+      },
+    })
+  })
+
+  it('任意設問が未回答なら、そのキーは送らない', async () => {
+    apiPostMock.mockResolvedValueOnce({
+      data: { success: true, data: { answered_at: '2026-10-15T05:00:00.000Z' } },
+    })
+
+    await submitPreSurveyAnswers({
+      eventId: 'evt-1',
+      answers: { age_range: 'twenties' },
+      questions: PRODUCTION_QUESTIONS,
+    })
+
+    expect(apiPostMock).toHaveBeenCalledWith('/events/evt-1/survey/answers', {
+      age_range: 'twenties',
+      custom_answers: {},
+    })
   })
 
   it('締切後の 409 PRE_SURVEY_CLOSED は ApiError として投げる', async () => {

@@ -7,8 +7,13 @@ import { QA_2026, SCHEDULE_2026, EVENT_DATE_LABEL_2026 } from '@/shared/data/con
 // tests/fixtures/ に置くとこのテストが見つけられず、突合せずに緑になる
 const FIXTURE = fileURLToPath(new URL('../../docs/tests/fixtures/schedule-2026-10-16.json', import.meta.url))
 
-/** 去年（2025-10-10/11）・廃止運用（スタッフ立会い）の痕跡。1件でもあれば失敗 */
-const FORBIDDEN = ['10/10', '10/11', 'DAY1', 'DAY2', '2025', 'スタッフに見せ', 'スタッフにコイン', 'ガチャポンブース', 'パスワードを忘れた場合」', 'アワード']
+/**
+ * 去年（2025-10-10/11）・廃止運用（スタッフ立会い）の痕跡。1件でもあれば失敗。
+ * - `パスワードを忘れた場合」` は issue #107（自分で再設定できる文面に戻した）で除外
+ * - `アワード` は issue #89（今年アプリ内で実施すると決定）で除外
+ * 去年の日程・運用の禁止語（10/10・DAY1・スタッフ立会い等）は引き続き残す。
+ */
+const FORBIDDEN = ['10/10', '10/11', 'DAY1', 'DAY2', '2025', 'スタッフに見せ', 'スタッフにコイン', 'ガチャポンブース']
 
 function allText(): string {
   return [

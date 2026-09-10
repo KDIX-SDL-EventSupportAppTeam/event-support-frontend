@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AdminShell } from '@/features/admin/components/AdminShell'
 import { LiveMonitoringBlock } from '@/features/admin/components/LiveMonitoringBlock'
-import { useAuthStore } from '@/shared/auth/authStore'
+import { GachaUsageBlock } from '@/features/admin/components/GachaUsageBlock'
+import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
 import {
   fetchAdminDashboard,
+  fetchAdminGachaStats,
+  patchAdminGachaEnabled,
   fetchRecommenderState,
   type AdminDashboard,
+  type AdminGachaStats,
   type CheckinNewEvent,
   type RecommenderState,
 } from '@/shared/api/v1Admin'
@@ -15,11 +19,14 @@ import { formatClientError } from '@/shared/lib/formatClientError'
 export function DashboardPage() {
   const token = useAuthStore((s) => s.token)
   const eventId = useAuthStore((s) => s.user?.event_id)
+  const canManageGacha = isManagerUser(useAuthStore((s) => s.user))
   const [data, setData] = useState<AdminDashboard | null>(null)
   const [recent, setRecent] = useState<CheckinNewEvent[]>([])
   const [error, setError] = useState<string | null>(null)
   const [recState, setRecState] = useState<RecommenderState | null>(null)
   const [recError, setRecError] = useState<string | null>(null)
+  const [gachaStats, setGachaStats] = useState<AdminGachaStats | null>(null)
+  const [gachaError, setGachaError] = useState<string | null>(null)
   // rating:new は集計に影響するため再取得するが、評価ラッシュ時の連発を防ぐため 5 秒 trailing デバウンス
   const ratingDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -51,16 +58,29 @@ export function DashboardPage() {
     }
   }, [eventId])
 
+  /** ガチャコイン使用状況の取得。失敗しても他の集計は表示し続ける（issue #87）。 */
+  const loadGachaStats = useCallback(async () => {
+    if (!eventId) return
+    try {
+      setGachaStats(await fetchAdminGachaStats(eventId))
+      setGachaError(null)
+    } catch (e) {
+      setGachaError(formatClientError(e, '取得失敗'))
+    }
+  }, [eventId])
+
   useEffect(() => {
     if (!eventId) return
     void loadDashboard(true)
     void loadRecState()
+    void loadGachaStats()
     const timer = setInterval(() => {
       void loadDashboard(false)
       void loadRecState()
+      void loadGachaStats()
     }, 60_000)
     return () => clearInterval(timer)
-  }, [eventId, loadDashboard, loadRecState])
+  }, [eventId, loadDashboard, loadRecState, loadGachaStats])
 
   useEffect(() => {
     if (!token || !eventId) return
@@ -158,6 +178,20 @@ export function DashboardPage() {
       </div>
 
       <LiveMonitoringBlock bingo={data.bingo} rec={recState} recError={recError} />
+
+      <GachaUsageBlock
+        stats={gachaStats}
+        error={gachaError}
+        canManage={canManageGacha}
+        onToggleEnabled={async (next) => {
+          try {
+            await patchAdminGachaEnabled(eventId as string, next)
+          } catch (e) {
+            throw new Error(formatClientError(e, 'ガチャの切り替えに失敗しました'))
+          }
+          await loadGachaStats()
+        }}
+      />
 
       <div className="row g-4 mb-4">
         {/* ブース別チェックイン バーチャート */}

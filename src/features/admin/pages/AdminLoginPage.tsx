@@ -128,7 +128,12 @@ export function AdminLoginPage() {
                 ログイン
               </button>
             </form>
-            <p className="mt-3 mb-0 text-center">
+            <p className="mt-3 mb-1 text-center">
+              <Link className="small" to={`/forgot-password?event=${encodeURIComponent(effectiveEventId)}`}>
+                パスワードを忘れた場合
+              </Link>
+            </p>
+            <p className="mb-0 text-center">
               <Link to="/login">参加者ログインへ</Link>
             </p>
           </div>
