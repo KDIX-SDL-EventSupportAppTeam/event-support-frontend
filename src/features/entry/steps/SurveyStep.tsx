@@ -9,7 +9,6 @@ import {
   deriveDisplayQuestions,
   reconcileAnswers,
 } from '@/features/entry/lib/deriveSurveyQuestions'
-import { ApiError } from '@/shared/api/unwrap'
 import type { PreSurveyAnswers, PreSurveyQuestion } from '@/features/entry/types/presurvey'
 
 /**
@@ -18,7 +17,6 @@ import type { PreSurveyAnswers, PreSurveyQuestion } from '@/features/entry/types
  */
 export function SurveyStep({ eventId, onAnswered }: { eventId: string; onAnswered: () => void }) {
   const [questions, setQuestions] = useState<PreSurveyQuestion[]>([])
-  const [isPreSurveyOpen, setIsPreSurveyOpen] = useState(true)
   const [answers, setAnswers] = useState<PreSurveyAnswers>({})
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -29,7 +27,6 @@ export function SurveyStep({ eventId, onAnswered }: { eventId: string; onAnswere
     fetchPreSurveyQuestions(eventId).then((result) => {
       if (!active) return
       setQuestions(result.questions)
-      setIsPreSurveyOpen(result.isPreSurveyOpen)
     })
     return () => {
       active = false
@@ -51,13 +48,8 @@ export function SurveyStep({ eventId, onAnswered }: { eventId: string; onAnswere
     try {
       await submitPreSurveyAnswers({ eventId, answers, questions })
       onAnswered()
-    } catch (e) {
-      if (e instanceof ApiError && e.code === 'PRE_SURVEY_CLOSED') {
-        setIsPreSurveyOpen(false)
-        setError('事前アンケートの回答受付は終了しました。')
-      } else {
-        setError('送信に失敗しました。時間をおいて再度お試しください。')
-      }
+    } catch {
+      setError('送信に失敗しました。時間をおいて再度お試しください。')
     } finally {
       setSubmitting(false)
     }
@@ -65,10 +57,7 @@ export function SurveyStep({ eventId, onAnswered }: { eventId: string; onAnswere
 
   return (
     <EntryLayout title="事前アンケート" subtitle="ご回答をお願いします">
-      {!isPreSurveyOpen ? (
-        <p className="text-danger text-center mb-0">事前アンケートの回答受付は終了しました。</p>
-      ) : (
-        <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit}>
           {displayQuestions.map((question) => (
             <PreSurveyQuestionField
               key={question.id}
@@ -87,8 +76,7 @@ export function SurveyStep({ eventId, onAnswered }: { eventId: string; onAnswere
               {submitting ? '送信中…' : '回答を送信する'}
             </button>
           </div>
-        </form>
-      )}
+      </form>
     </EntryLayout>
   )
 }

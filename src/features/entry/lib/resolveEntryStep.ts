@@ -36,9 +36,14 @@ export type ResolveEntryStepParams = {
   isOpen: boolean
 }
 
-/** 参加者以外（出展者・運営）はアンケート導線に乗せず、そのままアプリ本体へ通す。 */
+/**
+ * 出展者だけはアンケート導線に乗せず、そのまま出展者画面へ通す。
+ * manager / viewer / admin も入口では参加者と同じ流れ（開放待ち・`/home`）に乗せる。
+ * ここで素通しにすると `/home` 側の公開ゲート（RequireAppOpen）と判断が食い違い、
+ * 未開放時に入口と `/home` の間で往復リダイレクトが起きる。
+ */
 function isParticipant(role: AuthUser['role'] | undefined): boolean {
-  return role === undefined || role === 'participant'
+  return role !== 'exhibitor'
 }
 
 export function resolveEntryStep({
@@ -51,7 +56,9 @@ export function resolveEntryStep({
   if (!hasToken || !eventMatches) return 'auth'
   if (!isParticipant(role)) return 'app'
   if (!meState) return 'loading'
-  if (!meState.email_verified) return 'verify'
+  // メール確認を求めるのは本来の参加者だけ。運営系（manager / viewer / admin）は
+  // 登録キーで作られ確認メールが出ないため、サーバー（requireVerifiedEmail）も免除している。
+  if (!meState.email_verified && (role === undefined || role === 'participant')) return 'verify'
   if (!meState.survey_answered) return 'survey'
   if (!isOpen) return 'waiting'
   if (!meState.onboarding_completed) return 'onboarding'
