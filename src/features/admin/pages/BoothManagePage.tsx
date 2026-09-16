@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { AdminShell } from '@/features/admin/components/AdminShell'
 import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
 import {
@@ -327,7 +328,13 @@ export function BoothManagePage() {
             <span className="badge bg-secondary ms-2">{booths.length}</span>
           </span>
           {booths.length > 0 ? (
-            <CopyButton text={exportText} label="一覧をコピー（掲示物作成用）" />
+            <div className="d-flex gap-2 flex-wrap">
+              <Link to="/admin/booths/qr-print" className="btn btn-sm btn-outline-primary">
+                <i className="bi bi-qr-code me-1" />
+                QRコードを一括生成（印刷用）
+              </Link>
+              <CopyButton text={exportText} label="一覧をコピー（掲示物作成用）" />
+            </div>
           ) : null}
         </div>
         {booths.length === 0 ? (

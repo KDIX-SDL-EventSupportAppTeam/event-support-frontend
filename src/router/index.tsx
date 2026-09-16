@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { AdminLoginPage } from '@/features/admin/pages/AdminLoginPage'
 import { AdminMenuPage } from '@/features/admin/pages/AdminMenuPage'
 import { BoothManagePage } from '@/features/admin/pages/BoothManagePage'
+import { BoothQrPrintPage } from '@/features/admin/pages/BoothQrPrintPage'
 import { CategoryManagePage } from '@/features/admin/pages/CategoryManagePage'
 import { DashboardPage } from '@/features/admin/pages/DashboardPage'
 import { ParticipantsPage } from '@/features/admin/pages/ParticipantsPage'
@@ -170,6 +171,14 @@ export function AppRoutes() {
         element={
           <RequireAdmin>
             <BoothManagePage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/booths/qr-print"
+        element={
+          <RequireAdmin>
+            <BoothQrPrintPage />
           </RequireAdmin>
         }
       />
