@@ -1,5 +1,12 @@
 // 完了ポップアップ・確認ダイアログの共通枠。
 // docs/specs/design-refresh-2026/05-modals.md
+//
+// Bootstrap 本体（legacy-app.scss の `@import 'bootstrap/scss/bootstrap'`）にも
+// `.modal-content` と `.modal-title` があり、こちらより後ろで読み込まれる。
+// 詳細度が同じだと後勝ちで、背景色が `var(--bs-modal-bg)`（`.modal` の外では
+// 未定義＝透明）に、`.modal-title` の下余白が 0 に奪われてしまう。
+// ブース一覧の Bootstrap 製モーダルは壊さないよう、`.modal-overlay` の中だけ
+// 詳細度を上げて勝たせる。
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -12,45 +19,45 @@
   justify-content: center;
   background: rgba(0, 0, 0, 0.5);
   padding: 1rem;
-}
 
-.modal-content {
-  background: #fff;
-  border-radius: 0.75rem;
-  padding: 2rem;
-  max-width: 420px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  text-align: center;
+  .modal-content {
+    background: #fff;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    max-width: 420px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    text-align: center;
 
-  &:focus {
-    outline: none;
+    &:focus {
+      outline: none;
+    }
   }
-}
 
-.modal-title {
-  font-size: 1.3rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-}
-
-.modal-body-text {
-  font-size: 1rem;
-  margin-bottom: 2rem;
-}
-
-.modal-footer-buttons {
-  display: flex;
-  gap: 0.5rem;
-
-  button {
-    flex-grow: 1;
+  .modal-title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
   }
-}
 
-.modal-popup-image {
-  max-width: 100%;
-  height: auto;
-  margin-bottom: 1rem;
+  .modal-body-text {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .modal-footer-buttons {
+    display: flex;
+    gap: 0.5rem;
+
+    button {
+      flex-grow: 1;
+    }
+  }
+
+  .modal-popup-image {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 1rem;
+  }
 }
