@@ -14,6 +14,17 @@
   padding: 1rem;
 }
 
+// Bootstrap の .modal-content は --bs-modal-bg を参照するが、.modal の外では未定義で
+// 背景が透明になり背後の文字と重なる。.modal-overlay 配下で詳細度を上げて背景を確定させる。
+.modal-overlay > .modal-content {
+  --bs-modal-bg: #fff;
+  --bs-modal-color: var(--pf-ink-strong);
+  background-color: #fff;
+  color: var(--pf-ink-strong);
+  border: 0;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+}
+
 .modal-content {
   background: #fff;
   border-radius: 0.75rem;
