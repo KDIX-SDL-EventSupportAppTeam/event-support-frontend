@@ -69,8 +69,9 @@ export function OrganizerEventCreatePage() {
     try {
       const event = await createOrganizerEvent({
         name: form.name.trim(),
-        date_start: form.dateStart,
-        date_end: form.dateEnd,
+        // datetime-local は端末のローカル時刻。タイムゾーン付きの ISO にして送る
+        date_start: new Date(form.dateStart).toISOString(),
+        date_end: new Date(form.dateEnd).toISOString(),
         venue: form.venue.trim() || undefined,
         survey_url: form.surveyUrl.trim() || undefined,
         initial_manager: {

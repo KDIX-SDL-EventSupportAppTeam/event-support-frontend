@@ -644,3 +644,33 @@ export async function fetchAdminAwardTally(
   )
   return unwrapApiData(res)
 }
+
+/** アプリ公開ゲートの設定値（`GET/PUT /admin/events/:event_id/app-access`）。 */
+export type AdminAppAccess = {
+  event_id: string
+  mode: 'closed' | 'scheduled' | 'open'
+  app_opens_at: string | null
+  app_closes_at: string | null
+  pre_survey_closes_at: string | null
+  updated_by: string | null
+  updated_at: string | null
+}
+
+export async function fetchAdminAppAccess(eventId: string): Promise<AdminAppAccess> {
+  const res = await apiClient.get<ApiResponse<AdminAppAccess>>(
+    `/admin/events/${encodeURIComponent(eventId)}/app-access`,
+  )
+  return unwrapApiData(res)
+}
+
+/** アプリの開放スイッチ（manager 限定）。開放予定時刻などは変えない。 */
+export async function putAdminAppAccess(
+  eventId: string,
+  body: { mode: 'open' | 'closed' },
+): Promise<AdminAppAccess> {
+  const res = await apiClient.put<ApiResponse<AdminAppAccess>>(
+    `/admin/events/${encodeURIComponent(eventId)}/app-access`,
+    body,
+  )
+  return unwrapApiData(res)
+}

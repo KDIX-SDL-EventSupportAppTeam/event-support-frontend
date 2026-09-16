@@ -76,8 +76,16 @@ describe('resolveEntryStep', () => {
     ).toBe('app')
   })
 
-  it('運営もアンケート導線に乗せない', () => {
-    expect(resolveEntryStep({ ...base, role: 'manager', meState: null })).toBe('app')
+  it('運営（manager / viewer / admin）も参加者と同じくアンケート導線に乗せる', () => {
+    for (const role of ['manager', 'viewer', 'admin'] as const) {
+      expect(resolveEntryStep({ ...base, role, meState: null })).toBe('loading')
+      expect(resolveEntryStep({ ...base, role, meState: meState({ survey_answered: false }) })).toBe('survey')
+    }
+  })
+
+  it('運営はメール確認を免除する（サーバーの requireVerifiedEmail と同じ）', () => {
+    const unverified = meState({ email_verified: false, survey_answered: false })
+    expect(resolveEntryStep({ ...base, role: 'manager', meState: unverified })).toBe('survey')
   })
 
   it('開放判定はポーリング結果で上書きできる（再読込なしで先へ進む）', () => {

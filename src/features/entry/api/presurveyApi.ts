@@ -64,7 +64,6 @@ function buildAnswersBody(answers: PreSurveyAnswers, questions: PreSurveyQuestio
 /**
  * 回答送信。Bearer 認証必須（サインアップ／サインインは `features/auth` の
  * `useAuth().register` / `useAuth().login` を使う）。
- * 締切後は 409（`code: 'PRE_SURVEY_CLOSED'`）を ApiError で投げる。
  */
 export async function submitPreSurveyAnswers(params: {
   eventId: string
