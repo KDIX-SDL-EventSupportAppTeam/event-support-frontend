@@ -335,7 +335,12 @@ export function CheckInPage() {
             maxLength={8}
             placeholder="例: 481502"
             value={manualCode}
-            onChange={(e) => setManualCode(e.target.value.replace(/[^0-9]/g, ''))}
+            onChange={(e) => {
+              setManualCode(e.target.value.replace(/[^0-9]/g, ''))
+              // 打ち直しを始めたら前回のエラー文言は消す。残したままだと、正しいコードを
+              // 入れ終えても前回の「コードが違います…」が見え続ける（提案-5）。
+              setManualError(null)
+            }}
             aria-label="6桁の手動コード"
           />
           {manualError ? <p className="checkin-error-box">{manualError}</p> : null}
