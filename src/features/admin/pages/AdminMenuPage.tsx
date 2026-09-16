@@ -2,6 +2,7 @@ import { lazy, Suspense, useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { AnalyticsWindow } from '@/features/admin/components/AnalyticsWindow'
 import { AdminShell } from '@/features/admin/components/AdminShell'
+import { AppAccessPanel } from '@/features/admin/components/AppAccessPanel'
 import { EventInfoPanel } from '@/features/admin/components/EventInfoPanel'
 import { WINDOW_REGISTRY, type WindowKey } from '@/features/admin/config/windowRegistry'
 import { useStagedWindowMount } from '@/features/admin/hooks/useStagedWindowMount'
@@ -88,6 +89,7 @@ export function AdminMenuPage() {
     <AdminShell>
       <div className="d-flex flex-column gap-3">
         <EventInfoPanel eventId={eventId} />
+        <AppAccessPanel eventId={eventId} />
 
         {activeWindows.length === 0 ? (
           <div className="card border-0 shadow-sm">
