@@ -23,7 +23,7 @@ import type { CheckInResult } from '@/shared/types/checkin'
 import { entryPathForRedirect } from '@/shared/lib/lastEventId'
 
 // チェックイン成功モーダルの順序（docs/specs/bingo-dynamic-unlock/03-checkin-flow.md）:
-//   1. 評価ステップ（pending_rating が非 null のときだけ、前のブースの評価を先頭で聞く）
+//   1. 評価ステップ（今回チェックインしたブースの評価を先頭で聞く。未評価の過去ブースはマスから手動評価）
 //   2. チェックイン成功ステップ（今回チェックインしたブース名 / 埋まったマス）
 //   3. 解放演出（unlocked_pairs が空でないときだけ）
 // 判定は resolveCheckInView（純粋関数）に置く。
@@ -127,7 +127,7 @@ export function CheckInPage() {
     // サーバーが返す unlocked_pairs をペアごとに積む（unlocked_positions は全ペア分の平坦な配列）
     if (cardId) enqueuePairs(cardId, res.unlocked_pairs)
     if (res.cooldown_remaining_sec > 0) setCooldownRemainingSec(res.cooldown_remaining_sec)
-    setStep(res.pending_rating ? 'rating' : 'result')
+    setStep('rating')
   }
 
   async function handleCheckInV1() {
@@ -230,9 +230,10 @@ export function CheckInPage() {
 
   // 星（中央値なし）＋ コメント欄 ＋「完了」ボタン1つ。星未選択のまま完了しても
   // 評価を送らず次へ進む（スキップ扱い、エラーにしない）。送信失敗は静かに握りつぶす
-  // （チェックイン成功の表示を妨げない。未回収なら次回 pending_rating で再提示される）
-  async function completePendingRating(rating: number, comment: string) {
-    if (!eventId || !checkInResponse?.pending_rating) {
+  // （チェックイン成功の表示を妨げない。未回収分はホームのマスから手動評価できる）
+  // 今回訪問したブースを評価する。pending_rating（前のブース）は使わない
+  async function completeRating(rating: number, comment: string) {
+    if (!eventId || !checkInResponse) {
       setStep('result')
       return
     }
@@ -242,7 +243,7 @@ export function CheckInPage() {
     }
     setSubmitting(true)
     try {
-      await postV1CheckInRating(eventId, checkInResponse.pending_rating.checkin_id, rating, comment, 'NEXT_CHECKIN')
+      await postV1CheckInRating(eventId, checkInResponse.checkin_id, rating, comment, 'MANUAL')
     } catch {
       /* noop */
     } finally {
@@ -274,7 +275,7 @@ export function CheckInPage() {
 
   const view = resolveCheckInView({
     step,
-    hasPendingRating: Boolean(checkInResponse?.pending_rating),
+    hasRatingTarget: Boolean(checkInResponse),
     hasPendingUnlock: Boolean(currentUnlock),
     resultAcknowledged,
   })
@@ -366,13 +367,13 @@ export function CheckInPage() {
     )
   }
 
-  if (view === 'rating' && checkInResponse?.pending_rating) {
+  if (view === 'rating' && checkInResponse) {
     return (
       <CheckInRatingModal
-        boothName={checkInResponse.pending_rating.booth_name}
+        boothName={checkInResponse.booth.name}
         ratingScale={ratingScale}
         submitting={submitting}
-        onComplete={(r, c) => void completePendingRating(r, c)}
+        onComplete={(r, c) => void completeRating(r, c)}
       />
     )
   }
