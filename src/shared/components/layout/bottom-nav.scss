@@ -1,0 +1,112 @@
+.participant-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--pf-cream-light);
+}
+
+.participant-layout__body {
+  flex: 1 0 auto;
+  padding-bottom: calc(var(--pf-nav-height) + env(safe-area-inset-bottom, 0px));
+}
+
+.bottom-nav {
+  // 側の4項目と中央FABの2種類だけで、ボトムナビのアイコン寸法を決める
+  --pf-nav-icon-size: 2.5rem;
+  --pf-nav-fab-size: 4.2rem;
+
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  height: calc(var(--pf-nav-height) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.bottom-nav__bar {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: var(--pf-nav-height);
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.bottom-nav__list {
+  position: relative;
+  display: flex;
+  // stretch にして全項目を同じ高さにする。center だと項目の高さが中身なりになり、
+  // HTMLラベルを持つ項目だけ背が高くなってアイコンの位置が上下にずれる
+  align-items: stretch;
+  justify-content: space-between;
+  height: var(--pf-nav-height);
+  margin: 0;
+  padding: 0 0.5rem;
+  list-style: none;
+}
+
+.bottom-nav__item {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.bottom-nav__item--fab {
+  transform: translateY(-0.6rem);
+}
+
+.bottom-nav__link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border-radius: var(--pf-radius-pill);
+
+  &:focus-visible {
+    outline: 3px solid var(--pf-orange);
+    outline-offset: 2px;
+  }
+
+  img {
+    // 素材はすべて「正方形キャンバスに絵柄がほぼ一杯」へ揃えてある
+    // （docs/reference/assets.md）。したがって固定の正方形ボックスに contain で
+    // 収めるだけで、どの項目も同じ大きさに見える。max-height だけで効かせていた
+    // 頃は、素材ごとの透明余白の差がそのまま見た目の大小になっていた。
+    width: var(--pf-nav-icon-size);
+    height: var(--pf-nav-icon-size);
+    object-fit: contain;
+    flex: none;
+  }
+}
+
+.bottom-nav__item--fab .bottom-nav__link img {
+  // 中央FABだけは飛び出す演出のため、他項目よりひとまわり大きく見せる
+  width: var(--pf-nav-fab-size);
+  height: var(--pf-nav-fab-size);
+}
+
+.bottom-nav__label {
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--pf-ink);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+// 5項目 + 「アワード投票」の6文字が入りきらない幅（iPhone SE 相当の 320px 等）では、
+// バーの高さはそのままにアイコンとラベルだけ詰める。折り返させると項目ごとに
+// 高さが変わってアイコンの位置が上下にずれる
+@media (max-width: 360px) {
+  .bottom-nav {
+    --pf-nav-icon-size: 2.1rem;
+    --pf-nav-fab-size: 3.6rem;
+  }
+
+  .bottom-nav__label {
+    font-size: 0.62rem;
+  }
+}

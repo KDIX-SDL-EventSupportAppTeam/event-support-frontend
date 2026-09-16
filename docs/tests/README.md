@@ -7,6 +7,7 @@
 | [`tests/`](../../tests/) | Vitest のテストコード（`unit/`・`integration/`） |
 | `docs/tests/runs/` | 実行記録（何を・なぜ・結果） |
 | `docs/tests/fixtures/` | ダミーデータ・ログイン例・再現用の固定値 |
+| [`docs/tests/manual-e2e-checklist.md`](./manual-e2e-checklist.md) | 人が触って確認する通し手順（手動テスト仕様書） |
 
 テストコードは **`tests/` にまとめる**。`src/` 内に `*.test.ts` を置かない。
 実行後は必ず `docs/tests/runs/` に記録を残し、本ファイルの「記録一覧」を更新する。
@@ -40,6 +41,7 @@ PR 作成時は [AGENTS.md](../../AGENTS.md) の「次にやること」も合�
 |------|------|
 | [runs/](./runs/) | 実行記録（1 回の作業 = 1 ファイル） |
 | [fixtures/](./fixtures/) | 再現用の固定値（ログイン例・event_id 等） |
+| [manual-e2e-checklist.md](./manual-e2e-checklist.md) | 手動テスト仕様書。主催者のイベント作成から片付けまでを 1 周する |
 
 ### ファイル名（runs）
 
@@ -74,7 +76,14 @@ YYYY-MM-DD-kebab-case-summary.md
 | [tests/unit/auth-mock.test.ts](../../tests/unit/auth-mock.test.ts) | unit | `src/features/auth/mocks/authMock.ts`, `devDummyCredentials.ts` |
 | [tests/unit/bingo-random.test.ts](../../tests/unit/bingo-random.test.ts) | unit | `src/shared/data/sample/bingoRandom.ts` |
 | [tests/unit/sample-event-data.test.ts](../../tests/unit/sample-event-data.test.ts) | unit | `src/shared/data/sample/SampleEventData.ts`, `createEventDataSource.ts` |
+| [tests/unit/resolve-landing-path.test.ts](../../tests/unit/resolve-landing-path.test.ts) | unit | `src/features/auth/lib/resolveLandingPath.ts` |
+| [tests/unit/auth-role-helpers.test.ts](../../tests/unit/auth-role-helpers.test.ts) | unit | `src/shared/auth/authStore.ts`（`isAdminUser` / `isManagerUser`） |
+| [tests/unit/exhibitor-store.test.ts](../../tests/unit/exhibitor-store.test.ts) | unit | `src/features/exhibitor/store/exhibitorStore.ts` |
+| [tests/unit/production-env-guard.test.ts](../../tests/unit/production-env-guard.test.ts) | unit | `src/shared/config/productionEnvGuard.ts` |
+| [tests/unit/event-content-2026.test.ts](../../tests/unit/event-content-2026.test.ts) | unit | `src/shared/data/content/eventContent2026.ts` |
 | [tests/integration/frontend-package.test.ts](../../tests/integration/frontend-package.test.ts) | integration | ルート `package.json`（build スクリプト） |
+| [tests/unit/recommender-state-view.test.ts](../../tests/unit/recommender-state-view.test.ts) | unit | `src/features/admin/lib/recommenderStateView.ts` |
+| [tests/unit/parseQrToBoothId.test.ts](../../tests/unit/parseQrToBoothId.test.ts) | unit | `src/features/checkin/lib/parseQrToBoothId.ts` |
 
 新規テストを追加したら、この表も更新する。
 
@@ -85,6 +94,11 @@ YYYY-MM-DD-kebab-case-summary.md
 | 日付 | ファイル | 概要 | テストコード |
 |------|----------|------|--------------|
 | 2026-05-24 | [runs/2026-05-24-features-shared-refactor.md](./runs/2026-05-24-features-shared-refactor.md) | features/shared 移行後の lint/build/test | 全 unit + integration |
+| 2026-07-11 | [runs/2026-07-11-auth-exhibitor-unit-tests-restore.md](./runs/2026-07-11-auth-exhibitor-unit-tests-restore.md) | tests/ 実行復旧＋出展者・ログイン分岐の単体テスト追加 | resolve-landing-path, auth-role-helpers, exhibitor-store（新規）＋既存8ファイル |
+| 2026-09-05 | [runs/2026-09-05-admin-live-monitoring.md](./runs/2026-09-05-admin-live-monitoring.md) | 運営ダッシュボードの当日監視ブロック（#75）追加。tsc/lint/unit test | recommender-state-view（新規）＋既存全ファイル |
+| 2026-09-05 | [runs/2026-09-05-production-env-guard.md](./runs/2026-09-05-production-env-guard.md) | 本番ビルドのデータソース誤設定検知（issue #90）。tsc/eslint/unit test＋T-1〜T-5実測 | production-env-guard（新規）＋既存 |
+| 2026-09-05 | [runs/2026-09-05-event-content-2026.md](./runs/2026-09-05-event-content-2026.md) | スケジュール・Q&A の今年化（去年の混入をデータ突合とビルド成果物で検査） | event-content-2026（新規） |
+| 2026-09-05 | [runs/2026-09-05-checkin-qr-scan.md](./runs/2026-09-05-checkin-qr-scan.md) | チェックインのQR読み取り追加（#84）の単体テストと実機確認項目 | parseQrToBoothId（新規） |
 
 ---
 
@@ -97,20 +111,20 @@ YYYY-MM-DD-kebab-case-summary.md
 |----------|------|
 | （まだなし） | — |
 
-**レガシー参照:** [docs/legacy/tests/fixtures/dummy-login.md](../legacy/tests/fixtures/dummy-login.md)（event_id・ログイン例）
+**レガシー参照:** [docs/archive/legacy/tests/fixtures/dummy-login.md](../archive/legacy/tests/fixtures/dummy-login.md)（event_id・ログイン例）
 
 ---
 
 ## レガシー
 
-モノレポ時代の実行記録は [docs/legacy/tests/](../legacy/tests/) に退避済み。新規記録は `docs/tests/runs/` に追加し、legacy には書かない。
+モノレポ時代の実行記録は [docs/archive/legacy/tests/](../archive/legacy/tests/) に退避済み。新規記録は `docs/tests/runs/` に追加し、legacy には書かない。
 
 | 日付 | ファイル | 概要 |
 |------|----------|------|
-| 2026-05-12 | [runs/2026-05-12-frontend-rewrite-smoke.md](../legacy/tests/runs/2026-05-12-frontend-rewrite-smoke.md) | フロント書き換え後のスモーク |
-| 2026-05-13 | [runs/2026-05-13-mock-auth.md](../legacy/tests/runs/2026-05-13-mock-auth.md) | モック認証まわりの Vitest |
-| 2026-05-13 | [runs/2026-05-13-event-data-source.md](../legacy/tests/runs/2026-05-13-event-data-source.md) | SampleEventData・データソース切替 |
-| 2026-05-13 | [runs/2026-05-13-docs-sync-verification.md](../legacy/tests/runs/2026-05-13-docs-sync-verification.md) | lint / build / Vitest |
+| 2026-05-12 | [runs/2026-05-12-frontend-rewrite-smoke.md](../archive/legacy/tests/runs/2026-05-12-frontend-rewrite-smoke.md) | フロント書き換え後のスモーク |
+| 2026-05-13 | [runs/2026-05-13-mock-auth.md](../archive/legacy/tests/runs/2026-05-13-mock-auth.md) | モック認証まわりの Vitest |
+| 2026-05-13 | [runs/2026-05-13-event-data-source.md](../archive/legacy/tests/runs/2026-05-13-event-data-source.md) | SampleEventData・データソース切替 |
+| 2026-05-13 | [runs/2026-05-13-docs-sync-verification.md](../archive/legacy/tests/runs/2026-05-13-docs-sync-verification.md) | lint / build / Vitest |
 
 ---
 
@@ -118,4 +132,4 @@ YYYY-MM-DD-kebab-case-summary.md
 
 - [tests/README.md](../../tests/README.md) — テストコードの置き場所・コマンド
 - [AGENTS.md](../../AGENTS.md) — エージェント向けテスト規約
-- [docs/adrs/](../adrs/) — 設計判断（テスト方針の ADR はここへ）
+- [docs/decisions/adrs/](../decisions/adrs/) — 設計判断（テスト方針の ADR はここへ）

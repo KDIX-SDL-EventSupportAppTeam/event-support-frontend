@@ -1,4 +1,3 @@
-import type { Award } from '@/shared/types/award'
 import type { BingoGridCell, LegacyBooth } from '@/shared/types/legacyBooth'
 import {
   buildRandomBingoGrid,
@@ -8,11 +7,7 @@ import {
 } from '@/shared/data/sample/bingoRandom'
 import { SAMPLE_LEGACY_BOOTHS } from '@/shared/data/sample/sampleBooths'
 import { readSampleExtraCheckedIds, readSampleGachaponExtraSpent } from '@/shared/data/sample/sampleSession'
-
-const SAMPLE_AWARDS: Award[] = [
-  { id: 'award-1', name: '来場者投票', description: '当日投票で決定' },
-  { id: 'award-2', name: 'スタッフ賞', description: '運営おすすめ' },
-]
+import { MAX_GACHAPON_COINS } from '@/shared/config/gachapon'
 
 export function pickCheckedInBoothIds(booths: LegacyBooth[], eventId: string, userId: string): string[] {
   if (booths.length === 0) return []
@@ -49,7 +44,7 @@ export class SampleEventData {
   getBingoCount(eventId: string, userId: string): number {
     const grid = this.bingoGridFor(eventId, userId)
     const checked = new Set(this.getCheckedInBoothIds(eventId, userId))
-    return Math.min(4, countCompletedBingoLines(grid, checked))
+    return Math.min(MAX_GACHAPON_COINS, countCompletedBingoLines(grid, checked))
   }
 
   getGachaponBaseSpent(eventId: string, userId: string): number {
@@ -64,9 +59,5 @@ export class SampleEventData {
     const base = this.getGachaponBaseSpent(eventId, userId)
     const extra = readSampleGachaponExtraSpent(userId)
     return Math.min(lines, base + extra)
-  }
-
-  getAwards(): Award[] {
-    return SAMPLE_AWARDS.map((a) => ({ ...a }))
   }
 }

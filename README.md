@@ -93,6 +93,8 @@ npm run preview        # ビルド成果物のプレビュー
 npm run lint           # ESLint
 ```
 
+本番ビルドは環境変数が不正だと失敗する（`docs/reference/development.md` 参照）。
+
 ---
 
 ## ユビキタス言語

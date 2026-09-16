@@ -1,0 +1,178 @@
+// ブースQRコード一覧（印刷用）。A4 縦に 2 列 × 4 行で並べる。
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+.booth-qr-print {
+  min-height: 100vh;
+  background: #e9e5dc;
+  padding-bottom: 2rem;
+  color: var(--pf-ink-strong);
+}
+
+.booth-qr-print__toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: #fff;
+  box-shadow: var(--pf-shadow-card);
+  margin-bottom: 1.5rem;
+}
+
+// 1 枚 = A4（210mm × 297mm）
+.booth-qr-sheet {
+  box-sizing: border-box;
+  width: 210mm;
+  height: 297mm;
+  margin: 0 auto 1.5rem;
+  padding: 8mm;
+  background: #fff;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 15%);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 4mm;
+  overflow: hidden;
+}
+
+.booth-qr-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  border: 0.5mm dashed #c9bfa8; // 切り取り線を兼ねる
+  border-radius: 3mm;
+  padding: 3mm 4mm;
+  background: var(--pf-surface);
+  break-inside: avoid;
+}
+
+.booth-qr-card__head {
+  display: flex;
+  align-items: center;
+  gap: 2.5mm;
+  min-width: 0;
+  padding-bottom: 1.5mm;
+  border-bottom: 0.4mm solid var(--pf-yellow);
+}
+
+.booth-qr-card__number {
+  flex-shrink: 0;
+  min-width: 12mm;
+  padding: 0.8mm 2.5mm;
+  border-radius: 999px;
+  background: var(--pf-yellow);
+  font-size: 13pt;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.booth-qr-card__name {
+  min-width: 0;
+  font-size: 11.5pt;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.booth-qr-card__body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5mm 0;
+}
+
+.booth-qr-card__qr {
+  box-sizing: border-box;
+  height: 100%;
+  max-height: 40mm;
+  aspect-ratio: 1;
+  background: #fff;
+  border-radius: 1.5mm;
+  padding: 1mm;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.booth-qr-card__qr--missing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.4mm dashed var(--pf-ink-muted);
+  color: var(--pf-ink-muted);
+  font-size: 9pt;
+}
+
+.booth-qr-card__mascot {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  height: 17mm;
+  width: auto;
+}
+
+.booth-qr-card__code {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2.5mm;
+  padding-top: 1mm;
+}
+
+.booth-qr-card__code-label {
+  font-size: 7.5pt;
+  color: var(--pf-ink-muted);
+}
+
+.booth-qr-card__code-value {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 17pt;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  .booth-qr-print {
+    background: #fff;
+    padding: 0;
+    min-height: 0;
+  }
+
+  .booth-qr-sheet {
+    margin: 0;
+    box-shadow: none;
+    break-after: page;
+
+    &:last-child {
+      break-after: auto;
+    }
+  }
+
+  .booth-qr-print * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

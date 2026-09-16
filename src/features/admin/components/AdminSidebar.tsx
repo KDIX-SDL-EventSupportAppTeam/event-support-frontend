@@ -4,7 +4,11 @@ import { useShallow } from 'zustand/react/shallow'
 import { FULL_PAGE_NAV, WINDOW_REGISTRY } from '@/features/admin/config/windowRegistry'
 import { useAdminMenuStore } from '@/features/admin/store/adminMenuStore'
 import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
+import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
 import type { EventStatus } from '@/shared/lib/eventStatus'
+
+// モジュール直下（ビルド時定数なので 1 回だけ評価）
+const DATA_SOURCE_MODE = resolveEventDataSourceMode()
 
 type AdminSidebarProps = {
   onLogout: () => void
@@ -88,6 +92,13 @@ export const AdminSidebar = memo(function AdminSidebar({
           </label>
         ))}
       </nav>
+
+      <div className="px-3 pb-2 small text-white-50">
+        データ取得元: <code className="text-white">{DATA_SOURCE_MODE}</code>
+        {DATA_SOURCE_MODE === 'sample' ? (
+          <span className="badge bg-danger ms-2">サンプル（本番データではない）</span>
+        ) : null}
+      </div>
 
       <div className="p-3 border-top border-secondary">
         <button type="button" className="btn btn-outline-light btn-sm w-100" onClick={onLogout}>

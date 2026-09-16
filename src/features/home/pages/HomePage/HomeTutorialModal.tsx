@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MAX_GACHAPON_COINS } from '@/shared/config/gachapon'
 
 const STEPS = [
   {
@@ -11,7 +12,7 @@ const STEPS = [
   },
   {
     title: 'コインとガチャポン',
-    text: 'ビンゴの数に応じてコインを最大4枚までゲットできます。コインを使ってガチャポンを回すことができます。',
+    text: `ビンゴの数に応じてコインを最大${MAX_GACHAPON_COINS}枚までゲットできます。コインを使ってガチャポンを回すことができます。`,
   },
   {
     title: 'チェックインの方法',

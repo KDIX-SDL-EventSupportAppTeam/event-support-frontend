@@ -2,6 +2,7 @@ import { lazy, Suspense, useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { AnalyticsWindow } from '@/features/admin/components/AnalyticsWindow'
 import { AdminShell } from '@/features/admin/components/AdminShell'
+import { AppAccessPanel } from '@/features/admin/components/AppAccessPanel'
 import { EventInfoPanel } from '@/features/admin/components/EventInfoPanel'
 import { WINDOW_REGISTRY, type WindowKey } from '@/features/admin/config/windowRegistry'
 import { useStagedWindowMount } from '@/features/admin/hooks/useStagedWindowMount'
@@ -44,7 +45,10 @@ const LAZY_WINDOWS: Record<
 function WindowPlaceholder({ label, icon }: { label: string; icon: string }) {
   return (
     <AnalyticsWindow title={label} icon={icon} minimized={false} onToggleMinimize={() => undefined}>
-      <div className="text-muted small py-2">準備中…</div>
+      <div className="text-muted small py-2 d-flex align-items-center gap-2">
+        <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" />
+        読み込み中…
+      </div>
     </AnalyticsWindow>
   )
 }
@@ -85,6 +89,7 @@ export function AdminMenuPage() {
     <AdminShell>
       <div className="d-flex flex-column gap-3">
         <EventInfoPanel eventId={eventId} />
+        <AppAccessPanel eventId={eventId} />
 
         {activeWindows.length === 0 ? (
           <div className="card border-0 shadow-sm">

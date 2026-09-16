@@ -2,11 +2,9 @@ import { countCompletedBingoLines } from '@/shared/data/sample/bingoRandom'
 import type { ParticipantClient } from '@/shared/data/participantTypes'
 import { pickCheckedInBoothIds, SampleEventData } from '@/shared/data/sample/SampleEventData'
 import { SAMPLE_LEGACY_BOOTHS } from '@/shared/data/sample/sampleBooths'
-import { SAMPLE_QA_ITEMS } from '@/shared/data/sample/sampleQa'
-import { SAMPLE_SCHEDULE } from '@/shared/data/sample/sampleSchedule'
+import { QA_2026, SCHEDULE_2026 } from '@/shared/data/content/eventContent2026'
 import {
   appendSampleCheckedId,
-  incrementSampleGachaponExtraSpent,
   readSampleExtraCheckedIds,
   readSampleVotes,
   startSampleCooldown,
@@ -14,6 +12,7 @@ import {
 } from '@/shared/data/sample/sampleSession'
 import { SAMPLE_VOTE_AWARDS } from '@/shared/data/sample/sampleVoteAwards'
 import type { CheckInResult } from '@/shared/types/checkin'
+import { recordBingoCelebration } from '@/shared/lib/bingoCelebration'
 
 export class SampleParticipantClient implements ParticipantClient {
   private readonly sample = new SampleEventData()
@@ -31,23 +30,17 @@ export class SampleParticipantClient implements ParticipantClient {
     const pickIds = pickCheckedInBoothIds(SAMPLE_LEGACY_BOOTHS, eventId, userId)
     const beforeSet = new Set<string>([...pickIds, ...readSampleExtraCheckedIds(userId)])
     const rawBefore = countCompletedBingoLines(grid, beforeSet)
-    const bingoBefore = Math.min(4, rawBefore)
 
     appendSampleCheckedId(userId, booth.booth_id)
 
     const afterSet = new Set<string>([...pickIds, ...readSampleExtraCheckedIds(userId)])
     const rawAfter = countCompletedBingoLines(grid, afterSet)
-    const bingoAfter = Math.min(4, rawAfter)
 
-    const newCoinsAwarded = Math.max(0, bingoAfter - bingoBefore)
     const newlyCompletedLines = Math.max(0, rawAfter - rawBefore)
 
     startSampleCooldown(userId, 45_000)
 
-    if (newlyCompletedLines > 0) {
-      sessionStorage.setItem('newlyCompletedLines', String(newlyCompletedLines))
-      sessionStorage.setItem('newCoinsAwarded', String(newCoinsAwarded))
-    }
+    recordBingoCelebration(newlyCompletedLines)
 
     return {
       checkin_id: `sample-${booth.booth_id}`,
@@ -59,29 +52,15 @@ export class SampleParticipantClient implements ParticipantClient {
     }
   }
 
-  async getAvailableGachaponCoins(eventId: string, userId: string): Promise<number> {
-    const lines = this.sample.getBingoCount(eventId, userId)
-    const spent = this.sample.getGachaponCoinsSpent(eventId, userId)
-    return Math.max(0, lines - spent)
-  }
-
-  async postUseGachaponCoin(eventId: string, userId: string): Promise<void> {
-    const lines = this.sample.getBingoCount(eventId, userId)
-    const base = this.sample.getGachaponBaseSpent(eventId, userId)
-    const ok = incrementSampleGachaponExtraSpent(userId, lines, base)
-    if (!ok) {
-      throw new Error('使用できるコインがありません。')
-    }
-  }
-
   async getAwardVoteSnapshot(eventId: string, userId: string) {
-    void eventId
     const checkedIds = new Set(this.sample.getCheckedInBoothIds(eventId, userId))
     const checkedBooths = SAMPLE_LEGACY_BOOTHS.filter((b) => checkedIds.has(b.booth_id))
     const persisted = readSampleVotes(userId)
-    const votes: Record<string, string | null> = {}
+    // キーは award_id（issue #89）。チェックイン済みでない票は落とす（サーバーと同じ扱い）
+    const votes: Record<string, string> = {}
     for (const a of SAMPLE_VOTE_AWARDS) {
-      votes[a.name] = persisted[a.name] ?? null
+      const boothId = persisted[a.id]
+      if (boothId && checkedIds.has(boothId)) votes[a.id] = boothId
     }
     return {
       votingOpen: true,
@@ -91,18 +70,23 @@ export class SampleParticipantClient implements ParticipantClient {
     }
   }
 
-  async saveVotes(userId: string, votes: Record<string, string | null>): Promise<void> {
-    writeSampleVotes(userId, { ...votes })
+  async saveVotes(eventId: string, userId: string, votes: Record<string, string | null>) {
+    const next: Record<string, string> = {}
+    for (const [awardId, boothId] of Object.entries(votes)) {
+      if (boothId) next[awardId] = boothId
+    }
+    writeSampleVotes(userId, next)
+    return this.getAwardVoteSnapshot(eventId, userId)
   }
 
   async getSchedule() {
-    return SAMPLE_SCHEDULE.map((d) => ({
+    return SCHEDULE_2026.map((d) => ({
       dayTitle: d.dayTitle,
       events: d.events.map((e) => ({ ...e })),
     }))
   }
 
   async getQa() {
-    return SAMPLE_QA_ITEMS.map((q) => ({ ...q }))
+    return QA_2026.map((q) => ({ ...q }))
   }
 }

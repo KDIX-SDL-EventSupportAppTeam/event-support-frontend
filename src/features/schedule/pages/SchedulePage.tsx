@@ -31,15 +31,19 @@ export function SchedulePage() {
         days.map((day) => (
           <div key={day.dayTitle} className="day-container">
             <h2 className="day-title">{day.dayTitle}</h2>
-            <ul className="schedule-list">
-              {day.events.map((ev, index) => (
-                <li key={`${ev.time}-${ev.title}`} className={`schedule-item ${index % 2 === 0 ? 'bg-yellow' : 'bg-red'}`}>
-                  <div className="time-bar" aria-hidden />
-                  <span className="time">{ev.time}</span>
-                  <span className="event-title">{ev.title}</span>
-                </li>
-              ))}
-            </ul>
+            {day.events.length === 0 ? (
+              <p className="text-muted schedule-empty">タイムテーブルは会場の掲示・アナウンスをご覧ください。</p>
+            ) : (
+              <ul className="schedule-list">
+                {day.events.map((ev, index) => (
+                  <li key={`${ev.time}-${ev.title}`} className={`schedule-item ${index % 2 === 0 ? 'bg-yellow' : 'bg-red'}`}>
+                    <div className="time-bar" aria-hidden />
+                    <span className="time">{ev.time}</span>
+                    <span className="event-title">{ev.title}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         ))
       )}

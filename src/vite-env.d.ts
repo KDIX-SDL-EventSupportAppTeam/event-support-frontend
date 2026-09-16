@@ -2,7 +2,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL?: string
-  /** ローカル専用: ログイン画面のイベント ID 初期値 */
+  /** 運営ログインの event_id。本番でも設定する（cloudbuild.yaml の `_DEV_EVENT_ID`） */
   readonly VITE_DEV_EVENT_ID?: string
   readonly VITE_DEV_LOGIN_EMAIL?: string
   readonly VITE_DEV_LOGIN_PASSWORD?: string
@@ -14,6 +14,8 @@ interface ImportMetaEnv {
   readonly VITE_LEGACY_API_BASE_URL?: string
   /** ホーム「アプリフィードバック」で開くフォーム URL（未設定時は開発用の既定 URL） */
   readonly VITE_FEEDBACK_FORM_URL?: string
+  /** ホーム「X にポストする」で本文に併記する URL（未設定時は本文のみ。文面本体は sharePostTemplate.ts） */
+  readonly VITE_X_SHARE_URL?: string
   /** CD 動作確認用（本番ビルド時のみ index.html コメントに埋め込む） */
   readonly VITE_CD_TEST?: string
 }

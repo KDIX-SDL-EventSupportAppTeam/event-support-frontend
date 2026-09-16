@@ -1,0 +1,67 @@
+// 完了ポップアップ・確認ダイアログの共通枠。
+// docs/specs/design-refresh-2026/05-modals.md
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1rem;
+}
+
+// Bootstrap の .modal-content は --bs-modal-bg を参照するが、.modal の外では未定義で
+// 背景が透明になり背後の文字と重なる。.modal-overlay 配下で詳細度を上げて背景を確定させる。
+.modal-overlay > .modal-content {
+  --bs-modal-bg: #fff;
+  --bs-modal-color: var(--pf-ink-strong);
+  background-color: #fff;
+  color: var(--pf-ink-strong);
+  border: 0;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 2rem;
+  max-width: 420px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  text-align: center;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.modal-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.modal-body-text {
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+.modal-footer-buttons {
+  display: flex;
+  gap: 0.5rem;
+
+  button {
+    flex-grow: 1;
+  }
+}
+
+.modal-popup-image {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 1rem;
+}

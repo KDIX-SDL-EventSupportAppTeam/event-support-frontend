@@ -54,6 +54,7 @@ export type CreateEventBody = {
   date_start: string
   date_end: string
   venue?: string
+  survey_url?: string
   initial_manager: {
     email: string
     password: string
@@ -69,6 +70,7 @@ export type CreatedEvent = {
     date_start: string
     date_end: string
     venue: string | null
+    survey_url: string | null
   }
   initial_manager: {
     id: string
@@ -105,6 +107,7 @@ export type OrganizerEvent = {
   date_start: string
   date_end: string
   venue: string | null
+  survey_url: string | null
   created_at: string
   stats: {
     participants: number
@@ -170,6 +173,26 @@ export async function getOrganizerEvent(eventId: string): Promise<OrganizerEvent
   return res.data.data.event
 }
 
+/** イベント情報の修正。日時は ISO 8601（タイムゾーン付き）で送る。 */
+export type UpdateEventBody = {
+  name?: string
+  date_start?: string
+  date_end?: string
+  venue?: string | null
+  survey_url?: string | null
+}
+
+export async function updateOrganizerEvent(
+  eventId: string,
+  body: UpdateEventBody,
+): Promise<OrganizerEvent> {
+  const res = await organizerApiClient.patch<{ data: { event: OrganizerEvent } }>(
+    `/organizer/events/${encodeURIComponent(eventId)}`,
+    body,
+  )
+  return res.data.data.event
+}
+
 export async function listOrganizerStaff(eventId: string): Promise<Staff[]> {
   const res = await organizerApiClient.get<{ data: { staff: Staff[] } }>(
     `/organizer/events/${encodeURIComponent(eventId)}/staff`,
@@ -193,4 +216,29 @@ export async function removeOrganizerStaff(eventId: string, userId: string): Pro
   await organizerApiClient.delete(
     `/organizer/events/${encodeURIComponent(eventId)}/staff/${encodeURIComponent(userId)}`,
   )
+}
+
+/** イベントデータ全削除の削除件数（server #64 §4。旧 v1Admin の同名型を移設） */
+export type EventDataClearResult = {
+  recommendations: number
+  survey_answers: number
+  ratings: number
+  checkins: number
+  booth_tags: number
+  booth_categories: number
+  booths: number
+  participants: number
+  survey_questions: number
+  categories: number
+}
+
+export async function clearOrganizerEventData(eventId: string): Promise<EventDataClearResult> {
+  const res = await organizerApiClient.delete<{ data: { cleared: EventDataClearResult } }>(
+    `/organizer/events/${encodeURIComponent(eventId)}/event-data`,
+    {
+      data: { confirm: 'DELETE_ALL_EVENT_DATA' },
+      timeout: 120_000, // 全削除は複数 DELETE を順次実行するため既定 30s では足りない可能性
+    },
+  )
+  return res.data.data.cleared
 }

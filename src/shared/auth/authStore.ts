@@ -3,11 +3,25 @@ import { DEV_DUMMY_EVENT_ID, isMockAuthEnabled, MOCK_DEV_JWT } from '@/shared/au
 import type { AuthUser } from '@/shared/auth/types'
 import { TOKEN_KEY, USER_KEY } from '@/shared/config/storageKeys'
 
+/**
+ * JWT の payload 部をデコードする。
+ * JWT は base64url（`-`/`_`、パディング省略）でエンコードされるが、atob が読めるのは
+ * 標準 base64（`+`/`/`、パディング必須）だけ。正規化せずに atob へ渡すと、payload の
+ * バイト列次第で例外になり「有効なトークンを壊れている扱いで破棄」する誤判定が起きる
+ * （リロードのたびにログイン画面へ戻される症状の原因）。
+ */
+function decodeJwtPayload(token: string): unknown {
+  const part = token.split('.')[1] ?? ''
+  const base64 = part.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
+  return JSON.parse(atob(padded))
+}
+
 function roleFromToken(token: string): AuthUser['role'] {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1] ?? '')) as { role?: string }
+    const payload = decodeJwtPayload(token) as { role?: string }
     const r = payload.role
-    if (r === 'manager' || r === 'viewer' || r === 'admin') return r
+    if (r === 'manager' || r === 'viewer' || r === 'exhibitor' || r === 'admin') return r
     return 'participant'
   } catch {
     return 'participant'
@@ -17,7 +31,7 @@ function roleFromToken(token: string): AuthUser['role'] {
 /** JWT の exp を見て期限切れか判定する。壊れたトークンも無効扱い。 */
 export function isJwtExpired(token: string): boolean {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1] ?? '')) as { exp?: number }
+    const payload = decodeJwtPayload(token) as { exp?: number }
     if (typeof payload.exp !== 'number') return false // exp が無ければ判定不能（保持）
     return payload.exp * 1000 <= Date.now()
   } catch {

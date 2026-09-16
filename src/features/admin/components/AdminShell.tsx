@@ -33,7 +33,7 @@ export function AdminShell({ title, children }: AdminShellProps) {
   const status = current ? eventStatus(current.date_start, current.date_end) : null
 
   return (
-    <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+    <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: 'var(--pf-cream-light)' }}>
       <AdminSidebar onLogout={onLogout} eventName={current?.name} status={status} />
       <main className="flex-grow-1 overflow-auto">
         <div className="p-4">

@@ -20,7 +20,7 @@ function emojiFromLabels(labels: string[]): string {
 export function mapV1BoothListItemToLegacy(b: V1BoothListItem): LegacyBooth {
   return {
     booth_id: b.id,
-    booth_display_code: b.manual_code?.trim() || undefined,
+    booth_display_code: b.display_code?.trim() || undefined,
     booth_name: b.name,
     booth_emoji: emojiFromLabels(b.labels),
     booth_description: b.description ?? '',

@@ -22,7 +22,7 @@ export function OrganizerShell({ children }: OrganizerShellProps) {
   }, [clear, navigate])
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--pf-cream-light)' }}>
       <header className="navbar navbar-expand bg-white border-bottom shadow-sm px-3 px-md-4">
         <Link to="/organizer/events" className="navbar-brand fw-bold text-primary">
           <i className="bi bi-calendar2-week me-2" />

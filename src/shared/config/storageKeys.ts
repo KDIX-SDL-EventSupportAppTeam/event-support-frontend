@@ -5,3 +5,5 @@
  */
 export const TOKEN_KEY = 'token'
 export const USER_KEY = 'auth_user'
+/** 直近に踏んだ配布リンクの eventId。未認証時の戻り先を決めるために使う */
+export const LAST_EVENT_ID_KEY = 'last_event_id'

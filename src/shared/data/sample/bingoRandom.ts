@@ -59,7 +59,8 @@ export function buildRandomBingoGrid(booths: LegacyBooth[], seed: string): Bingo
   return combined
 }
 
-const LINE_INDEXES: readonly number[][] = [
+/** 4x4 の行・列・対角ライン定義（サンプルモードのビンゴカード生成で共用） */
+export const LINE_INDEXES: readonly number[][] = [
   [0, 1, 2, 3],
   [4, 5, 6, 7],
   [8, 9, 10, 11],

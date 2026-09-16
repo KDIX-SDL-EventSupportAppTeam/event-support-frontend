@@ -1,24 +1,33 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
-  fetchV1Recommendations,
+  fetchV1BingoCard,
+  postV1CheckIn,
   postV1CheckInRating,
-  postV1SelectRecommendation,
-  type V1RecommendationBooth,
-  type V1RecommendationsResponse,
+  type V1CheckInResponse,
 } from '@/shared/api/v1Participant'
 import { ApiError } from '@/shared/api/unwrap'
 import { createParticipantClient } from '@/shared/data/createParticipantClient'
 import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
 import { useLegacyBoothList } from '@/shared/hooks/useLegacyBoothList'
 import { formatClientError } from '@/shared/lib/formatClientError'
+import { resolveCheckInView, type CheckInStep } from '@/shared/lib/checkInFlowView'
+import { useUnlockAnimationQueue } from '@/shared/hooks/useUnlockAnimationQueue'
+import { recordBingoCelebration } from '@/shared/lib/bingoCelebration'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
-import { CheckInRecommendView } from '@/features/checkin/pages/CheckInRecommendView'
+import { CheckInQrScanView } from '@/features/checkin/pages/CheckInQrScanView'
+import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
 import { useAuthStore } from '@/shared/auth/authStore'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
 import type { CheckInResult } from '@/shared/types/checkin'
+import { entryPathForRedirect } from '@/shared/lib/lastEventId'
 
-type Step = 'booth' | 'rating' | 'recommend' | 'done'
+// チェックイン成功モーダルの順序（docs/specs/bingo-dynamic-unlock/03-checkin-flow.md）:
+//   1. 評価ステップ（今回チェックインしたブースの評価を先頭で聞く。未評価の過去ブースはマスから手動評価）
+//   2. チェックイン成功ステップ（今回チェックインしたブース名 / 埋まったマス）
+//   3. 解放演出（unlocked_pairs が空でないときだけ）
+// 判定は resolveCheckInView（純粋関数）に置く。
+type Step = CheckInStep
 
 export function CheckInPage() {
   const navigate = useNavigate()
@@ -29,16 +38,33 @@ export function CheckInPage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
   const isV1Flow = resolveEventDataSourceMode() === 'api'
 
-  const { booths, checkedInBoothIds, loading: boothsLoading } = useLegacyBoothList(eventId, userId)
+  const {
+    booths,
+    checkedInBoothIds,
+    loading: boothsLoading,
+    error: boothsError,
+    reload: reloadBooths,
+  } = useLegacyBoothList(eventId, userId)
 
-  const [step, setStep] = useState<Step>('booth')
+  const [step, setStep] = useState<Step>(boothIdParam ? 'booth' : 'scan')
   const [selectedBoothId, setSelectedBoothId] = useState(boothIdParam)
+  /** 'qr' = QR 読取または ?booth_id= 経由（一覧を出さない）／ 'list' = フォールバックの一覧選択 */
+  const [boothSource, setBoothSource] = useState<'qr' | 'list'>(boothIdParam ? 'qr' : 'list')
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  /** 手動コード入力（issue #86）。QR が使えない参加者の代替。6桁の数字 */
+  const [manualCode, setManualCode] = useState('')
+  const [manualError, setManualError] = useState<string | null>(null)
 
   const [checkInResult, setCheckInResult] = useState<CheckInResult | null>(null)
-  const [recommendations, setRecommendations] = useState<V1RecommendationsResponse | null>(null)
-  const [recommendLoading, setRecommendLoading] = useState(false)
+  const [checkInResponse, setCheckInResponse] = useState<V1CheckInResponse | null>(null)
+  const [ratingScale, setRatingScale] = useState<number>(4)
+  const [cardId, setCardId] = useState<string | null>(null)
+  const [cooldownRemainingSec, setCooldownRemainingSec] = useState(0)
+
+  const [resultAcknowledged, setResultAcknowledged] = useState(false)
+
+  const { current: currentUnlock, enqueuePairs, advance } = useUnlockAnimationQueue()
 
   const selectedBooth: LegacyBooth | undefined = useMemo(
     () => booths.find((b) => b.booth_id === selectedBoothId),
@@ -51,42 +77,78 @@ export function CheckInPage() {
     if (boothIdParam) setSelectedBoothId(boothIdParam)
   }, [boothIdParam])
 
-  const loadRecommendations = useCallback(async () => {
+  // QR / ?booth_id= 経由で既にチェックイン済みのブースに来たときは、赤いエラーではなく
+  // 「訪問済みです」を出す（同じ QR の再読み取りは正常な行動）。サーバー往復は不要。
+  useEffect(() => {
+    if (step !== 'booth' || boothSource !== 'qr' || !selectedBoothId || boothsLoading) return
+    if (checkedInBoothIds.includes(selectedBoothId)) setStep('already_visited')
+  }, [step, boothSource, selectedBoothId, boothsLoading, checkedInBoothIds])
+
+  // rating_scale / card_id は事前にカードを1回取得しておく（ハードコードしない）
+  useEffect(() => {
     if (!eventId || !isV1Flow) return
-    setRecommendLoading(true)
-    setErrorMessage(null)
-    try {
-      const data = await fetchV1Recommendations(eventId)
-      setRecommendations(data)
-      setStep('recommend')
-    } catch (e) {
-      setErrorMessage(formatClientError(e, 'おすすめの取得に失敗しました'))
-      setStep('done')
-    } finally {
-      setRecommendLoading(false)
+    let active = true
+    fetchV1BingoCard(eventId)
+      .then((card) => {
+        if (!active) return
+        setRatingScale(card.rating_scale)
+        setCardId(card.card_id)
+      })
+      .catch(() => {
+        /* 取得に失敗しても既定値（4）で続行する */
+      })
+    return () => {
+      active = false
     }
   }, [eventId, isV1Flow])
 
-  async function handleCheckIn() {
-    if (!eventId || !userId || !selectedBoothId) return
-    if (alreadyCheckedIn) {
-      setErrorMessage('このブースには既にチェックイン済みです。')
-      return
-    }
+  // 成功ステップを閉じた後、残りの解放演出をすべて見せ終えたらホームへ戻る
+  useEffect(() => {
+    if (!resultAcknowledged) return
+    if (currentUnlock) return
+    navigate('/home', { replace: true })
+  }, [resultAcknowledged, currentUnlock, navigate])
+
+  useEffect(() => {
+    if (cooldownRemainingSec <= 0) return
+    const timer = window.setInterval(() => {
+      setCooldownRemainingSec((s) => Math.max(0, s - 1))
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [cooldownRemainingSec])
+
+  /** チェックイン成功レスポンスを画面状態へ反映する（QR / 手動コードで共通） */
+  function applyV1CheckInResponse(res: V1CheckInResponse) {
+    setCheckInResponse(res)
+    setCheckInResult({ checkin_id: res.checkin_id, booth: { booth_id: res.booth.id, name: res.booth.name, emoji: '🎪' } })
+    // ライン成立演出はホーム側で出す（サンプルモードと同じ sessionStorage 経由）
+    if (res.new_lines > 0) recordBingoCelebration(res.new_lines)
+    // 解放演出のキューに積む（正の経路）。中央3・4マス目の達成では複数ペアが同時成立するため、
+    // サーバーが返す unlocked_pairs をペアごとに積む（unlocked_positions は全ペア分の平坦な配列）
+    if (cardId) enqueuePairs(cardId, res.unlocked_pairs)
+    if (res.cooldown_remaining_sec > 0) setCooldownRemainingSec(res.cooldown_remaining_sec)
+    setStep('rating')
+  }
+
+  async function handleCheckInV1() {
+    if (!eventId || !selectedBoothId) return
     setSubmitting(true)
     setErrorMessage(null)
     try {
-      const client = createParticipantClient()
-      const res = await client.postCheckIn(eventId, userId, selectedBoothId)
-      setCheckInResult(res)
-      if (isV1Flow) {
-        setStep('rating')
-      } else {
-        setStep('done')
-      }
+      const res = await postV1CheckIn(eventId, {
+        method: 'qr',
+        booth_id: selectedBoothId,
+        checked_in_at: new Date().toISOString(),
+      })
+      applyV1CheckInResponse(res)
     } catch (e) {
       if (e instanceof ApiError && e.code === 'CONFLICT') {
-        setErrorMessage('このブースには既にチェックイン済みです。')
+        // 同じブースへの2回目はエラーとして赤く出さない（同じ QR の再読み取りは正常な行動）
+        setStep('already_visited')
+      } else if (e instanceof ApiError && e.code === 'COOLDOWN') {
+        const match = /(\d+)/.exec(e.message)
+        setCooldownRemainingSec(match ? Number(match[1]) : 30)
+        setErrorMessage(e.message || 'クールダウン中です。しばらくお待ちください。')
       } else {
         setErrorMessage(formatClientError(e, 'チェックインに失敗しました'))
       }
@@ -95,87 +157,254 @@ export function CheckInPage() {
     }
   }
 
-  async function handleRatingSubmit(rating: number) {
-    if (!eventId || !checkInResult || !isV1Flow) return
+  /**
+   * 手動コードでのチェックイン（issue #86）。照合はサーバーが行う（フロントで正規化しない）。
+   * 前後の空白は zod 検証の前に落ちるため trim してから送る。
+   */
+  async function handleManualCheckIn() {
+    if (!eventId || submitting) return
+    const code = manualCode.trim()
+    if (!/^[0-9]{6}$/.test(code)) {
+      setManualError('6桁の数字を入力してください。')
+      return
+    }
     setSubmitting(true)
-    setErrorMessage(null)
+    setManualError(null)
     try {
-      await postV1CheckInRating(eventId, checkInResult.checkin_id, rating)
-      await loadRecommendations()
+      const res = await postV1CheckIn(eventId, {
+        method: 'manual',
+        manual_code: code,
+        checked_in_at: new Date().toISOString(),
+      })
+      void reloadBooths()
+      applyV1CheckInResponse(res)
     } catch (e) {
-      setErrorMessage(formatClientError(e, '評価の送信に失敗しました'))
+      if (e instanceof ApiError && e.code === 'CONFLICT') {
+        setStep('already_visited')
+      } else if (e instanceof ApiError && e.code === 'NOT_FOUND') {
+        setManualError('コードが違います。掲示された6桁の数字をもう一度ご確認ください。')
+      } else if (e instanceof ApiError && e.code === 'COOLDOWN') {
+        const match = /(\d+)/.exec(e.message)
+        setCooldownRemainingSec(match ? Number(match[1]) : 30)
+        setManualError(e.message || 'クールダウン中です。しばらくお待ちください。')
+      } else {
+        setManualError(formatClientError(e, 'チェックインに失敗しました'))
+      }
     } finally {
       setSubmitting(false)
     }
   }
 
-  async function handleRatingSkip() {
-    if (isV1Flow) {
-      await loadRecommendations()
-    } else {
-      navigate('/home', { replace: true })
-    }
-  }
-
-  async function handleRecommendSelect(boothId: string) {
-    if (!eventId || !recommendations) return
+  async function handleCheckInSample() {
+    if (!eventId || !userId || !selectedBoothId) return
     setSubmitting(true)
     setErrorMessage(null)
     try {
-      await postV1SelectRecommendation(eventId, recommendations.recommendation_id, boothId)
-      navigate('/home', { replace: true })
+      const client = createParticipantClient()
+      const res = await client.postCheckIn(eventId, userId, selectedBoothId)
+      setCheckInResult(res)
+      setStep('result')
     } catch (e) {
-      setErrorMessage(formatClientError(e, '選択の送信に失敗しました'))
+      if (e instanceof ApiError && e.code === 'CONFLICT') {
+        setStep('already_visited')
+      } else {
+        setErrorMessage(formatClientError(e, 'チェックインに失敗しました'))
+      }
+    } finally {
       setSubmitting(false)
     }
   }
 
-  function handleRecommendSkip() {
-    navigate('/home', { replace: true })
+  async function handleCheckIn() {
+    if (!eventId || !userId || !selectedBoothId) return
+    if (alreadyCheckedIn) {
+      setErrorMessage('このブースには既にチェックイン済みです。')
+      return
+    }
+    if (isV1Flow) {
+      await handleCheckInV1()
+    } else {
+      await handleCheckInSample()
+    }
+  }
+
+  // 星（中央値なし）＋ コメント欄 ＋「完了」ボタン1つ。星未選択のまま完了しても
+  // 評価を送らず次へ進む（スキップ扱い、エラーにしない）。送信失敗は静かに握りつぶす
+  // （チェックイン成功の表示を妨げない。未回収分はホームのマスから手動評価できる）
+  // 今回訪問したブースを評価する。pending_rating（前のブース）は使わない
+  async function completeRating(rating: number, comment: string) {
+    if (!eventId || !checkInResponse) {
+      setStep('result')
+      return
+    }
+    if (rating < 1) {
+      setStep('result')
+      return
+    }
+    setSubmitting(true)
+    try {
+      await postV1CheckInRating(eventId, checkInResponse.checkin_id, rating, comment, 'MANUAL')
+    } catch {
+      /* noop */
+    } finally {
+      setSubmitting(false)
+      setStep('result')
+    }
+  }
+
+  // 「ホームに戻る」= チェックイン成功ステップを閉じる。解放演出が残っていれば
+  // それを見せてから遷移する（下の useEffect が空になった時点で遷移する）
+  function finishAndGoHome() {
+    setResultAcknowledged(true)
+  }
+
+  function afterUnlockAnimation() {
+    if (cardId) advance(cardId)
   }
 
   if (!userId || !eventId) {
     return (
       <div className="reader-container container py-3">
         <p className="mb-3">ユーザー情報が取得できません。再ログインしてください。</p>
-        <button type="button" className="checkin-home-button" onClick={() => navigate('/login')}>
+        <button type="button" className="checkin-home-button" onClick={() => navigate(entryPathForRedirect())}>
           ログインへ
         </button>
       </div>
     )
   }
 
-  if (step === 'rating' && checkInResult) {
-    return (
-      <CheckInRatingModal
-        boothName={checkInResult.booth.name}
-        submitting={submitting}
-        onSubmit={(r) => void handleRatingSubmit(r)}
-        onSkip={() => void handleRatingSkip()}
-      />
-    )
-  }
+  const view = resolveCheckInView({
+    step,
+    hasRatingTarget: Boolean(checkInResponse),
+    hasPendingUnlock: Boolean(currentUnlock),
+    resultAcknowledged,
+  })
 
-  if (step === 'recommend') {
+  if (view === 'scan') {
     return (
       <div className="reader-container container py-3">
-        <CheckInRecommendView
-          booths={recommendations?.booths ?? ([] as V1RecommendationBooth[])}
-          loading={recommendLoading}
-          submitting={submitting}
-          onSelect={(id) => void handleRecommendSelect(id)}
-          onSkip={handleRecommendSkip}
+        <CheckInQrScanView
+          onDetected={(id) => {
+            setBoothSource('qr')
+            setSelectedBoothId(id)
+            setErrorMessage(null)
+            setStep('booth')
+          }}
+          onFallback={() => {
+            setBoothSource('list')
+            setSelectedBoothId('')
+            setErrorMessage(null)
+            setStep('booth')
+          }}
+          onManualCode={
+            isV1Flow
+              ? () => {
+                  setManualCode('')
+                  setManualError(null)
+                  setStep('manual')
+                }
+              : undefined
+          }
         />
-        {errorMessage ? <p className="text-danger mt-3">{errorMessage}</p> : null}
       </div>
     )
   }
 
-  if (step === 'done' && checkInResult) {
+  if (view === 'manual') {
+    return (
+      <div className="reader-container container py-3">
+        <h2 className="result-title">コードを入力</h2>
+        <p className="result-message mb-3">
+          ブースに掲示された6桁の数字を入力してください。
+        </p>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            void handleManualCheckIn()
+          }}
+        >
+          <input
+            className="form-control form-control-lg text-center mb-2"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="one-time-code"
+            autoCapitalize="off"
+            // コード長ちょうど（6）にはしない。ブラウザは貼り付けを trim 前に切り詰めるため、
+            // 前後に空白のある「 481502 」を貼ると 5 桁に欠ける（#103 起きてはいけないこと・PR #100）。
+            // 桁数の担保は「ちょうど6桁でないと送信不可」の側で行う（下の disabled と handleManualCheckIn）。
+            maxLength={8}
+            placeholder="例: 481502"
+            value={manualCode}
+            onChange={(e) => setManualCode(e.target.value.replace(/[^0-9]/g, ''))}
+            aria-label="6桁の手動コード"
+          />
+          {manualError ? <p className="checkin-error-box">{manualError}</p> : null}
+          {cooldownRemainingSec > 0 ? (
+            <p className="text-muted mb-2">あと{cooldownRemainingSec}秒お待ちください</p>
+          ) : null}
+          <div className="d-grid gap-2 mt-2">
+            <button
+              type="submit"
+              className="checkin-home-button"
+              disabled={submitting || !/^[0-9]{6}$/.test(manualCode.trim()) || cooldownRemainingSec > 0}
+            >
+              {submitting ? 'チェックイン中…' : 'チェックインする'}
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={() => {
+                setManualError(null)
+                setStep('scan')
+              }}
+            >
+              QRを読み取る
+            </button>
+          </div>
+        </form>
+      </div>
+    )
+  }
+
+  if (view === 'rating' && checkInResponse) {
+    return (
+      <CheckInRatingModal
+        boothName={checkInResponse.booth.name}
+        ratingScale={ratingScale}
+        submitting={submitting}
+        onComplete={(r, c) => void completeRating(r, c)}
+      />
+    )
+  }
+
+  if (view === 'unlock' && currentUnlock) {
+    return <UnlockAnimation positions={currentUnlock.positions} onDone={afterUnlockAnimation} />
+  }
+
+  if (view === 'already_visited') {
     return (
       <div className="reader-container container py-3">
         <div className="result-ui-container">
-          <img src="/icons/success.png" alt="" className="success-icon" />
+          <h2 className="result-title">訪問済みです</h2>
+          <p className="result-message">
+            このブースは既にチェックイン済みです。
+            <br />
+            引き続きイベントをお楽しみください。
+          </p>
+          <button type="button" className="checkin-home-button" onClick={() => navigate('/home')}>
+            ホームに戻る
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (view === 'result' && checkInResult) {
+    return (
+      <div className="reader-container container py-3">
+        <div className="result-ui-container">
+          <img src="/mascot/mascot-cheering.png" alt="" className="success-icon" />
           <h2 className="result-title">チェックイン完了！</h2>
           <div className="booth-emoji-large">{checkInResult.booth.emoji}</div>
           <p className="result-message">
@@ -183,7 +412,18 @@ export function CheckInPage() {
             <br />
             チェックインが完了しました。
           </p>
-          <button type="button" className="checkin-home-button" onClick={() => navigate('/home')}>
+          {checkInResponse ? (
+            checkInResponse.filled_cell ? (
+              <p className="small text-muted">ビンゴカードのマスが1つ埋まりました。</p>
+            ) : (
+              <p className="small text-muted">
+                チェックインは記録されましたが、ビンゴカードには載りませんでした。
+                <br />
+                訪問ありがとうございます。
+              </p>
+            )
+          ) : null}
+          <button type="button" className="checkin-home-button" onClick={finishAndGoHome}>
             ホームに戻る
           </button>
         </div>
@@ -195,7 +435,9 @@ export function CheckInPage() {
   return (
     <div className="reader-container container py-3">
       <h2 className="result-title">チェックイン</h2>
-      <p className="result-message mb-3">ブースを選んでチェックインしてください。</p>
+      <p className="result-message mb-3">
+        {boothSource === 'qr' ? 'このブースにチェックインします。' : 'ブースを選んでチェックインしてください。'}
+      </p>
 
       {boothsLoading ? (
         <div className="py-4 text-center">
@@ -203,32 +445,79 @@ export function CheckInPage() {
             <span className="visually-hidden">読み込み中</span>
           </div>
         </div>
+      ) : boothSource === 'list' ? (
+        booths.length === 0 ? (
+          <p className="text-muted">ブースがありません。</p>
+        ) : (
+          <div className="checkin-booth-picker d-grid gap-2 mb-4">
+            {booths.map((booth) => {
+              const checked = checkedInBoothIds.includes(booth.booth_id)
+              const active = selectedBoothId === booth.booth_id
+              return (
+                <button
+                  key={booth.booth_id}
+                  type="button"
+                  className={`btn text-start checkin-booth-option ${active ? 'active' : ''} ${checked ? 'disabled' : ''}`}
+                  disabled={checked}
+                  onClick={() => setSelectedBoothId(booth.booth_id)}
+                >
+                  <span className="me-2">{booth.booth_emoji}</span>
+                  <strong>{booth.booth_name}</strong>
+                  {booth.booth_display_code ? (
+                    <span className="ms-2 small text-muted">
+                      {booth.booth_display_code.toUpperCase()}
+                    </span>
+                  ) : null}
+                  {checked ? <span className="ms-2 small text-success">済</span> : null}
+                </button>
+              )
+            })}
+          </div>
+        )
       ) : booths.length === 0 ? (
-        <p className="text-muted">ブースがありません。</p>
-      ) : (
-        <div className="checkin-booth-picker d-grid gap-2 mb-4">
-          {booths.map((booth) => {
-            const checked = checkedInBoothIds.includes(booth.booth_id)
-            const active = selectedBoothId === booth.booth_id
-            return (
-              <button
-                key={booth.booth_id}
-                type="button"
-                className={`btn text-start checkin-booth-option ${active ? 'active' : ''} ${checked ? 'disabled' : ''}`}
-                disabled={checked}
-                onClick={() => setSelectedBoothId(booth.booth_id)}
-              >
-                <span className="me-2">{booth.booth_emoji}</span>
-                <strong>{booth.booth_name}</strong>
-                <span className="ms-2 small text-muted">
-                  {(booth.booth_display_code ?? booth.booth_id).toUpperCase()}
-                </span>
-                {checked ? <span className="ms-2 small text-success">済</span> : null}
-              </button>
-            )
-          })}
+        // ブースが1件も取れていない = 通信断・サーバー障害。QR が違うわけではないので
+        // 「このイベントのブースではありません」を出してはいけない（読み直させてしまう）
+        <div className="mb-3">
+          <p className="checkin-error-box">
+            {boothsError ?? 'ブース情報を取得できませんでした。通信状況を確認してください。'}
+          </p>
+          <button
+            type="button"
+            className="btn btn-outline-secondary w-100 mb-2"
+            onClick={() => void reloadBooths()}
+          >
+            再読み込み
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline-secondary w-100"
+            onClick={() => setStep('scan')}
+          >
+            もう一度読み取る
+          </button>
         </div>
-      )}
+      ) : !selectedBooth ? (
+        <div className="mb-3">
+          <p className="checkin-error-box">このQRコードは、このイベントのブースではありません。</p>
+          <button
+            type="button"
+            className="btn btn-outline-secondary w-100 mb-2"
+            onClick={() => setStep('scan')}
+          >
+            もう一度読み取る
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline-secondary w-100"
+            onClick={() => {
+              setBoothSource('list')
+              setSelectedBoothId('')
+            }}
+          >
+            ブース一覧から選ぶ
+          </button>
+        </div>
+      ) : null}
 
       {selectedBooth ? (
         <div className="checkin-selected-summary mb-3 p-3 border rounded">
@@ -241,15 +530,36 @@ export function CheckInPage() {
 
       {errorMessage ? <p className="text-danger mb-3">{errorMessage}</p> : null}
 
+      {cooldownRemainingSec > 0 ? (
+        <p className="text-muted mb-3">あと{cooldownRemainingSec}秒お待ちください</p>
+      ) : null}
+
       <div className="d-grid gap-2">
         <button
           type="button"
           className="checkin-home-button"
-          disabled={!selectedBoothId || submitting || alreadyCheckedIn || boothsLoading}
+          disabled={
+            !selectedBoothId ||
+            submitting ||
+            alreadyCheckedIn ||
+            boothsLoading ||
+            cooldownRemainingSec > 0 ||
+            (boothSource === 'qr' && !selectedBooth)
+          }
           onClick={() => void handleCheckIn()}
         >
           {submitting ? 'チェックイン中…' : 'チェックインする'}
         </button>
+        {boothSource === 'qr' && selectedBooth ? (
+          <button type="button" className="btn btn-outline-secondary" onClick={() => setStep('scan')}>
+            別のブースを読み取る
+          </button>
+        ) : null}
+        {boothSource === 'list' ? (
+          <button type="button" className="btn btn-outline-secondary" onClick={() => setStep('scan')}>
+            QRを読み取る
+          </button>
+        ) : null}
         <button type="button" className="btn btn-outline-secondary" onClick={() => navigate('/home')}>
           ホームに戻る
         </button>

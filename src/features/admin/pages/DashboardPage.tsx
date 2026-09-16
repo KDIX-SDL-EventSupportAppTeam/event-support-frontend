@@ -1,10 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AdminShell } from '@/features/admin/components/AdminShell'
-import { useAuthStore } from '@/shared/auth/authStore'
+import { LiveMonitoringBlock } from '@/features/admin/components/LiveMonitoringBlock'
+import { GachaUsageBlock } from '@/features/admin/components/GachaUsageBlock'
+import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
 import {
   fetchAdminDashboard,
+  fetchAdminGachaStats,
+  patchAdminGachaEnabled,
+  fetchRecommenderState,
   type AdminDashboard,
+  type AdminGachaStats,
   type CheckinNewEvent,
+  type RecommenderState,
 } from '@/shared/api/v1Admin'
 import { connectSocket, disconnectSocket } from '@/shared/api/socket'
 import { formatClientError } from '@/shared/lib/formatClientError'
@@ -12,22 +19,68 @@ import { formatClientError } from '@/shared/lib/formatClientError'
 export function DashboardPage() {
   const token = useAuthStore((s) => s.token)
   const eventId = useAuthStore((s) => s.user?.event_id)
+  const canManageGacha = isManagerUser(useAuthStore((s) => s.user))
   const [data, setData] = useState<AdminDashboard | null>(null)
   const [recent, setRecent] = useState<CheckinNewEvent[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [recState, setRecState] = useState<RecommenderState | null>(null)
+  const [recError, setRecError] = useState<string | null>(null)
+  const [gachaStats, setGachaStats] = useState<AdminGachaStats | null>(null)
+  const [gachaError, setGachaError] = useState<string | null>(null)
   // rating:new は集計に影響するため再取得するが、評価ラッシュ時の連発を防ぐため 5 秒 trailing デバウンス
   const ratingDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  /**
+   * 集計の取得。`reportError` が false のときは失敗を画面に出さず、前回値を残したまま黙る
+   * （ポーリングの一時的な失敗で当日の画面から数字が消えないようにするため）。
+   */
+  const loadDashboard = useCallback(
+    async (reportError: boolean) => {
+      if (!eventId) return
+      try {
+        setData(await fetchAdminDashboard(eventId))
+        setError(null)
+      } catch (e) {
+        if (reportError) setError(formatClientError(e, 'ダッシュボードの取得に失敗しました'))
+      }
+    },
+    [eventId],
+  )
+
+  /** 推薦エンジンの状態の中継取得。失敗しても他の集計は表示し続ける（issue #75） */
+  const loadRecState = useCallback(async () => {
+    if (!eventId) return
+    try {
+      setRecState(await fetchRecommenderState(eventId))
+      setRecError(null)
+    } catch (e) {
+      setRecError(formatClientError(e, '取得失敗'))
+    }
+  }, [eventId])
+
+  /** ガチャコイン使用状況の取得。失敗しても他の集計は表示し続ける（issue #87）。 */
+  const loadGachaStats = useCallback(async () => {
+    if (!eventId) return
+    try {
+      setGachaStats(await fetchAdminGachaStats(eventId))
+      setGachaError(null)
+    } catch (e) {
+      setGachaError(formatClientError(e, '取得失敗'))
+    }
+  }, [eventId])
+
   useEffect(() => {
     if (!eventId) return
-    fetchAdminDashboard(eventId)
-      .then(setData)
-      .catch((e) => setError(formatClientError(e, 'ダッシュボードの取得に失敗しました')))
+    void loadDashboard(true)
+    void loadRecState()
+    void loadGachaStats()
     const timer = setInterval(() => {
-      fetchAdminDashboard(eventId).then(setData).catch(() => undefined)
+      void loadDashboard(false)
+      void loadRecState()
+      void loadGachaStats()
     }, 60_000)
     return () => clearInterval(timer)
-  }, [eventId])
+  }, [eventId, loadDashboard, loadRecState, loadGachaStats])
 
   useEffect(() => {
     if (!token || !eventId) return
@@ -58,7 +111,8 @@ export function DashboardPage() {
       if (ratingDebounce.current) clearTimeout(ratingDebounce.current)
       ratingDebounce.current = setTimeout(() => {
         ratingDebounce.current = null
-        fetchAdminDashboard(eventId).then(setData).catch(() => undefined)
+        void loadDashboard(false)
+        void loadRecState()
       }, 5_000)
     }
     socket.on('checkin:new', onNew)
@@ -72,7 +126,7 @@ export function DashboardPage() {
       }
       disconnectSocket()
     }
-  }, [token, eventId])
+  }, [token, eventId, loadDashboard, loadRecState])
 
   if (error) {
     return (
@@ -122,6 +176,22 @@ export function DashboardPage() {
           </div>
         ))}
       </div>
+
+      <LiveMonitoringBlock bingo={data.bingo} rec={recState} recError={recError} />
+
+      <GachaUsageBlock
+        stats={gachaStats}
+        error={gachaError}
+        canManage={canManageGacha}
+        onToggleEnabled={async (next) => {
+          try {
+            await patchAdminGachaEnabled(eventId as string, next)
+          } catch (e) {
+            throw new Error(formatClientError(e, 'ガチャの切り替えに失敗しました'))
+          }
+          await loadGachaStats()
+        }}
+      />
 
       <div className="row g-4 mb-4">
         {/* ブース別チェックイン バーチャート */}

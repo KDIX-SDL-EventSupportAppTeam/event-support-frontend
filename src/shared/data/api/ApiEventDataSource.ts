@@ -35,9 +35,4 @@ export class ApiEventDataSource implements EventDataSource {
     void _userId
     return 0
   }
-
-  async getAwards(_eventId: string) {
-    void _eventId
-    return []
-  }
 }

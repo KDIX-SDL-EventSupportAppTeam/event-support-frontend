@@ -25,9 +25,4 @@ export class SampleEventDataSource implements EventDataSource {
   async getGachaponCoinsSpent(eventId: string, userId: string) {
     return this.sample.getGachaponCoinsSpent(eventId, userId)
   }
-
-  async getAwards(_eventId: string) {
-    void _eventId
-    return this.sample.getAwards()
-  }
 }

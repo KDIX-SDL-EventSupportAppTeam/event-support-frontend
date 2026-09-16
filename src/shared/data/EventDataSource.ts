@@ -1,4 +1,3 @@
-import type { Award } from '@/shared/types/award'
 import type { BingoGridCell, LegacyBooth } from '@/shared/types/legacyBooth'
 
 export type EventDataSourceMode = 'sample' | 'api'
@@ -18,6 +17,6 @@ export interface EventDataSource {
   getBingoCount(eventId: string, userId: string): Promise<number>
   /** ガチャで消費済みコイン枚数 */
   getGachaponCoinsSpent(eventId: string, userId: string): Promise<number>
-  /** 賞一覧（投票画面等で利用予定） */
-  getAwards(eventId: string): Promise<Award[]>
 }
+// 賞一覧はアワード投票のスナップショット（`shared/api/v1Awards` /
+// `ParticipantClient.getAwardVoteSnapshot`）から取る。EventDataSource には持たせない。

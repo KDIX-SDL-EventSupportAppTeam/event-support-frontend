@@ -50,3 +50,24 @@ export async function mockRegister(
     },
   }
 }
+
+/**
+ * メール確認画面の UI 先行検証用モック（issue #47 §7-1）。
+ * 'mock-expired' / 'mock-invalid' で各エラー画面を、それ以外は成功画面を再現する。
+ */
+export async function mockVerifyEmail(token: string): Promise<{ verified: boolean }> {
+  await new Promise((r) => setTimeout(r, 120))
+  if (token === 'mock-expired') {
+    throw new ApiError('TOKEN_EXPIRED', '確認リンクの有効期限が切れています（モック）')
+  }
+  if (token === 'mock-invalid') {
+    throw new ApiError('TOKEN_INVALID', 'この確認リンクは無効です（モック）')
+  }
+  return { verified: true }
+}
+
+/** 再送ボタンの UI 先行検証用モック（issue #47 §7-1） */
+export async function mockResendVerification(): Promise<{ sent: boolean }> {
+  await new Promise((r) => setTimeout(r, 120))
+  return { sent: true }
+}

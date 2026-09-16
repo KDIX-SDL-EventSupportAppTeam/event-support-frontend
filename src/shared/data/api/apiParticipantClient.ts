@@ -1,17 +1,7 @@
 import { postV1CheckIn } from '@/shared/api/v1Participant'
-import {
-  fetchBingoStatusFull,
-  fetchUserCheckedInBoothDetails,
-  fetchUserVotes,
-  fetchVoteAwardCategories,
-  fetchVotingStatus,
-  postUseGachaponCoin as postUseGachaponCoinRequest,
-  postVotesUpdate,
-} from '@/shared/api/legacyParticipant'
+import { fetchAwardVoteSnapshot, postAwardVotes } from '@/shared/api/v1Awards'
 import type { ParticipantClient } from '@/shared/data/participantTypes'
-import { SAMPLE_QA_ITEMS } from '@/shared/data/sample/sampleQa'
-import { SAMPLE_SCHEDULE } from '@/shared/data/sample/sampleSchedule'
-import { SAMPLE_VOTE_AWARDS } from '@/shared/data/sample/sampleVoteAwards'
+import { QA_2026, SCHEDULE_2026 } from '@/shared/data/content/eventContent2026'
 
 const DEFAULT_CHECKIN_EMOJI = '🎪'
 
@@ -33,46 +23,25 @@ export class ApiParticipantClient implements ParticipantClient {
     }
   }
 
-  async getAvailableGachaponCoins(_eventId: string, userId: string): Promise<number> {
-    void _eventId
-    const s = await fetchBingoStatusFull(userId)
-    return Math.max(0, s.bingoCount - s.gachaponCoinsSpent)
+  // ガチャコインは features/gachapon/api/gachaClient.ts に移設した（このクライアントは扱わない）。
+  async getAwardVoteSnapshot(eventId: string, _userId: string) {
+    void _userId
+    return fetchAwardVoteSnapshot(eventId)
   }
 
-  async postUseGachaponCoin(_eventId: string, userId: string): Promise<void> {
-    void _eventId
-    await postUseGachaponCoinRequest(userId)
-  }
-
-  async getAwardVoteSnapshot(eventId: string, userId: string) {
-    void eventId
-    const [votingOpen, rawAwards, checkedBooths, rawVotesUnknown] = await Promise.all([
-      fetchVotingStatus().catch(() => true),
-      fetchVoteAwardCategories().catch(() => []),
-      fetchUserCheckedInBoothDetails(userId).catch(() => []),
-      fetchUserVotes(userId).catch(() => ({})),
-    ])
-    const rawVotes = rawVotesUnknown as Record<string, string | null>
-    const awards = rawAwards.length > 0 ? rawAwards : SAMPLE_VOTE_AWARDS.map((a) => ({ ...a }))
-    const votes: Record<string, string | null> = {}
-    for (const a of awards) {
-      votes[a.name] = rawVotes[a.name] ?? null
-    }
-    return { votingOpen, awards, checkedBooths, votes }
-  }
-
-  async saveVotes(userId: string, votes: Record<string, string | null>): Promise<void> {
-    await postVotesUpdate(userId, votes)
+  async saveVotes(eventId: string, _userId: string, votes: Record<string, string | null>) {
+    void _userId
+    return postAwardVotes(eventId, votes)
   }
 
   async getSchedule() {
-    return SAMPLE_SCHEDULE.map((d) => ({
+    return SCHEDULE_2026.map((d) => ({
       dayTitle: d.dayTitle,
       events: d.events.map((e) => ({ ...e })),
     }))
   }
 
   async getQa() {
-    return SAMPLE_QA_ITEMS.map((q) => ({ ...q }))
+    return QA_2026.map((q) => ({ ...q }))
   }
 }
