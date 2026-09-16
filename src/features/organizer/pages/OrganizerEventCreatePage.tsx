@@ -11,6 +11,7 @@ type FormData = {
   dateEnd: string
   venue: string
   surveyUrl: string
+  mailFrom: string
   managerEmail: string
   managerPassword: string
   managerDisplayName: string
@@ -22,6 +23,7 @@ const EMPTY_FORM: FormData = {
   dateEnd: '',
   venue: '',
   surveyUrl: '',
+  mailFrom: '',
   managerEmail: '',
   managerPassword: '',
   managerDisplayName: '',
@@ -49,6 +51,8 @@ export function OrganizerEventCreatePage() {
     if (!form.dateStart) return '開始日時は必須です'
     if (!form.dateEnd) return '終了日時は必須です'
     if (form.dateEnd <= form.dateStart) return '終了日時は開始日時より後にしてください'
+    if (!form.mailFrom.trim()) return '送信元メールアドレスは必須です'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.mailFrom.trim())) return '送信元メールアドレスの形式が正しくありません'
     if (!form.managerEmail.trim()) return '初期マネージャーのメールアドレスは必須です'
     if (form.managerPassword.length < 8) return 'パスワードは8文字以上にしてください'
     if (form.surveyUrl.trim() && !/^https?:\/\//.test(form.surveyUrl.trim())) {
@@ -74,6 +78,7 @@ export function OrganizerEventCreatePage() {
         date_end: new Date(form.dateEnd).toISOString(),
         venue: form.venue.trim() || undefined,
         survey_url: form.surveyUrl.trim() || undefined,
+        mail_from: form.mailFrom.trim(),
         initial_manager: {
           email: form.managerEmail.trim(),
           password: form.managerPassword,
@@ -213,6 +218,25 @@ export function OrganizerEventCreatePage() {
                     placeholder="例: https://forms.gle/xxxx"
                   />
                   <div className="form-text">参加者ホームに表示するアンケートフォームのURL。空欄なら参加者にボタンは表示されません。</div>
+                </div>
+                <div className="mb-4">
+                  <label className="form-label" htmlFor="create-mail-from">
+                    送信元メールアドレス <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    id="create-mail-from"
+                    type="email"
+                    className="form-control"
+                    value={form.mailFrom}
+                    onChange={(e) => handleChange('mailFrom', e.target.value)}
+                    required
+                    maxLength={255}
+                    autoComplete="off"
+                    placeholder="例: info@techfes.example"
+                  />
+                  <div className="form-text">
+                    参加者への確認メール・パスワード再設定メールの送信元（返信先）になります。オーガナイザーのログイン用メールとは別のアドレスを設定してください。
+                  </div>
                 </div>
 
                 {/* 初期マネージャー */}
