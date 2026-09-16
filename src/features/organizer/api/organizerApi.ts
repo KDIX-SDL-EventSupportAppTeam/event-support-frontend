@@ -173,6 +173,26 @@ export async function getOrganizerEvent(eventId: string): Promise<OrganizerEvent
   return res.data.data.event
 }
 
+/** イベント情報の修正。日時は ISO 8601（タイムゾーン付き）で送る。 */
+export type UpdateEventBody = {
+  name?: string
+  date_start?: string
+  date_end?: string
+  venue?: string | null
+  survey_url?: string | null
+}
+
+export async function updateOrganizerEvent(
+  eventId: string,
+  body: UpdateEventBody,
+): Promise<OrganizerEvent> {
+  const res = await organizerApiClient.patch<{ data: { event: OrganizerEvent } }>(
+    `/organizer/events/${encodeURIComponent(eventId)}`,
+    body,
+  )
+  return res.data.data.event
+}
+
 export async function listOrganizerStaff(eventId: string): Promise<Staff[]> {
   const res = await organizerApiClient.get<{ data: { staff: Staff[] } }>(
     `/organizer/events/${encodeURIComponent(eventId)}/staff`,
