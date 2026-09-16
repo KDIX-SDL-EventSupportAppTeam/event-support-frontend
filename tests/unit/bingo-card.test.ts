@@ -188,7 +188,7 @@ describe('resolveCheckInView（03-checkin-flow.md の順序）', () => {
     expect(
       resolveCheckInView({
         step: 'rating',
-        hasPendingRating: true,
+        hasRatingTarget: true,
         hasPendingUnlock: true,
         resultAcknowledged: false,
       }),
@@ -199,7 +199,7 @@ describe('resolveCheckInView（03-checkin-flow.md の順序）', () => {
     expect(
       resolveCheckInView({
         step: 'result',
-        hasPendingRating: true,
+        hasRatingTarget: true,
         hasPendingUnlock: true,
         resultAcknowledged: false,
       }),
@@ -210,7 +210,7 @@ describe('resolveCheckInView（03-checkin-flow.md の順序）', () => {
     expect(
       resolveCheckInView({
         step: 'result',
-        hasPendingRating: true,
+        hasRatingTarget: true,
         hasPendingUnlock: true,
         resultAcknowledged: true,
       }),
@@ -221,7 +221,7 @@ describe('resolveCheckInView（03-checkin-flow.md の順序）', () => {
     expect(
       resolveCheckInView({
         step: 'result',
-        hasPendingRating: false,
+        hasRatingTarget: false,
         hasPendingUnlock: false,
         resultAcknowledged: true,
       }),

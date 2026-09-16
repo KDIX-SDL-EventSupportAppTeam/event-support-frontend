@@ -3,7 +3,7 @@
  * 仕様: docs/specs/bingo-dynamic-unlock/03-checkin-flow.md
  * `scan` はチェックイン前のカメラ画面（QR読み取り）で、上の 1〜3 の前段に置く。
  *
- *   1. 評価ステップ（pending_rating が非 null のときだけ）
+ *   1. 評価ステップ（今回チェックインしたブースを評価する）
  *   2. チェックイン成功ステップ
  *   3. 解放演出（解放が起きたときだけ）
  *
@@ -16,13 +16,14 @@ export type CheckInView = CheckInStep | 'unlock'
 
 export function resolveCheckInView(input: {
   step: CheckInStep
-  hasPendingRating: boolean
+  /** 評価対象（今回のチェックイン）があるか */
+  hasRatingTarget: boolean
   hasPendingUnlock: boolean
   /** 参加者がチェックイン成功ステップを閉じたか（「ホームに戻る」を押したか） */
   resultAcknowledged: boolean
 }): CheckInView {
   // 1. 評価ステップ。解放演出より必ず先。
-  if (input.step === 'rating' && input.hasPendingRating) return 'rating'
+  if (input.step === 'rating' && input.hasRatingTarget) return 'rating'
   // 3. 解放演出。2.（成功ステップ）を閉じた後にだけ出す。
   if (input.hasPendingUnlock && input.resultAcknowledged) return 'unlock'
   return input.step
