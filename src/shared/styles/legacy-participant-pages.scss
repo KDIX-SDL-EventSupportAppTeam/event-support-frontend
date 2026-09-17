@@ -211,6 +211,15 @@
 .checkin-qr-fallback-link {
   display: inline-block;
   margin-top: 1rem;
+
+  // 「QRが読めないときはコードを入力」だけを別の行に置き、親の中央寄せも保つ。
+  // ボタンは appearance の影響で幅が文字ぶんにしかならないため、block にするだけでは
+  // 左端に置かれたままになる。幅を内容に合わせて左右マージンで中央へ寄せる（NG-7）。
+  &--own-line {
+    display: block;
+    width: fit-content;
+    margin-inline: auto;
+  }
   background: none;
   border: none;
   padding: 0;
