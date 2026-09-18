@@ -65,6 +65,9 @@ export function HomePage() {
 
   // ガチャコインの所持枚数。card 取得（＝チェックインでライン数が動いた可能性）のたび取り直す。
   const [gachaCoins, setGachaCoins] = useState<GachaCoins | null>(null)
+  // 初回の取得が終わった（成功・失敗どちらでも）か。ライン成立モーダルの絵と本数は、
+  // 取得結果を見てから出し分けるので、それまで開くのを待つ（開いたあとに見た目が変わるのを防ぐ）
+  const [gachaCoinsSettled, setGachaCoinsSettled] = useState(false)
   useEffect(() => {
     if (!eventId || !userId) return
     let alive = true
@@ -76,6 +79,9 @@ export function HomePage() {
       .catch(() => {
         /* コインボタンは枚数なしで表示する（ナビゲーションは可能） */
       })
+      .finally(() => {
+        if (alive) setGachaCoinsSettled(true)
+      })
     return () => {
       alive = false
     }
@@ -83,7 +89,10 @@ export function HomePage() {
 
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [feedbackConfirmOpen, setFeedbackConfirmOpen] = useState(false)
-  const [bingoModalOpen, setBingoModalOpen] = useState(false)
+  // ライン成立モーダル。開いた時点の見せ方（絵を出すか・本数）を固定して、開いたあとに
+  // コイン情報が届いても中身が切り替わらないようにする
+  const [bingoModal, setBingoModal] = useState<{ complete: boolean; lines: number | null } | null>(null)
+  const bingoModalOpen = bingoModal !== null
   const [coinCompleteOpen, setCoinCompleteOpen] = useState(false)
   const [tweetsComingSoonOpen, setTweetsComingSoonOpen] = useState(false)
   const [xShareConfirmOpen, setXShareConfirmOpen] = useState(false)
@@ -108,10 +117,29 @@ export function HomePage() {
     }
   }, [eventId])
 
+  // チェックイン画面から渡されたライン成立の合図。コイン情報（成立本数）が揃ってから開く
+  const [pendingBingoLines, setPendingBingoLines] = useState(0)
   useEffect(() => {
     const { lines } = consumeBingoCelebration()
-    if (lines > 0) setBingoModalOpen(true)
+    if (lines > 0) setPendingBingoLines(lines)
   }, [])
+  useEffect(() => {
+    if (pendingBingoLines <= 0) return
+    const open = () => {
+      setPendingBingoLines(0)
+      setBingoModal({
+        complete: gachaCoins != null && gachaCoins.max_coins > 0 && gachaCoins.earned >= gachaCoins.max_coins,
+        lines: gachaCoins?.lines_completed ?? null,
+      })
+    }
+    if (!eventId || !userId || gachaCoinsSettled) {
+      open()
+      return
+    }
+    // 通信が遅くても祝福を待たせすぎない（それまでに届かなければ本数なしで開く）
+    const timer = window.setTimeout(open, 1500)
+    return () => window.clearTimeout(timer)
+  }, [pendingBingoLines, eventId, userId, gachaCoinsSettled, gachaCoins])
 
   // コイン上限到達の祝福。この端末で1回だけ出す。
   // - ビンゴ達成モーダルとは重ねない（閉じたあとに出す。bingoModalOpen を依存に入れている）
@@ -119,24 +147,39 @@ export function HomePage() {
   // - 判定は earned >= max_coins。bonus_coins > 0 の運用では上限より少し早く出るが、
   //   確定値（1枚/ライン・上限4・ボーナス0）では上限到達と一致する
   useEffect(() => {
-    if (!eventId || !userId || !gachaCoins || bingoModalOpen) return
+    if (!eventId || !userId || !gachaCoins || bingoModalOpen || pendingBingoLines > 0) return
     if (!gachaCoins.is_enabled || gachaCoins.max_coins <= 0) return
     if (gachaCoins.earned < gachaCoins.max_coins) return
     if (hasSeenCoinComplete(eventId, userId)) return
     markCoinCompleteSeen(eventId, userId)
     setCoinCompleteOpen(true)
-  }, [eventId, userId, gachaCoins, bingoModalOpen])
+  }, [eventId, userId, gachaCoins, bingoModalOpen, pendingBingoLines])
 
   return (
     <div className="legacy-home container py-3 px-2">
-      {bingoModalOpen ? (
-        <Modal titleId="bingo-modal-title" onClose={() => setBingoModalOpen(false)} contentClassName="text-center">
-          <img src="/feedback/popup-bingo-complete.png" alt="" className="modal-popup-image" />
-          <h2 id="bingo-modal-title" className="visually-hidden">
-            BINGO！おめでとうございます
-          </h2>
-          <p className="bingo-celebration-message">おめでとうございます！</p>
-          <button type="button" className="btn btn-primary" onClick={() => setBingoModalOpen(false)}>
+      {bingoModal ? (
+        <Modal titleId="bingo-modal-title" onClose={() => setBingoModal(null)} contentClassName="text-center">
+          {bingoModal.complete ? (
+            <>
+              <img src="/feedback/popup-bingo-complete.png" alt="" className="modal-popup-image" />
+              <h2 id="bingo-modal-title" className="visually-hidden">
+                BINGO！おめでとうございます
+              </h2>
+              <p className="bingo-celebration-message">おめでとうございます！</p>
+            </>
+          ) : (
+            <>
+              <h2 id="bingo-modal-title" className="modal-title">
+                BINGO！
+              </h2>
+              <p className="bingo-celebration-message">
+                {bingoModal.lines != null
+                  ? `ビンゴが${bingoModal.lines}本そろいました！ おめでとうございます！`
+                  : 'ビンゴがそろいました！ おめでとうございます！'}
+              </p>
+            </>
+          )}
+          <button type="button" className="btn btn-primary" onClick={() => setBingoModal(null)}>
             閉じる
           </button>
         </Modal>
