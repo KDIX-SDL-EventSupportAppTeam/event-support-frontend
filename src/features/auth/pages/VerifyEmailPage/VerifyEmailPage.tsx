@@ -5,6 +5,7 @@ import { useResendVerification } from '@/features/auth/hooks/useResendVerificati
 import { ApiError } from '@/shared/api/unwrap'
 import { formatClientError } from '@/shared/lib/formatClientError'
 import { entryPathForRedirect } from '@/shared/lib/lastEventId'
+import { VERIFY_SUCCESS_ALERT, VERIFY_SUCCESS_GUIDANCE } from './verifySuccessContent'
 
 type VerifyStatus =
   | { kind: 'verifying' }
@@ -65,12 +66,8 @@ export function VerifyEmailPage() {
 
               {status.kind === 'success' ? (
                 <>
-                  <div className="alert alert-success mb-4">メールアドレスの確認が完了しました</div>
-                  {/* 確認リンクは別タブで開かれることが多い。ここからは必ず入口へ戻し、
-                      続き（アンケート以降）は入口側の状態判定に任せる */}
-                  <Link to={entryPathForRedirect()} className="btn btn-primary">
-                    続きへ進む
-                  </Link>
+                  <div className="alert alert-success mb-4">{VERIFY_SUCCESS_ALERT}</div>
+                  <p className="mb-0">{VERIFY_SUCCESS_GUIDANCE}</p>
                 </>
               ) : null}
 
