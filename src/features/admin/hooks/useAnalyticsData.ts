@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { connectSocket, disconnectSocket } from '@/shared/api/socket'
+import { subscribeSocket } from '@/shared/api/socket'
 import { formatClientError } from '@/shared/lib/formatClientError'
 
 /** socket イベントによる再取得の最小間隔（ミリ秒）。
@@ -58,9 +58,8 @@ export function useAnalyticsData<T>(
     const pollTimer = pollMs && pollMs > 0 ? setInterval(reload, pollMs) : undefined
 
     // (2) WebSocket イベントでのスロットル付き再取得
-    const apiBase = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
     const events = eventsKey ? eventsKey.split(',') : []
-    let socket: ReturnType<typeof connectSocket> | undefined
+    const unsubscribes: (() => void)[] = []
     let lastRun = 0
     let pending: ReturnType<typeof setTimeout> | undefined
     const onEvent = () => {
@@ -78,18 +77,14 @@ export function useAnalyticsData<T>(
       }
     }
     if (token && events.length > 0) {
-      socket = connectSocket(token, apiBase)
-      for (const ev of events) socket.on(ev, onEvent)
+      for (const ev of events) unsubscribes.push(subscribeSocket(ev, onEvent))
     }
 
     return () => {
       cancelled = true
       if (pollTimer) clearInterval(pollTimer)
       if (pending) clearTimeout(pending)
-      if (socket) {
-        for (const ev of events) socket.off(ev, onEvent)
-        disconnectSocket()
-      }
+      for (const unsubscribe of unsubscribes) unsubscribe()
     }
   }, [active, eventId, fetcher, errorFallback, pollMs, eventsKey, token])
 
