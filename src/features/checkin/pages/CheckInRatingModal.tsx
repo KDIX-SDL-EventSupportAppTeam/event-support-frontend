@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { RATING_SCALE } from '@/shared/config/rating'
 
 type Props = {
   boothName: string
@@ -11,7 +12,7 @@ type Props = {
   ratingScale?: number
 }
 
-const DEFAULT_RATING_SCALE = 4
+const DEFAULT_RATING_SCALE = RATING_SCALE
 
 /**
  * チェックイン成功モーダルの評価ステップ。
