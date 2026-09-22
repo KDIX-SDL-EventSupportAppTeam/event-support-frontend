@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { AdminLoginPage } from '@/features/admin/pages/AdminLoginPage'
 import { AdminMenuPage } from '@/features/admin/pages/AdminMenuPage'
 import { BoothManagePage } from '@/features/admin/pages/BoothManagePage'
@@ -60,6 +60,17 @@ function LegacyEntryRedirect() {
   return <Navigate to={eventId ? `/e/${eventId}` : entryPathForRedirect()} replace />
 }
 
+/**
+ * チェックイン画面は遷移のたびに作り直す。
+ * 完了画面（すでに `/checkin`）でボトムナビの「チェックイン」を押しても、同じパスへの
+ * 遷移では CheckInPage が再マウントされず「完了」の状態が残って何も起きなかったため、
+ * location.key を key にして次のブースの読み取り画面から始め直す。
+ */
+function CheckInRoute() {
+  const location = useLocation()
+  return <CheckInPage key={location.key} />
+}
+
 /** 参加者は `/e/:eventId` 1 本、運営・管理は従来どおり別系統。 */
 export function AppRoutes() {
   return (
@@ -103,7 +114,7 @@ export function AppRoutes() {
         >
           {/* participant-gated:start ── ここから下は自動でゲート配下 */}
           <Route path="/home" element={<HomePage />} />
-          <Route path="/checkin" element={<CheckInPage />} />
+          <Route path="/checkin" element={<CheckInRoute />} />
           {/* issue #89。参加者ゲートの内側から出さないこと（未認証で開けてしまう） */}
           <Route path="/award-vote" element={<AwardVotePage />} />
           <Route path="/schedule" element={<SchedulePage />} />
