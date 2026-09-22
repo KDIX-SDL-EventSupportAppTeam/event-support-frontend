@@ -38,7 +38,7 @@ describe('fetchV1BingoCard', () => {
 })
 
 describe('postV1CheckIn', () => {
-  it('レスポンスの unlocked_positions / pending_rating をそのまま返す', async () => {
+  it('レスポンスの unlocked_positions をそのまま返す。pending_rating はもう来ない', async () => {
     postMock.mockResolvedValueOnce({
       data: {
         success: true,
@@ -52,17 +52,16 @@ describe('postV1CheckIn', () => {
           unlocked_pairs: [{ pair_key: '5-6', released_positions: [4, 7] }],
           new_lines: 0,
           lines_completed: 0,
-          pending_rating: { checkin_id: 'chk-0', booth_id: 'booth-0', booth_name: 'ブース0' },
         },
       },
     })
     const res = await postV1CheckIn('evt-1', { method: 'qr', booth_id: 'booth-1', checked_in_at: '2026-10-16T04:12:00.000Z' })
     expect(res.unlocked_positions).toEqual([4, 7])
     expect(res.unlocked_pairs).toEqual([{ pair_key: '5-6', released_positions: [4, 7] }])
-    expect(res.pending_rating?.checkin_id).toBe('chk-0')
-    // unlocked（真偽値）/ coins_earned はもう来ない
+    // unlocked（真偽値）/ coins_earned / pending_rating（issue #115）はもう来ない
     expect(res).not.toHaveProperty('unlocked')
     expect(res).not.toHaveProperty('coins_earned')
+    expect(res).not.toHaveProperty('pending_rating')
   })
 })
 
@@ -84,7 +83,6 @@ describe('postV1CheckIn（複数ペア同時解放）', () => {
           ],
           new_lines: 0,
           lines_completed: 0,
-          pending_rating: null,
         },
       },
     })
@@ -104,12 +102,12 @@ describe('postV1CheckInRating', () => {
     )
   })
 
-  it('NEXT_CHECKIN を明示的に渡せる', async () => {
+  it('T-4: IMMEDIATE を明示的に渡せる（チェックイン直後評価）', async () => {
     postMock.mockResolvedValueOnce({ data: { success: true, data: { rating_id: 'r-2' } } })
-    await postV1CheckInRating('evt-1', 'chk-2', 4, 'よかった', 'NEXT_CHECKIN')
+    await postV1CheckInRating('evt-1', 'chk-2', 4, 'よかった', 'IMMEDIATE')
     expect(postMock).toHaveBeenCalledWith(
       '/events/evt-1/checkins/chk-2/rating',
-      { rating: 4, context: 'NEXT_CHECKIN', comment: 'よかった' },
+      { rating: 4, context: 'IMMEDIATE', comment: 'よかった' },
     )
   })
 })

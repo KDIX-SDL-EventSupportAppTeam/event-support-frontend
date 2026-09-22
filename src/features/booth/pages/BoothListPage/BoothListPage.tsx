@@ -1,7 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLegacyBoothList } from '@/shared/hooks/useLegacyBoothList'
 import { useAuthStore } from '@/shared/auth/authStore'
+import { useLaterRating } from '@/features/checkin/hooks/useLaterRating'
+import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
+import { fetchV1BingoCard, fetchV1Checkins } from '@/shared/api/v1Participant'
+import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
+import { shouldShowUnratedBadge } from '@/features/booth/lib/boothRatingBadge'
 import '@/features/booth/styles/legacy-booth-list.scss'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
 
@@ -12,6 +17,49 @@ export function BoothListPage() {
   const { booths, checkedInBoothIds, loading } = useLegacyBoothList(eventId, userId)
   const [sortByCheckedIn, setSortByCheckedIn] = useState(false)
   const [selected, setSelected] = useState<LegacyBooth | null>(null)
+  // booth_id → 評価済みか。画面表示時に1回取得する（issue #115 D1/D3）
+  const [ratedByBoothId, setRatedByBoothId] = useState<Map<string, boolean>>(new Map())
+  // CheckInPage.tsx と同じく、既定値（4）を持ちつつ実際の段階数で上書きする
+  const [ratingScale, setRatingScale] = useState<number>(4)
+
+  const isSample = resolveEventDataSourceMode() === 'sample'
+  const rating = useLaterRating(eventId ?? '', (boothId) => {
+    setRatedByBoothId((prev) => new Map(prev).set(boothId, true))
+  })
+
+  useEffect(() => {
+    if (!eventId || isSample) return
+    let active = true
+    fetchV1Checkins(eventId).then((checkins) => {
+      if (!active) return
+      setRatedByBoothId(new Map(checkins.map((c) => [c.booth_id, c.rated])))
+    })
+    return () => {
+      active = false
+    }
+  }, [eventId, isSample])
+
+  useEffect(() => {
+    if (!eventId || isSample) return
+    let active = true
+    fetchV1BingoCard(eventId)
+      .then((card) => {
+        if (active) setRatingScale(card.rating_scale)
+      })
+      .catch(() => {
+        /* 取得に失敗しても既定値（4）で続行する */
+      })
+    return () => {
+      active = false
+    }
+  }, [eventId, isSample])
+
+  function isRated(id: string): boolean {
+    return ratedByBoothId.get(id) === true
+  }
+  function isUnratedCheckedIn(id: string): boolean {
+    return shouldShowUnratedBadge(isCheckedIn(id), ratedByBoothId.get(id))
+  }
 
   const sorted = useMemo(() => {
     if (!sortByCheckedIn) return booths
@@ -74,6 +122,9 @@ export function BoothListPage() {
                         <i className="bi bi-check-circle-fill" aria-hidden />
                       </span>
                     ) : null}
+                    {isUnratedCheckedIn(booth.booth_id) ? (
+                      <span className="badge text-bg-warning">未評価</span>
+                    ) : null}
                   </div>
                   <p className="card-text small mb-0">{booth.booth_description}</p>
                 </div>
@@ -123,10 +174,58 @@ export function BoothListPage() {
                     チェックイン
                   </button>
                 ) : (
-                  <p className="text-success text-center mt-3 mb-0">
-                    <i className="bi bi-check-circle-fill" aria-hidden /> チェックイン済み
-                  </p>
+                  <>
+                    <p className="text-success text-center mt-3 mb-0">
+                      <i className="bi bi-check-circle-fill" aria-hidden /> チェックイン済み
+                    </p>
+                    {isRated(selected.booth_id) ? (
+                      <p className="text-success text-center mt-2 mb-0">評価済み</p>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn btn-outline-primary w-100 mt-2"
+                        onClick={() => {
+                          const boothId = selected.booth_id
+                          const boothName = selected.booth_name
+                          setSelected(null)
+                          void rating.open(boothId, boothName)
+                        }}
+                      >
+                        このブースを評価する
+                      </button>
+                    )}
+                  </>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {rating.target ? (
+        <CheckInRatingModal
+          boothName={rating.target.boothName}
+          ratingScale={ratingScale}
+          submitting={rating.submitting}
+          onComplete={(r, c) => void rating.submit(r, c)}
+        />
+      ) : null}
+
+      {!rating.target && rating.error ? (
+        <div
+          className="modal fade show d-block"
+          tabIndex={-1}
+          role="dialog"
+          style={{ background: 'rgba(0,0,0,0.4)' }}
+          onClick={() => rating.close()}
+        >
+          <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content">
+              <div className="modal-body text-center py-4">
+                <p className="text-danger mb-3">{rating.error}</p>
+                <button type="button" className="btn btn-secondary" onClick={() => rating.close()}>
+                  閉じる
+                </button>
               </div>
             </div>
           </div>
