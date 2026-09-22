@@ -38,6 +38,8 @@ export type V1CheckinItem = {
   method: string
   checked_in_at: string
   synced_at: string | null
+  /** そのチェックインに評価があるか。点数は含まない（server#133 D1） */
+  rated: boolean
 }
 
 export async function fetchV1Booths(eventId: string, categoryId?: string): Promise<V1BoothListItem[]> {
@@ -88,8 +90,6 @@ export type V1CheckInResponse = {
   new_lines: number
   /** 成立ライン数の合計 */
   lines_completed: number
-  /** 直前に評価が未回収のブースがあれば非 null（評価モーダルの先頭ステップ用） */
-  pending_rating: { checkin_id: string; booth_id: string; booth_name: string } | null
 }
 
 export async function postV1CheckIn(
@@ -105,8 +105,8 @@ export async function postV1CheckIn(
   return unwrapApiData(res)
 }
 
-/** 評価の送信文脈。既定は手動評価（マスタップ導線 / チェックイン履歴からの導線）。 */
-export type V1RatingContext = 'NEXT_CHECKIN' | 'MANUAL'
+/** 評価の送信文脈。`IMMEDIATE` はチェックイン直後、`MANUAL` はあとから評価（マスタップ導線 / ブース一覧）。 */
+export type V1RatingContext = 'IMMEDIATE' | 'MANUAL'
 
 export async function postV1CheckInRating(
   eventId: string,

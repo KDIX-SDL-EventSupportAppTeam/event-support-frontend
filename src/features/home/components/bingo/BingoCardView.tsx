@@ -1,14 +1,13 @@
-import { useState } from 'react'
-import { fetchV1Checkins, postV1CheckInRating } from '@/shared/api/v1Participant'
-import { ApiError } from '@/shared/api/unwrap'
+import { useEffect, useState } from 'react'
+import { fetchV1Checkins } from '@/shared/api/v1Participant'
 import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
-import { formatClientError } from '@/shared/lib/formatClientError'
 import { MAX_GACHAPON_COINS } from '@/shared/config/gachapon'
 import type { BingoCard, BingoCell } from '@/shared/types/bingoCard'
 import { BingoCellView } from '@/features/home/components/bingo/BingoCellView'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
 import { BingoProgressStepper } from '@/features/home/components/bingo/BingoProgressStepper'
 import { Modal } from '@/shared/components/modal/Modal'
+import { useLaterRating } from '@/features/checkin/hooks/useLaterRating'
 
 type Props = {
   card: BingoCard
@@ -22,61 +21,34 @@ type Props = {
  */
 export function BingoCardView({ card, eventId, onRated }: Props) {
   const [selectedCell, setSelectedCell] = useState<BingoCell | null>(null)
-  const [ratingTarget, setRatingTarget] = useState<{ checkinId: string; boothName: string } | null>(null)
-  const [ratingLookupError, setRatingLookupError] = useState<string | null>(null)
-  const [ratingSubmitting, setRatingSubmitting] = useState(false)
+  // booth_id → 評価済みか。カードが開いたときに1回取得する（issue #115 D2）
+  const [ratedByBoothId, setRatedByBoothId] = useState<Map<string, boolean>>(new Map())
 
   const isSample = resolveEventDataSourceMode() === 'sample'
 
-  async function openManualRating(cell: BingoCell) {
-    if (!cell.booth) return
-    setRatingLookupError(null)
-    if (isSample) {
-      // サンプルモードには評価 API が無いため、導線のみ見せる（送信は無効）
-      setRatingTarget({ checkinId: 'sample', boothName: cell.booth.name })
-      return
+  useEffect(() => {
+    if (isSample) return
+    let active = true
+    fetchV1Checkins(eventId).then((checkins) => {
+      if (!active) return
+      setRatedByBoothId(new Map(checkins.map((c) => [c.booth_id, c.rated])))
+    })
+    return () => {
+      active = false
     }
-    try {
-      const checkins = await fetchV1Checkins(eventId)
-      // 1ブース1チェックインのため該当は高々1件
-      const match = checkins.find((c) => c.booth_id === cell.booth!.id)
-      if (!match) {
-        setRatingLookupError('チェックイン履歴が見つかりませんでした。')
-        return
-      }
-      setRatingTarget({ checkinId: match.id, boothName: cell.booth.name })
-    } catch (e) {
-      setRatingLookupError(formatClientError(e, 'チェックイン履歴の取得に失敗しました'))
-    }
-  }
+  }, [eventId, isSample])
 
-  async function submitManualRating(rating: number, comment: string) {
-    if (!ratingTarget || isSample) {
-      setRatingTarget(null)
-      return
-    }
-    setRatingSubmitting(true)
-    setRatingLookupError(null)
-    try {
-      await postV1CheckInRating(eventId, ratingTarget.checkinId, rating, comment, 'MANUAL')
-      onRated?.()
-    } catch (e) {
-      // 評価済み（409）は無言で閉じると「押しても何も起きない」ため理由を出す。
-      // それ以外の送信失敗はチェックイン等と同様、表示を妨げない
-      if (e instanceof ApiError && e.code === 'CONFLICT') {
-        setRatingLookupError('このブースは既に評価済みです。')
-      }
-    } finally {
-      setRatingSubmitting(false)
-      setRatingTarget(null)
-    }
-  }
+  const rating = useLaterRating(eventId, (boothId) => {
+    setRatedByBoothId((prev) => new Map(prev).set(boothId, true))
+    onRated?.()
+  })
 
-  // マス評価の対象は「達成済みかつブースが紐づくマス」。
-  // source は問わない: is_achieved が真なら事前推薦マスでも実際に訪問済みで check_ins 行があり、
-  // かつ NEXT_CHECKIN では最後の1件を構造上取り逃すため、手動評価が唯一の回収手段になる
-  // （03-checkin-flow.md「手動評価の導線」）。
-  const canRate = (cell: BingoCell) => cell.is_achieved && Boolean(cell.booth)
+  // マス評価の対象は「達成済み かつ ブースあり かつ 未評価」（issue #115 D2）。
+  // source は問わない: is_achieved が真なら事前推薦マスでも実際に訪問済みで check_ins 行がある。
+  const canRate = (cell: BingoCell) =>
+    cell.is_achieved && Boolean(cell.booth) && ratedByBoothId.get(cell.booth!.id) !== true
+  const isRated = (cell: BingoCell) =>
+    cell.is_achieved && Boolean(cell.booth) && ratedByBoothId.get(cell.booth!.id) === true
 
   const guideMessage =
     card.progress.center_achieved < 2
@@ -137,13 +109,14 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
                 <button
                   type="button"
                   className="btn btn-outline-primary btn-sm"
-                  onClick={() => void openManualRating(selectedCell)}
+                  onClick={() => void rating.open(selectedCell.booth!.id, selectedCell.booth!.name)}
                 >
                   このブースを評価する
                 </button>
-                {ratingLookupError ? <p className="text-danger small mt-2 mb-0">{ratingLookupError}</p> : null}
+                {rating.error ? <p className="text-danger small mt-2 mb-0">{rating.error}</p> : null}
               </div>
             ) : null}
+            {isRated(selectedCell) ? <p className="text-success small mt-3 mb-0">評価済み</p> : null}
           </div>
           <div className="modal-footer border-0 pt-0">
             <button type="button" className="btn btn-secondary btn-modal-close" onClick={() => setSelectedCell(null)}>
@@ -153,12 +126,12 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
         </Modal>
       ) : null}
 
-      {ratingTarget ? (
+      {rating.target ? (
         <CheckInRatingModal
-          boothName={ratingTarget.boothName}
+          boothName={rating.target.boothName}
           ratingScale={card.rating_scale}
-          submitting={ratingSubmitting}
-          onComplete={(r, c) => void submitManualRating(r, c)}
+          submitting={rating.submitting}
+          onComplete={(r, c) => void rating.submit(r, c)}
         />
       ) : null}
     </div>

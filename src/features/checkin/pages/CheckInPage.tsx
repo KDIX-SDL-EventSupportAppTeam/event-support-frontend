@@ -230,8 +230,8 @@ export function CheckInPage() {
 
   // 星（中央値なし）＋ コメント欄 ＋「完了」ボタン1つ。星未選択のまま完了しても
   // 評価を送らず次へ進む（スキップ扱い、エラーにしない）。送信失敗は静かに握りつぶす
-  // （チェックイン成功の表示を妨げない。未回収分はホームのマスから手動評価できる）
-  // 今回訪問したブースを評価する。pending_rating（前のブース）は使わない
+  // （チェックイン成功の表示を妨げない。未回収分はブース一覧・ホームのマスから後で評価できる）
+  // 直後評価は今回のチェックインに対して行う（context: 'IMMEDIATE'）
   async function completeRating(rating: number, comment: string) {
     if (!eventId || !checkInResponse) {
       setStep('result')
@@ -243,7 +243,7 @@ export function CheckInPage() {
     }
     setSubmitting(true)
     try {
-      await postV1CheckInRating(eventId, checkInResponse.checkin_id, rating, comment, 'MANUAL')
+      await postV1CheckInRating(eventId, checkInResponse.checkin_id, rating, comment, 'IMMEDIATE')
     } catch {
       /* noop */
     } finally {
