@@ -101,7 +101,10 @@ export function CheckInQrScanView({ onDetected, onFallback, onManualCode }: Prop
       {onManualCode ? (
         <button
           type="button"
-          className="checkin-qr-fallback-link d-block"
+          // 行を分けるだけなら Bootstrap の d-block は使わない。display: block !important で
+          // 親 .checkin-qr-scan-view の text-align: center から外れ、左端に寄ってしまう（NG-7）。
+          // 1 行を占有しつつ中央に置く指定は .checkin-qr-fallback-link--own-line 側で持つ。
+          className="checkin-qr-fallback-link checkin-qr-fallback-link--own-line"
           onClick={onManualCode}
         >
           QRが読めないときはコードを入力
