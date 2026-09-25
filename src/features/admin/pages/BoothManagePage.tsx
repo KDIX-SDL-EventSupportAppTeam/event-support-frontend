@@ -182,6 +182,7 @@ export function BoothManagePage() {
       setNewForm(EMPTY_FORM)
       setShowForm(false)
       setError(null)
+      setDeleteError(null)
       await reload()
     } catch (err) {
       setError(formatClientError(err, '作成に失敗しました'))
@@ -251,6 +252,7 @@ export function BoothManagePage() {
     try {
       await regenerateBoothManualCode(eventId, booth.id)
       setError(null)
+      setDeleteError(null)
       await reload()
     } catch (err) {
       setError(formatClientError(err, '再発番に失敗しました'))
