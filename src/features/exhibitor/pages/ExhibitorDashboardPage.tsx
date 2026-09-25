@@ -128,9 +128,10 @@ export function ExhibitorDashboardPage() {
   return (
     <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: 'var(--pf-cream-light)' }}>
       {/* サイドバー（AdminSidebar の鏡写し。上部=現在ブース名、中央=担当ブース一覧＋画面切替、下部=ログアウト） */}
+      {/* サイドバーを画面に固定し、本文だけをスクロールさせる（手動 E2E 提案-8: 縦長の画面でログアウトが最下部に隠れていた） */}
       <aside
         className="bg-dark text-white d-flex flex-column flex-shrink-0"
-        style={{ width: 220, minHeight: '100vh' }}
+        style={{ width: 220, height: '100vh', position: 'sticky', top: 0, overflowY: 'auto' }}
       >
         <div className="p-3 border-bottom border-secondary">
           <span className="text-white fw-bold d-block">
