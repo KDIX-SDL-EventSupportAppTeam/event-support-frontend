@@ -138,6 +138,8 @@ export function BoothManagePage() {
   /** 編集開始時点の手動コード。onSaveEdit で「変わったときだけ」送るための比較元 */
   const [editOriginalManualCode, setEditOriginalManualCode] = useState('')
   const [error, setError] = useState<string | null>(null)
+  // 削除失敗のエラーは該当行の中に出す（手動 E2E NG-13: 最上部の alert は下の行だと画面外で見えなかった。NG-12 の editError と同じ構造）
+  const [deleteError, setDeleteError] = useState<{ boothId: string; message: string } | null>(null)
   const [showForm, setShowForm] = useState(false)
 
   async function reload() {
@@ -180,6 +182,7 @@ export function BoothManagePage() {
       setNewForm(EMPTY_FORM)
       setShowForm(false)
       setError(null)
+      setDeleteError(null)
       await reload()
     } catch (err) {
       setError(formatClientError(err, '作成に失敗しました'))
@@ -188,6 +191,7 @@ export function BoothManagePage() {
 
   function startEdit(b: BoothRow) {
     setEditId(b.id)
+    setDeleteError(null)
     setEditOriginalManualCode(b.manual_code ?? '')
     setEditForm({
       name: b.name,
@@ -228,11 +232,12 @@ export function BoothManagePage() {
 
   async function onDelete(boothId: string) {
     if (!eventId || !confirm('このブースを削除しますか？')) return
+    setDeleteError(null)
     try {
       await deleteAdminBooth(eventId, boothId)
       await reload()
     } catch (err) {
-      setError(formatClientError(err, '削除に失敗しました'))
+      setDeleteError({ boothId, message: formatClientError(err, '削除に失敗しました') })
     }
   }
 
@@ -247,6 +252,7 @@ export function BoothManagePage() {
     try {
       await regenerateBoothManualCode(eventId, booth.id)
       setError(null)
+      setDeleteError(null)
       await reload()
     } catch (err) {
       setError(formatClientError(err, '再発番に失敗しました'))
@@ -454,6 +460,12 @@ export function BoothManagePage() {
                       </div>
                     )}
                   </div>
+                  {deleteError && deleteError.boothId === b.id && (
+                    <div className="alert alert-danger d-flex align-items-center gap-2 mt-3 mb-0 py-2">
+                      <i className="bi bi-exclamation-triangle-fill" />
+                      {deleteError.message}
+                    </div>
+                  )}
                 </div>
               ),
             )}
