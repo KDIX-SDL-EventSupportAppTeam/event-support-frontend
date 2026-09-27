@@ -34,9 +34,10 @@ export const AdminSidebar = memo(function AdminSidebar({
   const navItems = FULL_PAGE_NAV.filter((item) => !item.managerOnly || canManage)
 
   return (
+    // サイドバーを画面に固定し、本文だけをスクロールさせる（手動 E2E 提案-8: 縦長の画面でログアウトが最下部に隠れていた）
     <aside
       className="bg-dark text-white d-flex flex-column flex-shrink-0"
-      style={{ width: 220, minHeight: '100vh' }}
+      style={{ width: 220, height: '100vh', position: 'sticky', top: 0, overflowY: 'auto' }}
     >
       <div className="p-3 border-bottom border-secondary">
         <Link to="/admin/menu" className="text-white text-decoration-none fw-bold d-block">
