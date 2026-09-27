@@ -13,11 +13,10 @@ import {
   type CheckinNewEvent,
   type RecommenderState,
 } from '@/shared/api/v1Admin'
-import { connectSocket, disconnectSocket } from '@/shared/api/socket'
+import { subscribeSocket } from '@/shared/api/socket'
 import { formatClientError } from '@/shared/lib/formatClientError'
 
 export function DashboardPage() {
-  const token = useAuthStore((s) => s.token)
   const eventId = useAuthStore((s) => s.user?.event_id)
   const canManageGacha = isManagerUser(useAuthStore((s) => s.user))
   const [data, setData] = useState<AdminDashboard | null>(null)
@@ -83,9 +82,7 @@ export function DashboardPage() {
   }, [eventId, loadDashboard, loadRecState, loadGachaStats])
 
   useEffect(() => {
-    if (!token || !eventId) return
-    const apiBase = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
-    const socket = connectSocket(token, apiBase)
+    if (!eventId) return
     const onNew = (payload: CheckinNewEvent) => {
       setRecent((prev) => [payload, ...prev].slice(0, 10))
       setData((prev) =>
@@ -115,18 +112,17 @@ export function DashboardPage() {
         void loadRecState()
       }, 5_000)
     }
-    socket.on('checkin:new', onNew)
-    socket.on('rating:new', onRating)
+    const unsubscribeNew = subscribeSocket('checkin:new', onNew as (...args: unknown[]) => void)
+    const unsubscribeRating = subscribeSocket('rating:new', onRating)
     return () => {
-      socket.off('checkin:new', onNew)
-      socket.off('rating:new', onRating)
+      unsubscribeNew()
+      unsubscribeRating()
       if (ratingDebounce.current) {
         clearTimeout(ratingDebounce.current)
         ratingDebounce.current = null
       }
-      disconnectSocket()
     }
-  }, [token, eventId, loadDashboard, loadRecState])
+  }, [eventId, loadDashboard, loadRecState])
 
   if (error) {
     return (

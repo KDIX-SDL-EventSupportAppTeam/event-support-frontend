@@ -9,6 +9,7 @@ import {
   type AdminBoothComment,
 } from '@/shared/api/v1Admin'
 import { formatClientError } from '@/shared/lib/formatClientError'
+import { starFillStates } from '@/shared/config/rating'
 
 export function BoothCommentsPage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
@@ -214,8 +215,8 @@ function CommentCard({ comment: c }: { comment: AdminBoothComment }) {
       <div className="card-body py-2 px-3">
         <div className="d-flex align-items-center gap-2 mb-1">
           <span className="text-warning">
-            {[1, 2, 3, 4, 5].map((n) => (
-              <i key={n} className={`bi ${c.rating >= n ? 'bi-star-fill' : 'bi-star'}`} style={{ fontSize: '0.8rem' }} />
+            {starFillStates(c.rating).map((filled, i) => (
+              <i key={i} className={`bi ${filled ? 'bi-star-fill' : 'bi-star'}`} style={{ fontSize: '0.8rem' }} />
             ))}
           </span>
           <span className="small fw-semibold">{c.user_display_name ?? '（不明）'}</span>
