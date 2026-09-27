@@ -134,7 +134,8 @@ export function EventInfoPanel({ eventId }: EventInfoPanelProps) {
                 onClick={() => startEdit('name')}
                 aria-label="イベント名を編集"
               >
-                <i className="bi bi-pencil" />
+                <i className="bi bi-pencil me-1" />
+                編集
               </button>
             ) : null}
           </div>
@@ -177,7 +178,8 @@ export function EventInfoPanel({ eventId }: EventInfoPanelProps) {
                 onClick={() => startEdit('venue')}
                 aria-label="会場を編集"
               >
-                <i className="bi bi-pencil" />
+                <i className="bi bi-pencil me-1" />
+                編集
               </button>
             ) : null}
           </div>
@@ -216,7 +218,8 @@ export function EventInfoPanel({ eventId }: EventInfoPanelProps) {
                 onClick={() => startEdit('survey_url')}
                 aria-label="アンケートURLを編集"
               >
-                <i className="bi bi-pencil" />
+                <i className="bi bi-pencil me-1" />
+                編集
               </button>
             ) : null}
           </div>
