@@ -159,6 +159,47 @@
       0 2px 3px rgba(16, 24, 40, 0.14);
   }
 
+  // 「お帰りの前に」バナー（issue #151）。1枚のカードに2リンクを収め、行数を増やさない。
+  .return-banner {
+    margin: 0 0.5rem;
+    padding: 0.5rem 0.6rem;
+    background-color: var(--pf-cream-light);
+    border: 1px solid var(--pf-cream);
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .return-banner-title {
+    margin: 0 0 0.35rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--pf-ink-strong);
+  }
+
+  // 375px でも2リンクが1行に並ぶ（縦に積んで行数を増やさない）
+  .return-banner-links {
+    display: flex;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .return-banner-links > li {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .return-banner-done {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    font-size: 0.75rem;
+    line-height: 1.2;
+    color: var(--pf-ink-muted);
+  }
+
   .sub-actions {
     padding: 0 0.5rem;
   }

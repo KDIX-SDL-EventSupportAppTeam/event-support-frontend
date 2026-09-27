@@ -8,6 +8,10 @@ import { fetchPublicEvent } from '@/shared/api/publicEvent'
 import { useUnlockAnimationQueue } from '@/shared/hooks/useUnlockAnimationQueue'
 import { consumeBingoCelebration } from '@/shared/lib/bingoCelebration'
 import { hasSeenCoinComplete, markCoinCompleteSeen } from '@/shared/lib/coinCelebration'
+import { hasOpenedSurvey, markSurveyOpened } from '@/shared/lib/surveyOpenedFlag'
+import { createParticipantClient } from '@/shared/data/createParticipantClient'
+import { ReturnBeforeLeavingBanner } from '@/features/home/components/ReturnBeforeLeavingBanner'
+import { resolveReturnBannerState } from '@/features/home/components/returnBannerView'
 import { BingoCardView } from '@/features/home/components/bingo/BingoCardView'
 import { createGachaClient, type GachaCoins } from '@/features/gachapon/api/gachaClient'
 import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
@@ -97,6 +101,12 @@ export function HomePage() {
   const [tweetsComingSoonOpen, setTweetsComingSoonOpen] = useState(false)
   const [xShareConfirmOpen, setXShareConfirmOpen] = useState(false)
   const [surveyUrl, setSurveyUrl] = useState<string | null>(null)
+  // 「お帰りの前に」バナー（issue #151）。アンケートの確認モーダルは既存の feedbackConfirmOpen と同じ作り
+  const [surveyConfirmOpen, setSurveyConfirmOpen] = useState(false)
+  const [surveyOpened, setSurveyOpened] = useState(false)
+  // アワード投票の状態。取得できないうちは null（受付中・未投票として扱い、導線を隠さない）
+  const [votingOpen, setVotingOpen] = useState<boolean | null>(null)
+  const [awardVotes, setAwardVotes] = useState<Record<string, string> | null>(null)
   const [eventName, setEventName] = useState<string | null>(null)
 
   useEffect(() => {
@@ -116,6 +126,29 @@ export function HomePage() {
       active = false
     }
   }, [eventId])
+
+  // 投票済み・受付終了の判定はサーバーのスナップショット（voting_open / votes）をそのまま使う。
+  // localStorage で投票済みを捏造しない（issue #151）。
+  useEffect(() => {
+    if (!eventId || !userId) return
+    let active = true
+    setSurveyOpened(hasOpenedSurvey(eventId, userId))
+    createParticipantClient()
+      .getAwardVoteSnapshot(eventId, userId)
+      .then((snap) => {
+        if (!active) return
+        setVotingOpen(snap.votingOpen)
+        setAwardVotes(snap.votes)
+      })
+      .catch(() => {
+        /* 取得できないときは導線を出したままにする（回収の機会を減らさない） */
+      })
+    return () => {
+      active = false
+    }
+  }, [eventId, userId])
+
+  const returnBanner = resolveReturnBannerState({ votingOpen, votes: awardVotes, surveyUrl, surveyOpened })
 
   // チェックイン画面から渡されたライン成立の合図。コイン情報（成立本数）が揃ってから開く
   const [pendingBingoLines, setPendingBingoLines] = useState(0)
@@ -224,6 +257,40 @@ export function HomePage() {
               onClick={() => {
                 window.open(FEEDBACK_FORM_URL, '_blank', 'noopener,noreferrer')
                 setFeedbackConfirmOpen(false)
+              }}
+            >
+              はい
+            </button>
+          </div>
+        </Modal>
+      ) : null}
+
+      {surveyConfirmOpen && surveyUrl ? (
+        <Modal
+          titleId="survey-confirm-title"
+          onClose={() => setSurveyConfirmOpen(false)}
+          contentClassName="text-center"
+        >
+          <h5 id="survey-confirm-title" className="modal-title">
+            イベントアンケートを開きます
+          </h5>
+          <p className="modal-body-text">
+            イベントアンケートのフォームを新しいタブで開きます。よろしいですか？
+          </p>
+          <div className="modal-footer-buttons">
+            <button type="button" className="btn-custom-secondary" onClick={() => setSurveyConfirmOpen(false)}>
+              キャンセル
+            </button>
+            <button
+              type="button"
+              className="btn-custom-primary-red"
+              onClick={() => {
+                window.open(surveyUrl, '_blank', 'noopener,noreferrer')
+                if (eventId && userId) {
+                  markSurveyOpened(eventId, userId)
+                  setSurveyOpened(true)
+                }
+                setSurveyConfirmOpen(false)
               }}
             >
               はい
@@ -359,26 +426,18 @@ export function HomePage() {
         </div>
       ) : null}
 
-      {surveyUrl ? (
-        <div className="row g-2 mt-2">
-          <div className="col-12">
-            <button
-              type="button"
-              className="btn btn-sub-action w-100"
-              onClick={() => window.open(surveyUrl, '_blank', 'noopener,noreferrer')}
-            >
-              <i className="bi bi-clipboard-check me-1" aria-hidden="true" />
-              イベントアンケートに回答する
-            </button>
-          </div>
-        </div>
-      ) : null}
-
       <div className="row g-2 mt-2">
         <div className="col-12">
           <XShareButton onClick={() => setXShareConfirmOpen(true)} />
         </div>
       </div>
+
+      {/* 「お帰りの前に」バナー。5列グリッドより上に置く（issue #151） */}
+      <ReturnBeforeLeavingBanner
+        state={returnBanner}
+        onVote={() => navigate('/award-vote')}
+        onOpenSurveyConfirm={() => setSurveyConfirmOpen(true)}
+      />
 
       <div className="row row-cols-5 g-2 mt-2 sub-actions">
         <div className="col">
