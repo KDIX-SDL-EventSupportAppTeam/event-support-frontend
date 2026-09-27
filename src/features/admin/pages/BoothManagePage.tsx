@@ -445,7 +445,8 @@ export function BoothManagePage() {
                           className="btn btn-sm btn-outline-primary"
                           onClick={() => startEdit(b)}
                         >
-                          <i className="bi bi-pencil" />
+                          <i className="bi bi-pencil me-1" />
+                          編集
                         </button>
                         <button
                           type="button"
