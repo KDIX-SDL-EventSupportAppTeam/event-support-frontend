@@ -138,6 +138,8 @@ export function BoothManagePage() {
   /** 編集開始時点の手動コード。onSaveEdit で「変わったときだけ」送るための比較元 */
   const [editOriginalManualCode, setEditOriginalManualCode] = useState('')
   const [error, setError] = useState<string | null>(null)
+  // 編集フォームのエラーは行の中に出す（手動 E2E NG-12: 最上部の alert は下の行を編集中だと画面外で見えなかった）
+  const [editError, setEditError] = useState<string | null>(null)
   // 削除失敗のエラーは該当行の中に出す（手動 E2E NG-13: 最上部の alert は下の行だと画面外で見えなかった。NG-12 の editError と同じ構造）
   const [deleteError, setDeleteError] = useState<{ boothId: string; message: string } | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -191,6 +193,7 @@ export function BoothManagePage() {
 
   function startEdit(b: BoothRow) {
     setEditId(b.id)
+    setEditError(null)
     setDeleteError(null)
     setEditOriginalManualCode(b.manual_code ?? '')
     setEditForm({
@@ -209,7 +212,7 @@ export function BoothManagePage() {
     // 開始時点から変わったときだけ検証・送信する（未変更なら手動コードは触らない）
     const manualChanged = manual !== editOriginalManualCode.trim()
     if (manualChanged && !MANUAL_CODE_RE.test(manual)) {
-      setError('手動コードは6桁の数字で入力してください')
+      setEditError('手動コードは6桁の数字で入力してください')
       return
     }
     try {
@@ -223,10 +226,10 @@ export function BoothManagePage() {
         ...(manualChanged ? { manual_code: manual } : {}),
       })
       setEditId(null)
-      setError(null)
+      setEditError(null)
       await reload()
     } catch (err) {
-      setError(formatClientError(err, '更新に失敗しました'))
+      setEditError(formatClientError(err, '更新に失敗しました'))
     }
   }
 
@@ -359,6 +362,12 @@ export function BoothManagePage() {
                     categories={categories}
                     showManualCode
                   />
+                  {editError && (
+                    <div className="alert alert-danger d-flex align-items-center gap-2 mt-3 mb-0 py-2">
+                      <i className="bi bi-exclamation-triangle-fill" />
+                      {editError}
+                    </div>
+                  )}
                   <div className="mt-2 d-flex gap-2">
                     <button type="button" className="btn btn-sm btn-primary" onClick={() => onSaveEdit(b.id)}>
                       <i className="bi bi-check-lg me-1" />
@@ -367,7 +376,10 @@ export function BoothManagePage() {
                     <button
                       type="button"
                       className="btn btn-sm btn-outline-secondary"
-                      onClick={() => setEditId(null)}
+                      onClick={() => {
+                        setEditId(null)
+                        setEditError(null)
+                      }}
                     >
                       キャンセル
                     </button>
@@ -439,7 +451,8 @@ export function BoothManagePage() {
                           className="btn btn-sm btn-outline-primary"
                           onClick={() => startEdit(b)}
                         >
-                          <i className="bi bi-pencil" />
+                          <i className="bi bi-pencil me-1" />
+                          編集
                         </button>
                         <button
                           type="button"

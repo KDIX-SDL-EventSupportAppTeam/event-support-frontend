@@ -252,7 +252,8 @@ export function AdminAwardsPage() {
                               })
                             }}
                           >
-                            <i className="bi bi-pencil" />
+                            <i className="bi bi-pencil me-1" />
+                            編集
                           </button>
                           <button
                             type="button"
