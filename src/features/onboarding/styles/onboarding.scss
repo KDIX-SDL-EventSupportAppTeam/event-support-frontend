@@ -74,44 +74,95 @@
   text-align: center;
 }
 
-.onboarding-mockup-frame {
-  position: relative;
+// スライドの絵の領域。残りの高さをすべて受け取り、モックアップをその中に収める。
+// 高さを固定しないので、画面の低い端末では勝手に小さくなり、見出し・次へボタンを押し出さない。
+.onboarding-art {
+  flex: 1 1 auto;
+  min-height: 0; // flex子はこれが無いと中身の高さより縮められない
   width: 100%;
-  // 縦長の代用モックアップ画像（縦横比 約0.84）がそのまま画面高を圧迫しないよう、
-  // 18rem から縮小。iPhone SE 相当（375x667）でも次へボタンまで収まることを確認済み
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.onboarding-mockup-frame {
+  // flex-basis を 0 にして「.onboarding-art の残り」に収める。モックアップの高さは
+  // ここから決まるので、rem での高さ指定は持たせない
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  // stretch のままにする（cross軸＝高さが確定し、.onboarding-mockup の max-height: 100% が効く）
+  align-items: stretch;
+}
+
+// モックアップと同じ大きさの箱。はみ出しイラスト（.onboarding-aside）の % 指定が
+// 端末の幅・高さを基準になるよう、スライドいっぱいには広げない
+.onboarding-mockup-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   max-width: 13rem;
-  margin: 0 auto 1rem;
 }
 
 .onboarding-mockup {
-  width: 100%;
+  // 幅は高さから決まる（縦横比 約0.56）。max-width は横幅の狭い端末での上限
+  max-height: 100%;
+  max-width: 100%;
+  width: auto;
   height: auto;
+  object-fit: contain;
   display: block;
 }
 
-.onboarding-illustrations {
+// 端末の外側の余白へはみ出させるイラスト。画面の絵を隠さず、縦の高さも食わない
+.onboarding-aside {
   position: absolute;
-  inset: 0;
+  pointer-events: none;
+}
+
+// マスコットが端末の左下から覗く配置。幅・位置を % にしてモックアップの拡縮に追従させる
+.onboarding-aside-bottom-start {
+  left: -20%;
+  bottom: -1%;
+  width: 40%;
+  height: auto;
+}
+
+.onboarding-aside-top-end {
+  right: -14%;
+  top: 6%;
+  width: 24%;
+  height: auto;
+}
+
+// モックアップの下に普通に並べるイラスト
+.onboarding-art-row {
+  flex: 0 0 auto;
+  width: 100%;
   display: flex;
   flex-wrap: wrap;
-  align-content: center;
+  align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  pointer-events: none;
 }
 
 .onboarding-feature-icon {
   // 素材は正方形キャンバスに絵柄がほぼ一杯（docs/reference/assets.md）。
   // 固定の正方形ボックスに contain で収めれば、どのアイコンも同じ大きさに見える
-  width: 3rem;
-  height: 3rem;
+  width: 2.5rem;
+  height: 2.5rem;
   object-fit: contain;
 }
 
-.onboarding-flow-image,
-.onboarding-award-image {
-  width: 90%;
-  max-width: 16rem;
+.onboarding-flow-image {
+  width: 100%;
+  max-width: 17rem;
   height: auto;
 }
 
