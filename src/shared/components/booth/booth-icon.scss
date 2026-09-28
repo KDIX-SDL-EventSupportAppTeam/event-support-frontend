@@ -1,0 +1,22 @@
+// ブースアイコンの共通寸法。
+// 素材ごとに透明余白の量が違うため、固定の正方形 + object-fit: contain で揃える
+// （docs/decisions/adrs/0005-icon-canvas-normalization.md と同じ考え方）。
+.booth-icon {
+  --pf-booth-icon-size: 2.5rem;
+
+  display: inline-block;
+  flex: 0 0 auto;
+  width: var(--pf-booth-icon-size);
+  height: var(--pf-booth-icon-size);
+  object-fit: contain;
+  object-position: center;
+}
+
+// 素材が無いブースの代わりに絵文字を出す版。画像と同じ箱に収める
+.booth-icon--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--pf-booth-icon-size) * 0.72);
+  line-height: 1;
+}

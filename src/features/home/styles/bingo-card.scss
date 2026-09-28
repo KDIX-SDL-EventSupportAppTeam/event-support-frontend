@@ -88,6 +88,17 @@
   margin-bottom: 0.1rem;
 }
 
+// 未達成の開放マスに出すブースアイコン。マスの約半分に収め、下にブース名を残す
+// （素材と対応は docs/reference/assets.md「booth」）
+.bingo-cell-booth-icon {
+  --pf-booth-icon-size: 48%;
+
+  height: auto;
+  aspect-ratio: 1;
+  max-height: 48%;
+  margin-bottom: 0.1rem;
+}
+
 .bingo-cell-booth-name {
   font-size: 0.68rem;
   line-height: 1.1;

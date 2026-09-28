@@ -7,6 +7,7 @@ import { BingoCellView } from '@/features/home/components/bingo/BingoCellView'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
 import { BingoProgressStepper } from '@/features/home/components/bingo/BingoProgressStepper'
 import { Modal } from '@/shared/components/modal/Modal'
+import { BoothIcon } from '@/shared/components/booth/BoothIcon'
 import { useLaterRating } from '@/features/checkin/hooks/useLaterRating'
 
 type Props = {
@@ -92,7 +93,8 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
           contentClassName="booth-detail-popup text-start"
         >
           <div className="modal-header border-0 pb-0">
-            <h5 id="booth-detail-title" className="modal-title w-100">
+            <h5 id="booth-detail-title" className="modal-title w-100 d-flex align-items-center gap-2">
+              <BoothIcon displayCode={selectedCell.booth?.display_code} size="2rem" />
               {selectedCell.booth?.name ?? 'ブース情報'}
             </h5>
             <button
