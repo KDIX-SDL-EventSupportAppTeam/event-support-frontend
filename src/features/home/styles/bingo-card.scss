@@ -2,8 +2,6 @@
 // 演出は当日 13:30-15:30 に集中発火するため、重いアニメーションは避ける（Q-F5）。
 // 配色は docs/specs/design-refresh-2026/01-design-tokens.md の --pf-* トークンに合わせる。
 
-@use 'sass:math';
-
 // 縦横比の保証は .pf-logo（shared/styles/brand-logo.scss）が持つ
 .bingo-logo {
   height: 1.4em;
@@ -88,6 +86,17 @@
   margin-bottom: 0.1rem;
 }
 
+// 未達成の開放マスに出すブースアイコン。マスの約半分に収め、下にブース名を残す
+// （素材と対応は docs/reference/assets.md「booth」）
+.bingo-cell-booth-icon {
+  --pf-booth-icon-size: 48%;
+
+  height: auto;
+  aspect-ratio: 1;
+  max-height: 48%;
+  margin-bottom: 0.1rem;
+}
+
 .bingo-cell-booth-name {
   font-size: 0.68rem;
   line-height: 1.1;
@@ -95,11 +104,23 @@
   color: var(--pf-ink);
 }
 
-.bingo-cell-undecided-text {
-  font-size: 0.6rem;
-  line-height: 1.15;
-  color: var(--pf-ink-muted);
+// 全制覇マスは文言が2〜3行になるので、スタンプを小さくして 4×4 のマスに収める
+.bingo-cell-all-visited .bingo-cell-stamp {
+  width: 45%;
+  max-height: 38%;
+}
+
+// 割り当て可能なブースが残っていないマス（= 全制覇）の文言。
+// 4×4 のグリッド（375px 幅で1マス約 80px）で溢れないよう、スタンプに重ねず小さく出す。
+.bingo-cell-all-visited-text {
+  position: relative;
+  z-index: 1;
+  font-size: 0.55rem;
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--pf-ink-strong);
   word-break: break-word;
+  padding: 0 0.1rem;
 }
 
 // ビンゴ進捗ステッパー（4段階の丸連番インジケータ）。素材は無くCSSのみで実装する
@@ -144,7 +165,7 @@
   color: var(--pf-ink-strong);
 }
 
-// 解放演出（簡素・スキップ可）
+// 解放通知モーダル（静止画・「閉じる」＋自動クローズ。issue #148）
 .bingo-unlock-overlay {
   display: flex;
   flex-direction: column;
@@ -153,44 +174,12 @@
   z-index: 1080;
 }
 
-.bingo-unlock-burst {
-  position: relative;
-  width: 160px;
-  height: 160px;
+// 静止画1枚の通知モーダル（issue #148）。バーストアニメーションは廃止した。
+// 375px 幅でも文言とボタンが画面内に収まる大きさに抑える。
+.bingo-unlock-image {
+  width: min(60vw, 200px);
+  height: auto;
   margin-bottom: 1rem;
-}
-
-.bingo-unlock-piece {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 14px;
-  height: 14px;
-  background: var(--pf-yellow-soft);
-  border-radius: 3px;
-  transform: translate(-50%, -50%) scale(0);
-  animation: bingo-unlock-piece-burst 900ms ease-out forwards;
-}
-
-@for $i from 1 through 12 {
-  .bingo-unlock-piece:nth-child(#{$i}) {
-    $angle: math.div(360deg, 12) * ($i - 1);
-    --bingo-unlock-angle: #{$angle};
-  }
-}
-
-@keyframes bingo-unlock-piece-burst {
-  0% {
-    transform: translate(-50%, -50%) rotate(var(--bingo-unlock-angle, 0deg)) translateY(0) scale(0.4);
-    opacity: 0;
-  }
-  40% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -50%) rotate(var(--bingo-unlock-angle, 0deg)) translateY(-70px) scale(1);
-    opacity: 0.9;
-  }
 }
 
 .bingo-unlock-message {

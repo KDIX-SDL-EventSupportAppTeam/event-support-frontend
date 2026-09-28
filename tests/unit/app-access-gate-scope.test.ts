@@ -73,8 +73,10 @@ describe('アプリ公開ゲートの適用範囲', () => {
 })
 
 /**
- * ゲート（`RequireAppOpen`）と入口（`EntryPage` の `useAppAccess`）が
- * **同じエンドポイント** で開放状態を取ること（issue #80）。
+ * ゲート（`RequireAppOpen`）は参加者専用ルートを守るものなので、出展者トークンは
+ * 判定を待たず即座に締め出す（参加者画面が一瞬見えてから出展者画面へバウンスする
+ * 不具合の再発防止）。参加者に対しては、入口（`EntryPage`）と**同じエンドポイント**
+ * （`GET /me/state`）で開放状態を取ること（issue #80）。
  *
  * サーバー側の判定が一致していても、別々の口を叩いているとキャッシュ差・
  * レプリカ遅延で食い違い、入口とアプリ本体の間で往復リダイレクトが起きうる。
@@ -91,8 +93,15 @@ describe('開放状態の取得口', () => {
     'utf-8',
   )
 
-  it('ゲートも入口も shared/api/appAccess から取得する', () => {
-    expect(gateSrc).toMatch(/import\s*\{[^}]*fetchAppAccess[^}]*\}\s*from\s*'@\/shared\/api\/appAccess'/)
+  it('ゲートは出展者を判定前に締め出す', () => {
+    expect(gateSrc).toMatch(/role === 'exhibitor'/)
+  })
+
+  it('ゲートは参加者向けに shared/features/entry/api/meState から取得する', () => {
+    expect(gateSrc).toMatch(/import\s*\{[^}]*fetchMeState[^}]*\}\s*from\s*'@\/features\/entry\/api\/meState'/)
+  })
+
+  it('入口の useAppAccess は shared/api/appAccess から取得する', () => {
     expect(hookSrc).toMatch(/import\s*\{[^}]*fetchAppAccess[^}]*\}\s*from\s*'@\/shared\/api\/appAccess'/)
   })
 

@@ -107,6 +107,7 @@ type EditForm = {
   dateEnd: string
   venue: string
   surveyUrl: string
+  mailFrom: string
 }
 
 function toEditForm(event: OrganizerEvent): EditForm {
@@ -116,6 +117,7 @@ function toEditForm(event: OrganizerEvent): EditForm {
     dateEnd: toLocalInput(event.date_end),
     venue: event.venue ?? '',
     surveyUrl: event.survey_url ?? '',
+    mailFrom: event.mail_from ?? '',
   }
 }
 
@@ -148,6 +150,7 @@ function EventOverview({
     e.preventDefault()
     const name = form.name.trim()
     const surveyUrl = form.surveyUrl.trim()
+    const mailFrom = form.mailFrom.trim()
     const start = new Date(form.dateStart)
     const end = new Date(form.dateEnd)
     if (!name) {
@@ -166,6 +169,14 @@ function EventOverview({
       setSaveError('アンケートURLは http(s):// で始めてください')
       return
     }
+    if (!mailFrom) {
+      setSaveError('送信元メールアドレスは必須です')
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mailFrom)) {
+      setSaveError('送信元メールアドレスの形式が正しくありません')
+      return
+    }
 
     setSaving(true)
     setSaveError(null)
@@ -176,6 +187,7 @@ function EventOverview({
         date_end: end.toISOString(),
         venue: form.venue.trim() || null,
         survey_url: surveyUrl || null,
+        mail_from: mailFrom,
       })
       onUpdated(updated)
       setEditing(false)
@@ -269,6 +281,24 @@ function EventOverview({
                 placeholder="https://forms.gle/xxxx"
               />
             </div>
+            <div className="mb-3">
+              <label className="form-label small fw-bold" htmlFor="edit-mail-from">
+                送信元メールアドレス <span className="text-danger">*</span>
+              </label>
+              <input
+                id="edit-mail-from"
+                type="email"
+                className="form-control"
+                value={form.mailFrom}
+                onChange={(e) => update('mailFrom', e.target.value)}
+                maxLength={255}
+                required
+                placeholder="info@techfes.example"
+              />
+              <div className="form-text">
+                参加者への確認メール等の送信元。オーガナイザーのログイン用メールとは別のアドレスにしてください。
+              </div>
+            </div>
             <p className="text-muted small">
               日時を変えても、アプリの公開状態（運営画面の開放スイッチ）は変わりません。
             </p>
@@ -301,6 +331,10 @@ function EventOverview({
             <div className="text-muted small mb-1">
               <i className="bi bi-link-45deg me-1" />
               {event.survey_url ?? 'アンケート未設定'}
+            </div>
+            <div className={`small mb-1 ${event.mail_from ? 'text-muted' : 'text-danger'}`}>
+              <i className="bi bi-envelope me-1" />
+              {event.mail_from ?? '送信元メール未設定（編集から設定してください）'}
             </div>
           </>
         )}

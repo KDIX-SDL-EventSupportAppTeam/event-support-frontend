@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { ONBOARDING_SLIDES } from '@/features/onboarding/config/slides'
+import type { OnboardingSlide } from '@/features/onboarding/config/slides'
 import '@/features/onboarding/styles/onboarding.scss'
 
 const LAST_INDEX = ONBOARDING_SLIDES.length - 1
+
+/** モックアップの下に普通に並べるイラスト（横長の図解やアイコンの列）。 */
+function belowIllustrations(slide: OnboardingSlide) {
+  return slide.illustrations.filter((illustration) => illustration.placement === 'below')
+}
 
 /**
  * アプリ本体へ初めて入るときに1回だけ表示するオンボーディング（横スワイプ4枚）。
@@ -69,18 +75,41 @@ export function OnboardingFlow({ onFinish }: { onFinish: () => void }) {
             aria-roledescription="slide"
             aria-label={`${index + 1} / ${ONBOARDING_SLIDES.length}`}
           >
-            <div className="onboarding-mockup-frame">
-              <img className="onboarding-mockup" src={slide.mockup.src} alt={slide.mockup.alt} />
-              <div className="onboarding-illustrations">
-                {slide.illustrations.map((illustration) => (
-                  <img
-                    key={illustration.src}
-                    src={illustration.src}
-                    alt={illustration.alt}
-                    className={illustration.className}
-                  />
-                ))}
+            {/*
+              モックアップはアプリの画面そのもの。イラストを画面の上に重ねると画面が
+              何枚も積み重なって見えるため、外側の余白（aside-*）か下（below）にだけ置く。
+              どこに置くかは slides.ts の placement が持つ。
+            */}
+            <div className="onboarding-art">
+              <div className="onboarding-mockup-frame">
+                <div className="onboarding-mockup-stage">
+                  <img className="onboarding-mockup" src={slide.mockup.src} alt={slide.mockup.alt} />
+                  {slide.illustrations
+                    .filter((illustration) => illustration.placement !== 'below')
+                    .map((illustration) => (
+                      <img
+                        key={illustration.src}
+                        src={illustration.src}
+                        alt={illustration.alt}
+                        // はみ出し配置では大きさも位置も placement のクラスが決めるので
+                        // 通常配置用の className（幅を rem で持つ）は付けない
+                        className={`onboarding-aside onboarding-${illustration.placement}`}
+                      />
+                    ))}
+                </div>
               </div>
+              {belowIllustrations(slide).length > 0 ? (
+                <div className="onboarding-art-row">
+                  {belowIllustrations(slide).map((illustration) => (
+                    <img
+                      key={illustration.src}
+                      src={illustration.src}
+                      alt={illustration.alt}
+                      className={illustration.className}
+                    />
+                  ))}
+                </div>
+              ) : null}
             </div>
             <h2 className="onboarding-title">{slide.title}</h2>
             <p className="onboarding-description">{slide.description}</p>

@@ -10,6 +10,10 @@ import {
   reconcileAnswers,
 } from '@/features/entry/lib/deriveSurveyQuestions'
 import type { PreSurveyAnswers, PreSurveyQuestion } from '@/features/entry/types/presurvey'
+import { ApiError } from '@/shared/api/unwrap'
+
+const SURVEY_NOT_CONFIGURED_MESSAGE =
+  '事前アンケートの準備ができていません。時間をおいて再度お試しください'
 
 /**
  * S3 ── 事前アンケート回答。
@@ -17,6 +21,7 @@ import type { PreSurveyAnswers, PreSurveyQuestion } from '@/features/entry/types
  */
 export function SurveyStep({ eventId, onAnswered }: { eventId: string; onAnswered: () => void }) {
   const [questions, setQuestions] = useState<PreSurveyQuestion[]>([])
+  const [questionsLoaded, setQuestionsLoaded] = useState(false)
   const [answers, setAnswers] = useState<PreSurveyAnswers>({})
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -27,11 +32,14 @@ export function SurveyStep({ eventId, onAnswered }: { eventId: string; onAnswere
     fetchPreSurveyQuestions(eventId).then((result) => {
       if (!active) return
       setQuestions(result.questions)
+      setQuestionsLoaded(true)
     })
     return () => {
       active = false
     }
   }, [eventId])
+
+  const isSurveyNotConfigured = questionsLoaded && questions.length === 0
 
   /** 表示用に絞り込んだ設問。連動の判断はすべて純粋関数側にある */
   const displayQuestions = deriveDisplayQuestions(questions, answers)
@@ -48,11 +56,23 @@ export function SurveyStep({ eventId, onAnswered }: { eventId: string; onAnswere
     try {
       await submitPreSurveyAnswers({ eventId, answers, questions })
       onAnswered()
-    } catch {
-      setError('送信に失敗しました。時間をおいて再度お試しください。')
+    } catch (e) {
+      if (e instanceof ApiError && e.code === 'SURVEY_NOT_CONFIGURED') {
+        setError(e.message)
+      } else {
+        setError('送信に失敗しました。時間をおいて再度お試しください。')
+      }
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (isSurveyNotConfigured) {
+    return (
+      <EntryLayout title="事前アンケート" subtitle="ご回答をお願いします">
+        <p className="text-danger text-center">{SURVEY_NOT_CONFIGURED_MESSAGE}</p>
+      </EntryLayout>
+    )
   }
 
   return (

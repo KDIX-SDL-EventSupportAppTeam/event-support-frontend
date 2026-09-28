@@ -13,11 +13,12 @@ import {
   type CheckinNewEvent,
   type RecommenderState,
 } from '@/shared/api/v1Admin'
-import { connectSocket, disconnectSocket } from '@/shared/api/socket'
+import { subscribeSocket } from '@/shared/api/socket'
 import { formatClientError } from '@/shared/lib/formatClientError'
+import { useBoothDisplayCodes } from '@/features/admin/hooks/useBoothDisplayCodes'
+import { BoothIcon } from '@/shared/components/booth/BoothIcon'
 
 export function DashboardPage() {
-  const token = useAuthStore((s) => s.token)
   const eventId = useAuthStore((s) => s.user?.event_id)
   const canManageGacha = isManagerUser(useAuthStore((s) => s.user))
   const [data, setData] = useState<AdminDashboard | null>(null)
@@ -27,6 +28,8 @@ export function DashboardPage() {
   const [recError, setRecError] = useState<string | null>(null)
   const [gachaStats, setGachaStats] = useState<AdminGachaStats | null>(null)
   const [gachaError, setGachaError] = useState<string | null>(null)
+  // ダッシュボード API は display_code を返さないので、アイコン用に番号だけ別で引く
+  const boothCodes = useBoothDisplayCodes(eventId)
   // rating:new は集計に影響するため再取得するが、評価ラッシュ時の連発を防ぐため 5 秒 trailing デバウンス
   const ratingDebounce = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -83,9 +86,7 @@ export function DashboardPage() {
   }, [eventId, loadDashboard, loadRecState, loadGachaStats])
 
   useEffect(() => {
-    if (!token || !eventId) return
-    const apiBase = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
-    const socket = connectSocket(token, apiBase)
+    if (!eventId) return
     const onNew = (payload: CheckinNewEvent) => {
       setRecent((prev) => [payload, ...prev].slice(0, 10))
       setData((prev) =>
@@ -115,18 +116,17 @@ export function DashboardPage() {
         void loadRecState()
       }, 5_000)
     }
-    socket.on('checkin:new', onNew)
-    socket.on('rating:new', onRating)
+    const unsubscribeNew = subscribeSocket('checkin:new', onNew as (...args: unknown[]) => void)
+    const unsubscribeRating = subscribeSocket('rating:new', onRating)
     return () => {
-      socket.off('checkin:new', onNew)
-      socket.off('rating:new', onRating)
+      unsubscribeNew()
+      unsubscribeRating()
       if (ratingDebounce.current) {
         clearTimeout(ratingDebounce.current)
         ratingDebounce.current = null
       }
-      disconnectSocket()
     }
-  }, [token, eventId, loadDashboard, loadRecState])
+  }, [eventId, loadDashboard, loadRecState])
 
   if (error) {
     return (
@@ -209,8 +209,12 @@ export function DashboardPage() {
                   {data.booths.slice(0, 10).map((b, i) => (
                     <div key={b.id}>
                       <div className="d-flex justify-content-between mb-1">
-                        <span className="small text-truncate" style={{ maxWidth: '60%' }}>
-                          <span className="text-muted me-1">{i + 1}.</span>
+                        <span
+                          className="small text-truncate d-flex align-items-center gap-1"
+                          style={{ maxWidth: '60%' }}
+                        >
+                          <span className="text-muted">{i + 1}.</span>
+                          <BoothIcon displayCode={boothCodes.get(b.id)} size="1.5rem" />
                           {b.name}
                         </span>
                         <span className="small fw-semibold">

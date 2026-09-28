@@ -55,6 +55,8 @@ export type CreateEventBody = {
   date_end: string
   venue?: string
   survey_url?: string
+  /** 参加者への確認メール等の送信元。オーガナイザーのログイン用メールとは別 */
+  mail_from: string
   initial_manager: {
     email: string
     password: string
@@ -71,6 +73,7 @@ export type CreatedEvent = {
     date_end: string
     venue: string | null
     survey_url: string | null
+    mail_from: string | null
   }
   initial_manager: {
     id: string
@@ -108,6 +111,8 @@ export type OrganizerEvent = {
   date_end: string
   venue: string | null
   survey_url: string | null
+  /** 旧イベントは null（送信時はサーバー既定の MAIL_FROM） */
+  mail_from: string | null
   created_at: string
   stats: {
     participants: number
@@ -180,6 +185,7 @@ export type UpdateEventBody = {
   date_end?: string
   venue?: string | null
   survey_url?: string | null
+  mail_from?: string
 }
 
 export async function updateOrganizerEvent(

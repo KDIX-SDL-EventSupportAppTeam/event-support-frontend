@@ -63,5 +63,9 @@
 .modal-popup-image {
   max-width: 100%;
   height: auto;
-  margin-bottom: 1rem;
+  // 左右 auto で中央に置く。.modal-content は Bootstrap の .modal-content が持つ
+  // `display: flex; flex-direction: column` を受け継ぐため、親の text-align: center では
+  // 画像（フレックスアイテム）は中央に来ず左端に寄る。auto マージンは block でも flex でも効く
+  margin: 0 auto 1rem;
+  display: block;
 }
