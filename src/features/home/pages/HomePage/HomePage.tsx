@@ -211,10 +211,10 @@ export function HomePage() {
           <h2 id="bingo-modal-title" className="visually-hidden">
             BINGO！おめでとうございます
           </h2>
+          {/* span 区切りは改行位置のため（文の途中で折り返させない）。legacy-home.scss を見ること */}
           <p className="bingo-celebration-message">
-            {bingoModal.lines != null
-              ? `ビンゴが${bingoModal.lines}本そろいました！ おめでとうございます！`
-              : 'ビンゴがそろいました！ おめでとうございます！'}
+            <span>{bingoModal.lines != null ? `ビンゴが${bingoModal.lines}本そろいました！` : 'ビンゴがそろいました！'}</span>
+            <span>おめでとうございます！</span>
           </p>
           <button type="button" className="btn btn-primary" onClick={() => setBingoModal(null)}>
             閉じる

@@ -255,6 +255,14 @@
   .bingo-celebration-message {
     font-size: 1.2rem;
     margin-bottom: 2rem;
+
+    // 日本語は文節の途中でも折り返されるため、そのままだと
+    // 「…おめでとう / ございます！」のように語の真ん中で切れる。
+    // 文ごとに span で包み、inline-block にして span の中では改行させない
+    // （収まらないときは span と span の間だけで改行される）
+    span {
+      display: inline-block;
+    }
   }
 
   .booth-detail-popup {
