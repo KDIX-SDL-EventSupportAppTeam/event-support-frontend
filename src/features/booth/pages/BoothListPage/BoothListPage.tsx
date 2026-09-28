@@ -7,6 +7,7 @@ import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
 import { fetchV1BingoCard, fetchV1Checkins } from '@/shared/api/v1Participant'
 import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
 import { shouldShowUnratedBadge } from '@/features/booth/lib/boothRatingBadge'
+import { BoothIcon } from '@/shared/components/booth/BoothIcon'
 import '@/features/booth/styles/legacy-booth-list.scss'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
 
@@ -112,7 +113,7 @@ export function BoothListPage() {
                   <div className="booth-number-badge">
                     {booth.booth_display_code ? booth.booth_display_code.toUpperCase() : '—'}
                   </div>
-                  <span className="booth-emoji">{booth.booth_emoji}</span>
+                  <BoothIcon displayCode={booth.booth_display_code} fallback={booth.booth_emoji} />
                 </div>
                 <div className="booth-content">
                   <div className="booth-header">
@@ -151,7 +152,14 @@ export function BoothListPage() {
           <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">{selected.booth_name}</h5>
+                <h5 className="modal-title d-flex align-items-center gap-2">
+                  <BoothIcon
+                    displayCode={selected.booth_display_code}
+                    fallback={selected.booth_emoji}
+                    size="2rem"
+                  />
+                  {selected.booth_name}
+                </h5>
                 <button type="button" className="btn-close" aria-label="Close" onClick={() => setSelected(null)} />
               </div>
               <div className="modal-body">

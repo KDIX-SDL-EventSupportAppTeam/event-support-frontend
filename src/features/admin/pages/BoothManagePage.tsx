@@ -14,6 +14,7 @@ import {
 import { fetchV1Booths, type V1BoothListItem } from '@/shared/api/v1Participant'
 import { formatClientError } from '@/shared/lib/formatClientError'
 import { CopyButton } from '@/shared/components/CopyButton'
+import { BoothIcon } from '@/shared/components/booth/BoothIcon'
 
 /** 運営が編集できるブースの1行（display_code は公開、manual_code は秘匿・6桁数字） */
 type BoothRow = V1BoothListItem & { manual_code: string; checkin_url: string }
@@ -388,6 +389,7 @@ export function BoothManagePage() {
               ) : (
                 <div key={b.id} className="list-group-item p-3">
                   <div className="d-flex align-items-start gap-3">
+                    <BoothIcon displayCode={b.display_code} size="2.5rem" />
                     <div className="flex-grow-1 min-w-0">
                       <div className="d-flex align-items-center gap-2 flex-wrap">
                         <span className="fw-semibold">{b.name}</span>
