@@ -207,6 +207,11 @@
     color: var(--pf-ink-muted);
   }
 
+  // ライン成立バッジ（bingo-line-badge.png）は素材が小さいので引き伸ばさない
+  .bingo-celebration-badge {
+    max-width: 180px;
+  }
+
   .sub-actions {
     padding: 0 0.5rem;
   }
