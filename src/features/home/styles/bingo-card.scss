@@ -95,11 +95,23 @@
   color: var(--pf-ink);
 }
 
-.bingo-cell-undecided-text {
-  font-size: 0.6rem;
-  line-height: 1.15;
-  color: var(--pf-ink-muted);
+// 全制覇マスは文言が2〜3行になるので、スタンプを小さくして 4×4 のマスに収める
+.bingo-cell-all-visited .bingo-cell-stamp {
+  width: 45%;
+  max-height: 38%;
+}
+
+// 割り当て可能なブースが残っていないマス（= 全制覇）の文言。
+// 4×4 のグリッド（375px 幅で1マス約 80px）で溢れないよう、スタンプに重ねず小さく出す。
+.bingo-cell-all-visited-text {
+  position: relative;
+  z-index: 1;
+  font-size: 0.55rem;
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--pf-ink-strong);
   word-break: break-word;
+  padding: 0 0.1rem;
 }
 
 // ビンゴ進捗ステッパー（4段階の丸連番インジケータ）。素材は無くCSSのみで実装する

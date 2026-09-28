@@ -93,7 +93,7 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
         >
           <div className="modal-header border-0 pb-0">
             <h5 id="booth-detail-title" className="modal-title w-100">
-              {selectedCell.booth?.name ?? 'ブース情報'}
+              {selectedCell.booth?.name ?? 'すべてのブースを訪問しました'}
             </h5>
             <button
               type="button"
@@ -103,6 +103,23 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
             />
           </div>
           <div className="modal-body pt-2">
+            {/*
+              ブース名が無いマス（is_revealed かつ booth: null。サーバー E7）。
+              「ブースが決まらなかった」ではなく**全部回りきった終点**なので、
+              なぜブース名が無いのかをここで説明する。
+              ブース数不足（運営都合）との出し分けは event-support-server#150 以降。
+            */}
+            {!selectedCell.booth ? (
+              <>
+                <p className="mb-2">
+                  このマスに割り当てられるブースが残っていません。あなたが回れるブースは、すべて訪問済みです。
+                </p>
+                <p className="mb-0 small text-muted">
+                  このマスは訪問済みとして扱われ、ビンゴのラインにも数えられます。
+                  ブース名が入らないのは不具合ではありません。
+                </p>
+              </>
+            ) : null}
             {selectedCell.booth?.description ? <p className="mb-2">{selectedCell.booth.description}</p> : null}
             {canRate(selectedCell) ? (
               <div className="mt-3">
