@@ -2,9 +2,10 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 
-const { resolveBingoCelebrationLines, shouldShowCoinCompleteArt } = await import(
+const { resolveBingoCelebrationLines, shouldShowCoinCompleteArt, bingoCelebrationArt } = await import(
   '@/features/home/celebration/bingoCelebrationView'
 )
+const { BINGO_GOAL_LINES } = await import('@/shared/config/bingo')
 
 const homePageSource = readFileSync(
   path.resolve(__dirname, '../../src/features/home/pages/HomePage/HomePage.tsx'),
@@ -25,6 +26,36 @@ describe('resolveBingoCelebrationLines', () => {
   it('どちらも無ければ null（本数なしの文言で開く）', () => {
     expect(resolveBingoCelebrationLines(0, 0)).toBeNull()
     expect(resolveBingoCelebrationLines(undefined, 0)).toBeNull()
+  })
+})
+
+describe('bingoCelebrationArt', () => {
+  it('1〜3本目は文字の入っていないライン成立バッジ', () => {
+    for (const lines of [1, 2, 3]) {
+      expect(bingoCelebrationArt(lines)).toEqual({ src: '/bingo/bingo-line-badge.png', isBadge: true })
+    }
+  })
+
+  it('目標本数に届いたら「ビンゴコンプリート！」の一枚絵', () => {
+    expect(bingoCelebrationArt(BINGO_GOAL_LINES)).toEqual({
+      src: '/feedback/popup-bingo-complete.png',
+      isBadge: false,
+    })
+    expect(bingoCelebrationArt(BINGO_GOAL_LINES + 1).src).toBe('/feedback/popup-bingo-complete.png')
+  })
+
+  it('起きてはいけないこと: 1本目に「すべてのビンゴを達成しました」の絵を出す', () => {
+    expect(bingoCelebrationArt(1).src).not.toBe('/feedback/popup-bingo-complete.png')
+  })
+
+  it('起きてはいけないこと: 本数が分からないときに達成の絵を出す', () => {
+    expect(bingoCelebrationArt(null).src).toBe('/bingo/bingo-line-badge.png')
+  })
+
+  it('どの本数でも必ずアートを出す（出さない分岐が無い）', () => {
+    for (const lines of [null, 0, 1, 2, 3, 4, 10]) {
+      expect(bingoCelebrationArt(lines).src.length).toBeGreaterThan(0)
+    }
   })
 })
 
@@ -49,9 +80,13 @@ describe('HomePage のビンゴ達成モーダル', () => {
     expect(bingoModalBlock).not.toContain('gachaCoins')
   })
 
-  it('専用アートが真偽値で出し分けられていない（常に出す）', () => {
-    expect(bingoModalBlock).toContain('/feedback/popup-bingo-complete.png')
+  it('アートは必ず出す（出す・出さないの真偽値が無い）', () => {
+    expect(bingoModalBlock).toContain('bingoCelebrationArt(bingoModal.lines)')
     expect(bingoModalBlock).not.toContain('bingoModal.complete')
+  })
+
+  it('アートの選択にガチャの上限枚数を使っていない', () => {
+    expect(bingoModalBlock).not.toContain('MAX_GACHAPON_COINS')
   })
 
   it('起きてはいけないこと: コイン満タンの既読管理が外れる', () => {

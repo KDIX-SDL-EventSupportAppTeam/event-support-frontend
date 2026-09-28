@@ -9,6 +9,7 @@ import { useUnlockAnimationQueue } from '@/shared/hooks/useUnlockAnimationQueue'
 import { consumeBingoCelebration } from '@/shared/lib/bingoCelebration'
 import { hasSeenCoinComplete, markCoinCompleteSeen } from '@/shared/lib/coinCelebration'
 import {
+  bingoCelebrationArt,
   resolveBingoCelebrationLines,
   shouldShowCoinCompleteArt,
 } from '@/features/home/celebration/bingoCelebrationView'
@@ -158,8 +159,22 @@ export function HomePage() {
     <div className="legacy-home container py-3 px-2">
       {bingoModal ? (
         <Modal titleId="bingo-modal-title" onClose={() => setBingoModal(null)} contentClassName="text-center">
-          {/* 専用アートは本数によらず常に出す（issue #149。旧実装はコイン上限で出し分けていた） */}
-          <img src="/feedback/popup-bingo-complete.png" alt="" className="modal-popup-image" decoding="async" />
+          {/*
+            アートは必ず出す（issue #149。旧実装はガチャコインの上限で出し分けていた）。
+            絵柄だけは本数で変える: 1〜3本目は文字の入っていないライン成立バッジ、
+            目標本数（BINGO_GOAL_LINES）に届いたら「ビンゴコンプリート！」の一枚絵。
+          */}
+          {(() => {
+            const art = bingoCelebrationArt(bingoModal.lines)
+            return (
+              <img
+                src={art.src}
+                alt=""
+                className={`modal-popup-image${art.isBadge ? ' bingo-celebration-badge' : ''}`}
+                decoding="async"
+              />
+            )
+          })()}
           <h2 id="bingo-modal-title" className="visually-hidden">
             BINGO！おめでとうございます
           </h2>

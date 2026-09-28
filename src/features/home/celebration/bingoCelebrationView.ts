@@ -1,3 +1,5 @@
+import { BINGO_GOAL_LINES } from '@/shared/config/bingo'
+
 /**
  * ビンゴ達成モーダル・コイン満タンモーダルの見せ方を決める純関数。
  * 仕様: docs/specs/design-refresh-2026/05-modals.md、issue #149
@@ -36,4 +38,27 @@ export function resolveBingoCelebrationLines(
  */
 export function shouldShowCoinCompleteArt(bingoCelebrationShown: boolean): boolean {
   return !bingoCelebrationShown
+}
+
+/**
+ * ビンゴ達成モーダルに出すアート。**本数で出し分ける**（issue #149 のレビュー）。
+ *
+ * `popup-bingo-complete.png` は絵の中に「ビンゴコンプリート！ / すべてのビンゴを達成しました！」が
+ * 焼き込まれているため、1本目に出すと絵の文字が嘘になる。
+ * 1〜3本目は文字の入っていない**ライン成立バッジ**（`docs/reference/assets.md`:
+ * 「ビンゴ成立バッジ（星入りグリッド）」）を使い、目標本数に届いたときだけ一枚絵に切り替える。
+ *
+ * **判定はビンゴのデータだけで行う**（`lines_completed` と `BINGO_GOAL_LINES`）。
+ * ガチャコインの枚数・上限は見ない。
+ * 本数が分からないとき（`null`）はバッジ側に寄せる（達成していないのに「すべて達成」と言わない）。
+ */
+export function bingoCelebrationArt(lines: number | null): {
+  src: string
+  /** バッジは素材が小さいので、モーダル内で大きく引き伸ばさない。 */
+  isBadge: boolean
+} {
+  const complete = lines != null && lines >= BINGO_GOAL_LINES
+  return complete
+    ? { src: '/feedback/popup-bingo-complete.png', isBadge: false }
+    : { src: '/bingo/bingo-line-badge.png', isBadge: true }
 }
