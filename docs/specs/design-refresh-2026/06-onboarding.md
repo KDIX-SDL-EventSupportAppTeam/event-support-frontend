@@ -1,6 +1,6 @@
 ---
 状態: 確定
-最終更新: 2026-08-26
+最終更新: 2026-09-28
 ---
 
 # オンボーディング
@@ -36,20 +36,21 @@
 | 「次へ」の帯 | `/ui/button/bottom-bar-primary.png` |
 | スワイプ操作の説明 | `/icon/action/gesture-swipe.png` |
 
-### スマホ枠は代用する
+### スマホ枠
 
-モックでは各スライドにアプリ画面のスマホモックアップが載っているが、
-**アワード用（`/onboarding/award-screen-*.png`）以外は素材が無い。**
+各スライドに、そのスライドが紹介する画面のスマホモックアップを載せる。
+素材は 2026-09-27 受領分（4-1-1）で揃った。**代用は解消済み。**
 
-**全スライドでアワードの画像を代用する。** 新たに画面キャプチャを作らない。
+| スライド | パス |
+|---|---|
+| 1 アプリの機能紹介 | `/onboarding/mockup-home.png` |
+| 2 ビンゴ | `/onboarding/mockup-bingo-card.png` |
+| 3 会場マップ | `/onboarding/mockup-venue-map.png` |
+| 4 アワード投票 | `/onboarding/mockup-award.png` |
 
-- `/onboarding/award-screen-decorated.png` — 装飾つき
-- `/onboarding/award-screen-plain.png` — 装飾なし
+パスは `src/features/onboarding/config/slides.ts` の定数にまとめておくこと。
 
-同じ絵の装飾あり／なしなので、**スライドごとにどちらかを選んで変化を付けてよい。**
-代用であることをコメントに残し、素材受領後に差し替えられるようパスを定数にまとめること。
-
-依頼済みの一覧は assets.md 未受領表を正とする。
+未受領の素材の一覧は assets.md 未受領表を正とする。
 
 ## 決定事項
 

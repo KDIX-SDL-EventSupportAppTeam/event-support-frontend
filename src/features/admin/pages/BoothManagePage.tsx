@@ -14,6 +14,7 @@ import {
 import { fetchV1Booths, type V1BoothListItem } from '@/shared/api/v1Participant'
 import { formatClientError } from '@/shared/lib/formatClientError'
 import { CopyButton } from '@/shared/components/CopyButton'
+import { BoothIcon } from '@/shared/components/booth/BoothIcon'
 
 /** 運営が編集できるブースの1行（display_code は公開、manual_code は秘匿・6桁数字） */
 type BoothRow = V1BoothListItem & { manual_code: string; checkin_url: string }
@@ -138,6 +139,10 @@ export function BoothManagePage() {
   /** 編集開始時点の手動コード。onSaveEdit で「変わったときだけ」送るための比較元 */
   const [editOriginalManualCode, setEditOriginalManualCode] = useState('')
   const [error, setError] = useState<string | null>(null)
+  // 編集フォームのエラーは行の中に出す（手動 E2E NG-12: 最上部の alert は下の行を編集中だと画面外で見えなかった）
+  const [editError, setEditError] = useState<string | null>(null)
+  // 削除失敗のエラーは該当行の中に出す（手動 E2E NG-13: 最上部の alert は下の行だと画面外で見えなかった。NG-12 の editError と同じ構造）
+  const [deleteError, setDeleteError] = useState<{ boothId: string; message: string } | null>(null)
   const [showForm, setShowForm] = useState(false)
 
   async function reload() {
@@ -180,6 +185,7 @@ export function BoothManagePage() {
       setNewForm(EMPTY_FORM)
       setShowForm(false)
       setError(null)
+      setDeleteError(null)
       await reload()
     } catch (err) {
       setError(formatClientError(err, '作成に失敗しました'))
@@ -188,6 +194,8 @@ export function BoothManagePage() {
 
   function startEdit(b: BoothRow) {
     setEditId(b.id)
+    setEditError(null)
+    setDeleteError(null)
     setEditOriginalManualCode(b.manual_code ?? '')
     setEditForm({
       name: b.name,
@@ -205,7 +213,7 @@ export function BoothManagePage() {
     // 開始時点から変わったときだけ検証・送信する（未変更なら手動コードは触らない）
     const manualChanged = manual !== editOriginalManualCode.trim()
     if (manualChanged && !MANUAL_CODE_RE.test(manual)) {
-      setError('手動コードは6桁の数字で入力してください')
+      setEditError('手動コードは6桁の数字で入力してください')
       return
     }
     try {
@@ -219,20 +227,21 @@ export function BoothManagePage() {
         ...(manualChanged ? { manual_code: manual } : {}),
       })
       setEditId(null)
-      setError(null)
+      setEditError(null)
       await reload()
     } catch (err) {
-      setError(formatClientError(err, '更新に失敗しました'))
+      setEditError(formatClientError(err, '更新に失敗しました'))
     }
   }
 
   async function onDelete(boothId: string) {
     if (!eventId || !confirm('このブースを削除しますか？')) return
+    setDeleteError(null)
     try {
       await deleteAdminBooth(eventId, boothId)
       await reload()
     } catch (err) {
-      setError(formatClientError(err, '削除に失敗しました'))
+      setDeleteError({ boothId, message: formatClientError(err, '削除に失敗しました') })
     }
   }
 
@@ -247,6 +256,7 @@ export function BoothManagePage() {
     try {
       await regenerateBoothManualCode(eventId, booth.id)
       setError(null)
+      setDeleteError(null)
       await reload()
     } catch (err) {
       setError(formatClientError(err, '再発番に失敗しました'))
@@ -353,6 +363,12 @@ export function BoothManagePage() {
                     categories={categories}
                     showManualCode
                   />
+                  {editError && (
+                    <div className="alert alert-danger d-flex align-items-center gap-2 mt-3 mb-0 py-2">
+                      <i className="bi bi-exclamation-triangle-fill" />
+                      {editError}
+                    </div>
+                  )}
                   <div className="mt-2 d-flex gap-2">
                     <button type="button" className="btn btn-sm btn-primary" onClick={() => onSaveEdit(b.id)}>
                       <i className="bi bi-check-lg me-1" />
@@ -361,7 +377,10 @@ export function BoothManagePage() {
                     <button
                       type="button"
                       className="btn btn-sm btn-outline-secondary"
-                      onClick={() => setEditId(null)}
+                      onClick={() => {
+                        setEditId(null)
+                        setEditError(null)
+                      }}
                     >
                       キャンセル
                     </button>
@@ -370,6 +389,7 @@ export function BoothManagePage() {
               ) : (
                 <div key={b.id} className="list-group-item p-3">
                   <div className="d-flex align-items-start gap-3">
+                    <BoothIcon displayCode={b.display_code} size="2.5rem" />
                     <div className="flex-grow-1 min-w-0">
                       <div className="d-flex align-items-center gap-2 flex-wrap">
                         <span className="fw-semibold">{b.name}</span>
@@ -433,7 +453,8 @@ export function BoothManagePage() {
                           className="btn btn-sm btn-outline-primary"
                           onClick={() => startEdit(b)}
                         >
-                          <i className="bi bi-pencil" />
+                          <i className="bi bi-pencil me-1" />
+                          編集
                         </button>
                         <button
                           type="button"
@@ -454,6 +475,12 @@ export function BoothManagePage() {
                       </div>
                     )}
                   </div>
+                  {deleteError && deleteError.boothId === b.id && (
+                    <div className="alert alert-danger d-flex align-items-center gap-2 mt-3 mb-0 py-2">
+                      <i className="bi bi-exclamation-triangle-fill" />
+                      {deleteError.message}
+                    </div>
+                  )}
                 </div>
               ),
             )}

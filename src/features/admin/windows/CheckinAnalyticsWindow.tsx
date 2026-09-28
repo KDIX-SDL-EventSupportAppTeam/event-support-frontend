@@ -21,7 +21,7 @@ import {
   type CheckinAnalytics,
   type CheckinNewEvent,
 } from '@/shared/api/v1Admin'
-import { connectSocket, disconnectSocket } from '@/shared/api/socket'
+import { subscribeSocket } from '@/shared/api/socket'
 import { useAuthStore } from '@/shared/auth/authStore'
 
 const METHOD_COLORS = ['#0d6efd', '#fd7e14']
@@ -54,9 +54,7 @@ export const CheckinAnalyticsWindow = memo(function CheckinAnalyticsWindow({
   }, [data])
 
   useEffect(() => {
-    if (!active || !token || !eventId) return
-    const apiBase = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
-    const socket = connectSocket(token, apiBase)
+    if (!active || !eventId) return
     const onNew = (payload: CheckinNewEvent) => {
       setRecent((prev) =>
         [
@@ -71,12 +69,8 @@ export const CheckinAnalyticsWindow = memo(function CheckinAnalyticsWindow({
         ].slice(0, 20),
       )
     }
-    socket.on('checkin:new', onNew)
-    return () => {
-      socket.off('checkin:new', onNew)
-      disconnectSocket()
-    }
-  }, [active, token, eventId])
+    return subscribeSocket('checkin:new', onNew as (...args: unknown[]) => void)
+  }, [active, eventId])
 
   const methodPie = data
     ? [

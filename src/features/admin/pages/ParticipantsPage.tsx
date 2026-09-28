@@ -107,7 +107,8 @@ export function ParticipantsPage() {
                   className="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0"
                   style={{ width: 36, height: 36, fontSize: '0.85rem' }}
                 >
-                  {(p.display_name ?? p.email)[0]?.toUpperCase()}
+                  {/* 絵文字などサロゲートペアの文字が化けないよう、UTF-16 単位ではなくコードポイント単位で先頭 1 文字を取る（手動 E2E NG-14） */}
+                  {Array.from(p.display_name ?? p.email)[0]?.toUpperCase()}
                 </div>
                 <div className="flex-grow-1 min-w-0">
                   <div className="fw-semibold">{p.display_name ?? '—'}</div>

@@ -1,4 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import {
+  UNLOCK_MODAL_AUTO_CLOSE_MS,
+  UNLOCK_MODAL_BUTTON_ENABLE_MS,
+  UNLOCK_MODAL_IMAGE,
+  unlockModalMessage,
+} from '@/features/home/components/bingo/unlockModalCopy'
 
 type Props = {
   /** 今回の解放で開いた外周マスの position（`unlocked_positions` / `released_positions`）。 */
@@ -7,33 +13,45 @@ type Props = {
 }
 
 /**
- * 外周マス解放演出（1回分）。
+ * 外周マス解放の通知モーダル（1回分）。
  * 仕様: docs/specs/bingo-dynamic-unlock/02-unlock-animation.md
  *
- * 解放は最大3回起きるため、1回分の演出だけを描画する。呼び出し側が
- * `pair_key` ごとに未再生の解放イベントをキューにして、1つずつこのコンポーネントを表示する。
- * スキップ可能。演出中も操作を完全にブロックしない（オーバーレイのボタンは常に押せる）。
+ * 解放は最大3回起きるため、1回分だけを描画する。呼び出し側が `pair_key` ごとに
+ * 未再生の解放イベントをキューにして、1つずつこのコンポーネントを表示する。
+ * バーストアニメーションは廃止し、静止画1枚＋文言＋「閉じる」の構成にした（issue #148）。
+ * 自動クローズは残す（操作を無期限に奪わないため。02-unlock-animation.md「起きてはいけないこと」）。
  */
 export function UnlockAnimation({ positions, onDone }: Props) {
+  const [closable, setClosable] = useState(false)
+
   useEffect(() => {
-    const timer = window.setTimeout(onDone, 2200)
-    return () => window.clearTimeout(timer)
+    const enableTimer = window.setTimeout(() => setClosable(true), UNLOCK_MODAL_BUTTON_ENABLE_MS)
+    const closeTimer = window.setTimeout(onDone, UNLOCK_MODAL_AUTO_CLOSE_MS)
+    return () => {
+      window.clearTimeout(enableTimer)
+      window.clearTimeout(closeTimer)
+    }
   }, [onDone])
 
   const count = positions.length
 
   return (
-    <div className="modal-overlay bingo-unlock-overlay" role="dialog" aria-modal="true" aria-label="ビンゴカード解放演出">
-      <div className="bingo-unlock-burst" aria-hidden>
-        {positions.map((position, i) => (
-          <span key={position} className="bingo-unlock-piece" style={{ animationDelay: `${i * 40}ms` }} />
-        ))}
-      </div>
+    <div
+      className="modal-overlay bingo-unlock-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="bingo-unlock-title"
+    >
+      {/* 装飾。情報は文言側に持たせる（既存の modal-popup-image と同じ扱い） */}
+      <img src={UNLOCK_MODAL_IMAGE} alt="" className="bingo-unlock-image" decoding="async" />
       <div className="text-center bingo-unlock-message">
-        <p className="fs-4 fw-bold mb-1">新しいマスが開きました！</p>
-        <p className="mb-3">外周{count}マスが解放されました</p>
-        <button type="button" className="btn btn-light" onClick={onDone}>
-          スキップ
+        <p id="bingo-unlock-title" className="fs-4 fw-bold mb-1">
+          新しいマスが開きました
+        </p>
+        <p className="mb-3">{unlockModalMessage(count)}</p>
+        {/* 最初から同じ位置・同じ大きさで置き、disabled を外すだけにする（押し間違い防止） */}
+        <button type="button" className="btn btn-light" onClick={onDone} disabled={!closable}>
+          閉じる
         </button>
       </div>
     </div>
