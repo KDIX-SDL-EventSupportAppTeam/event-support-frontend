@@ -42,15 +42,18 @@ export function ReturnBeforeLeavingBanner({ state, onVote, onOpenSurveyConfirm }
             </li>
             {state.survey ? (
               <li>
-                {state.survey === 'open' ? (
-                  <button type="button" className="btn btn-sub-action" onClick={onOpenSurveyConfirm}>
-                    <i className="bi bi-clipboard-check me-1" aria-hidden="true" />
-                    イベントアンケート
-                  </button>
-                ) : (
-                  // 「回答済み」とは書かない。外部フォームの回答状況は分からない（surveyOpenedFlag.ts）
-                  <span className="return-banner-done">イベントアンケート（開きました）</span>
-                )}
+                {/*
+                  一度開いたあとも**押せるままにする。** 外部フォームの回答状況は分からないので
+                  （surveyOpenedFlag.ts）、「開きました」は控えめな印であって済み表示ではない。
+                  ここを押せなくすると、開いただけで回答していない参加者が辿り着けなくなる。
+                */}
+                <button type="button" className="btn btn-sub-action" onClick={onOpenSurveyConfirm}>
+                  <i className="bi bi-clipboard-check me-1" aria-hidden="true" />
+                  イベントアンケート
+                  {state.survey === 'opened' ? (
+                    <span className="return-banner-hint">（開きました）</span>
+                  ) : null}
+                </button>
               </li>
             ) : null}
           </ul>

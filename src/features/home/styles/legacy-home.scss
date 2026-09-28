@@ -190,6 +190,13 @@
     min-width: 0;
   }
 
+  // 「開きました」の控えめな印。押せる導線のラベルに添えるだけで、非活性の合図ではない
+  .return-banner-hint {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--pf-ink-muted);
+  }
+
   .return-banner-done {
     display: flex;
     align-items: center;

@@ -16,11 +16,23 @@ export type VoteLinkState =
   /** 受付終了。押せない */
   | 'closed'
 
-/** イベントアンケートの導線の状態。`null` は `survey_url` が無く出さない。 */
+/**
+ * イベントアンケートの導線の状態。`null` は `survey_url` が無く出さない。
+ *
+ * **`'opened'` でもリンクは押せる。** 外部フォームの回答状況は分からないので
+ * （`shared/lib/surveyOpenedFlag.ts`）、`'opened'` は「開きました」という控えめな印にだけ使う。
+ * **分からないものを済み扱いにして入口を閉じてはいけない**（開いただけで回答していない
+ * 参加者がアンケートに辿り着けなくなる。issue #151 の目的＝早期帰宅者からの回収に逆行する）。
+ */
 export type SurveyLinkState = 'open' | 'opened' | null
 
 export type ReturnBannerState = {
-  /** バナー自体を出すか。**どちらも済んだら出さない**（常時表示でも邪魔にならない） */
+  /**
+   * バナー自体を出すか。
+   *
+   * **アンケートの導線がある限り出す。** 畳むのは、アワード投票が押せず（投票済み・受付終了＝
+   * どちらもサーバーが返す事実）かつ `survey_url` が無いときだけ。
+   */
   visible: boolean
   vote: VoteLinkState
   survey: SurveyLinkState
@@ -41,8 +53,8 @@ export function resolveReturnBannerState(args: {
   const vote: VoteLinkState = voted ? 'done' : args.votingOpen === false ? 'closed' : 'open'
   const survey: SurveyLinkState = args.surveyUrl ? (args.surveyOpened ? 'opened' : 'open') : null
 
-  // 押せる導線が1つも無いなら出さない
+  // アワード投票が押せる、またはアンケートの導線がある限りバナーを出す。
+  // アンケートは一度開いたあとも押せるので、survey が 'opened' でも畳まない。
   const voteActionable = vote === 'open'
-  const surveyActionable = survey === 'open'
-  return { visible: voteActionable || surveyActionable, vote, survey }
+  return { visible: voteActionable || survey !== null, vote, survey }
 }

@@ -46,13 +46,30 @@ describe('resolveReturnBannerState', () => {
     expect(s.visible).toBe(true)
   })
 
-  it('両方済みならバナー自体を出さない', () => {
-    expect(
-      resolveReturnBannerState({ ...base, votes: { a: 'b' }, surveyOpened: true }).visible,
-    ).toBe(false)
+  it('一度開いたあともアンケートは押せる（開いた ≠ 回答した）', () => {
+    const s = resolveReturnBannerState({ ...base, surveyOpened: true })
+    expect(s.survey).toBe('opened')
+    expect(s.visible).toBe(true)
   })
 
-  it('投票済み・締切かつ surveyUrl 無しでもバナーを出さない', () => {
+  it('投票済みでも survey_url があればバナーが出る', () => {
+    expect(resolveReturnBannerState({ ...base, votes: { a: 'b' } }).visible).toBe(true)
+    expect(
+      resolveReturnBannerState({ ...base, votes: { a: 'b' }, surveyOpened: true }).visible,
+    ).toBe(true)
+  })
+
+  it('起きてはいけないこと: 一度開いただけでアンケートの入口が閉じる', () => {
+    for (const votes of [null, {}, { a: 'b' }]) {
+      for (const votingOpen of [true, false, null]) {
+        const s = resolveReturnBannerState({ ...base, votes, votingOpen, surveyOpened: true })
+        expect(s.visible).toBe(true)
+        expect(s.survey).not.toBeNull()
+      }
+    }
+  })
+
+  it('投票済み・締切かつ surveyUrl 無しならバナーを出さない（畳むのはこの場合だけ）', () => {
     expect(resolveReturnBannerState({ ...base, votes: { a: 'b' }, surveyUrl: null }).visible).toBe(false)
     expect(resolveReturnBannerState({ ...base, votingOpen: false, surveyUrl: null }).visible).toBe(false)
   })
@@ -88,6 +105,12 @@ describe('ホームの導線（issue #151）', () => {
   it('見出しに「閉会式を待たずに」と書いていない（離脱を促さない）', () => {
     expect(bannerCode).toContain('お帰りの前に')
     expect(bannerCode).not.toContain('閉会式')
+  })
+
+  it('アンケートは常に button（非活性の span にしない）', () => {
+    const surveyBlock = bannerCode.slice(bannerCode.indexOf('{state.survey ?'))
+    expect(surveyBlock).toContain('onClick={onOpenSurveyConfirm}')
+    expect(surveyBlock).not.toContain('return-banner-done')
   })
 
   it('起きてはいけないこと: 投票済みを localStorage で捏造する', () => {
