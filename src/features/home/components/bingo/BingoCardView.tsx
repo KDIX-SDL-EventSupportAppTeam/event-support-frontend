@@ -6,6 +6,7 @@ import type { BingoCard, BingoCell } from '@/shared/types/bingoCard'
 import { BingoCellView } from '@/features/home/components/bingo/BingoCellView'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
 import { BingoProgressStepper } from '@/features/home/components/bingo/BingoProgressStepper'
+import { bingoGuideMessage } from '@/features/home/components/bingo/bingoGuideMessage'
 import { Modal } from '@/shared/components/modal/Modal'
 import { BoothIcon } from '@/shared/components/booth/BoothIcon'
 import { useLaterRating } from '@/features/checkin/hooks/useLaterRating'
@@ -51,12 +52,9 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
   const isRated = (cell: BingoCell) =>
     cell.is_achieved && Boolean(cell.booth) && ratedByBoothId.get(cell.booth!.id) === true
 
-  const guideMessage =
-    card.progress.center_achieved < 2
-      ? '気になるブースを回ってみよう'
-      : card.progress.revealed_cells > card.progress.center_total
-        ? '新しいマスが開きました。開いたマスのブースに行ってみよう'
-        : '気になるブースを回ってみよう'
+  // 誘導文は1行に集約する（issue #147 でサマリを削り、issue #146 で中身を入れた）。
+  // 解放直後の通知は UnlockAnimation が全画面で出すので、ここでは繰り返さない。
+  const guideMessage = bingoGuideMessage(card)
 
   return (
     <div className="bingo-card-v2">
@@ -71,12 +69,6 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
       <p className="bingo-unlock-guide mb-2">{guideMessage}</p>
 
       <BingoProgressStepper current={card.lines_completed} max={MAX_GACHAPON_COINS} />
-
-      <div className="bingo-progress small text-muted mb-2">
-        中央 {card.progress.center_achieved}/{card.progress.center_total} ・ 開放
-        {card.progress.revealed_cells}マス ・ 達成{card.progress.achieved_cells}マス ・ ビンゴ
-        {card.lines_completed}本
-      </div>
 
       <div className="row g-1 g-sm-2 mt-1">
         {card.cells.map((cell) => (

@@ -170,7 +170,7 @@ public/
 | `bingo/bingo-grid-filled.png` | ビンゴ盤（全マス埋まった達成イラスト） |
 | `bingo/bingo-cell-stamp.png` | 埋まったマスのキャラスタンプ |
 | `bingo/bingo-cell-star.png` | 埋まったマスの星＋紙吹雪 |
-| `bingo/bingo-line-badge.png` | ビンゴ成立バッジ（星入りグリッド） |
+| `bingo/bingo-line-badge.png` | ビンゴ成立バッジ（星入りグリッド）。**ビンゴ達成モーダルで目標本数に届くまでの絵**（文字が入っていない） |
 | `gacha/coin.png` | ガチャコイン（金）。`/gachapon/use` の所持枚数表示 |
 | `map/booth-number-card.png` | ブース番号カード |
 
