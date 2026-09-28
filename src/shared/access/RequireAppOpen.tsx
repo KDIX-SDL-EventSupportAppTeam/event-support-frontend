@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
-import { fetchAppAccess } from '@/shared/api/appAccess'
 import { fetchMeState } from '@/features/entry/api/meState'
 import { useAuthStore } from '@/shared/auth/authStore'
 
@@ -35,20 +34,17 @@ export function RequireAppOpen() {
   const [checked, setChecked] = useState(false)
 
   useEffect(() => {
-    if (!eventId) {
+    if (!eventId || role === 'exhibitor') {
       setChecked(true)
       return
     }
     let active = true
     setChecked(false)
     setGate(null)
-    const request: Promise<GateResult> =
-      role === 'exhibitor'
-        ? fetchAppAccess(eventId).then((a) => ({ isOpen: a.is_open, surveyAnswered: true }))
-        : fetchMeState(eventId).then((s) => ({
-            isOpen: s.app_access.is_open,
-            surveyAnswered: s.survey_answered,
-          }))
+    const request: Promise<GateResult> = fetchMeState(eventId).then((s) => ({
+      isOpen: s.app_access.is_open,
+      surveyAnswered: s.survey_answered,
+    }))
     request
       .then((g) => {
         if (active) setGate(g)
@@ -65,6 +61,9 @@ export function RequireAppOpen() {
   }, [eventId, role])
 
   if (!checked) return null
+  // 参加者専用ルート配下。出展者トークンは参加者画面に入れず出展者画面へ戻す
+  // （fetchAppAccess を介した誤許可・フラッシュ→バウンスの原因だったため明示的に拒否する）。
+  if (role === 'exhibitor') return <Navigate to="/exhibitor" replace />
   // 取得できなかった場合（gate が null）は締め出さない。
   // ここで undefined を踏んでアプリ全体が白画面になるのを防ぐ。
   if (eventId && gate && (!gate.isOpen || !gate.surveyAnswered)) {
