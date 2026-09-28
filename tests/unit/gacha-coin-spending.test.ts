@@ -47,18 +47,28 @@ function fakeServer(available: number) {
   }
 }
 
+/** サーバー（`z.string().uuid()`）が通す形。04-api/participant-api.md の INVALID_BODY を避ける。 */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
 describe('buildIdempotencyKeys', () => {
-  it('操作ID + ":" + 通し番号（1 起点）', () => {
-    expect(buildIdempotencyKeys('op', 2)).toEqual(['op:1', 'op:2'])
+  it('枚数ぶんのキーを作る', () => {
+    expect(buildIdempotencyKeys(2)).toHaveLength(2)
   })
 
-  it('同じ操作IDと同じ枚数なら同じキー列になる（再試行で枚数が増えない）', () => {
-    expect(buildIdempotencyKeys('op', 3)).toEqual(buildIdempotencyKeys('op', 3))
+  it('起きてはいけないこと: UUID 形式でないキーを送る（サーバーが 400 INVALID_BODY を返す）', () => {
+    for (const key of buildIdempotencyKeys(4)) {
+      expect(key).toMatch(UUID)
+    }
   })
 
   it('起きてはいけないこと: キーが重複する（1リクエストぶんしか成立しなくなる）', () => {
-    const keys = buildIdempotencyKeys('op', 4)
+    const keys = buildIdempotencyKeys(4)
     expect(new Set(keys).size).toBe(4)
+  })
+
+  it('生成関数を差し替えられる（テスト・再現用）', () => {
+    let n = 0
+    expect(buildIdempotencyKeys(2, () => `k${(n += 1)}`)).toEqual(['k1', 'k2'])
   })
 })
 
@@ -77,8 +87,8 @@ describe('clampCoinCount', () => {
 describe('spendCoins', () => {
   it('2枚指定すると1枚消費 API を2回、別の冪等キーで逐次呼ぶ', async () => {
     const server = fakeServer(4)
-    const out = await spendCoins({ count: 2, operationId: 'op', useCoin: server.useCoin })
-    expect(server.calls).toEqual(['op:1', 'op:2'])
+    const out = await spendCoins({ keys: ['op-1', 'op-2'], useCoin: server.useCoin })
+    expect(server.calls).toEqual(['op-1', 'op-2'])
     expect(server.ledgerSize).toBe(2)
     expect(out.summary?.used_count).toBe(2)
     expect(out.summary?.coin_indexes).toEqual([0, 1])
@@ -87,15 +97,23 @@ describe('spendCoins', () => {
 
   it('二度押ししても消費枚数が指定枚数を超えない（冪等キーが効く）', async () => {
     const server = fakeServer(4)
-    await spendCoins({ count: 2, operationId: 'op', useCoin: server.useCoin })
-    const second = await spendCoins({ count: 2, operationId: 'op', useCoin: server.useCoin })
+    await spendCoins({ keys: ['op-1', 'op-2'], useCoin: server.useCoin })
+    const second = await spendCoins({ keys: ['op-1', 'op-2'], useCoin: server.useCoin })
     expect(server.ledgerSize).toBe(2)
     expect(second.summary?.used_count).toBe(2)
   })
 
+  it('生成したキー列をそのまま使う（UUID を送る）', async () => {
+    const server = fakeServer(4)
+    const keys = buildIdempotencyKeys(2)
+    await spendCoins({ keys, useCoin: server.useCoin })
+    expect(server.calls).toEqual(keys)
+    for (const key of server.calls) expect(key).toMatch(UUID)
+  })
+
   it('2枚目で 409 になったら、1枚目は成立したまま止まる', async () => {
     const server = fakeServer(1)
-    const out = await spendCoins({ count: 2, operationId: 'op', useCoin: server.useCoin })
+    const out = await spendCoins({ keys: ['op-1', 'op-2'], useCoin: server.useCoin })
     expect(out.stoppedByNoCoins).toBe(true)
     expect(out.summary?.used_count).toBe(1)
     expect(out.summary?.requested).toBe(2)
@@ -104,7 +122,7 @@ describe('spendCoins', () => {
 
   it('起きてはいけないこと: 成立した分をロールバックする／0枚として扱う', async () => {
     const server = fakeServer(1)
-    const out = await spendCoins({ count: 3, operationId: 'op', useCoin: server.useCoin })
+    const out = await spendCoins({ keys: ['op-1', 'op-2', 'op-3'], useCoin: server.useCoin })
     expect(out.summary).not.toBeNull()
     expect(out.summary?.used_count).toBe(1)
   })
@@ -112,8 +130,7 @@ describe('spendCoins', () => {
   it('409 以外のエラーは error として返し、成立分は保つ', async () => {
     let n = 0
     const out = await spendCoins({
-      count: 2,
-      operationId: 'op',
+      keys: ['op-1', 'op-2'],
       useCoin: async () => {
         n += 1
         if (n === 1) {
@@ -138,7 +155,7 @@ describe('spendCoins', () => {
 
   it('1枚目から 409 のときは summary が null（既存のエラー表示に落ちる）', async () => {
     const server = fakeServer(0)
-    const out = await spendCoins({ count: 1, operationId: 'op', useCoin: server.useCoin })
+    const out = await spendCoins({ keys: ['op-1'], useCoin: server.useCoin })
     expect(out.summary).toBeNull()
     expect(out.stoppedByNoCoins).toBe(true)
   })
@@ -188,8 +205,13 @@ describe('使用確認画面（issue #150）', () => {
     expect(usePage).toContain('使用中…')
   })
 
-  it('枚数を変えたら操作IDを作り直す', () => {
-    expect(usePage).toContain('setOperationId(crypto.randomUUID())')
+  it('枚数を変えたら冪等キー列を作り直す', () => {
+    expect(usePage).toContain('setIdempotencyKeys(buildIdempotencyKeys(clamped))')
+  })
+
+  it('起きてはいけないこと: UUID でない派生キー（<uuid>:1 など）を組み立てる', () => {
+    expect(usePage).not.toMatch(/`\$\{[A-Za-z]+\}:\$\{/)
+    expect(usePage).not.toContain("+ ':' +")
   })
 
   it('完了画面へは履歴を置換して遷移する', () => {

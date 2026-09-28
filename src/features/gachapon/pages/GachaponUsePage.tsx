@@ -7,7 +7,7 @@ import {
   GACHA_DISABLED,
   type GachaCoins,
 } from '@/features/gachapon/api/gachaClient'
-import { clampCoinCount, spendCoins } from '@/features/gachapon/lib/coinSpending'
+import { buildIdempotencyKeys, clampCoinCount, spendCoins } from '@/features/gachapon/lib/coinSpending'
 
 /**
  * 使用確認画面。GET で枚数を出し、確定で**指定枚数ぶん**1枚消費 API を逐次 POST する（issue #150）。
@@ -15,7 +15,8 @@ import { clampCoinCount, spendCoins } from '@/features/gachapon/lib/coinSpending
  * - 枚数はステッパー（`− n +`）で選ぶ。**手動入力は採らない**（上限4枚で桁を意識させる意味が無い）
  * - 上限は**サーバーが返した `coins.available`**。`MAX_GACHAPON_COINS` をここの判定に使わない
  * - `available` が1枚のときはステッパーを出さず、従来どおりの1枚フロー
- * - 冪等キーは枚数ぶん別に持つ（`操作ID:通し番号`）。**枚数を変えたら操作IDから作り直す**（G-5）
+ * - 冪等キーは枚数ぶん別に持つ（**1枚につき1個の UUID**。サーバーが UUID 形式で検証する）。
+ *   キー列は状態として保持し、同じ枚数の再試行では同じ列を送る。**枚数を変えたら作り直す**（G-5）
  * - 確認は1段のみ（二重確認モーダルは重ねない）
  * - 「n枚使う」は押下直後に disabled にし、ラベルを「使用中…」に変える
  * - 残り0枚のときは使用ボタンを表示しない（disabled ではなく非表示）
@@ -26,8 +27,9 @@ export function GachaponUsePage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
   const userId = useAuthStore((s) => s.user?.id)
 
-  // 操作ID。同じ枚数での再試行では使い回し、**枚数を変えたら作り直す**（別の操作として扱う）。
-  const [operationId, setOperationId] = useState(() => crypto.randomUUID())
+  // 冪等キー列（1枚 = 1 UUID）。同じ枚数での再試行では使い回し、
+  // **枚数を変えたら作り直す**（別の操作として扱う）。
+  const [idempotencyKeys, setIdempotencyKeys] = useState<string[]>(() => buildIdempotencyKeys(1))
 
   const [coins, setCoins] = useState<GachaCoins | null>(null)
   const [count, setCount] = useState(1)
@@ -68,7 +70,7 @@ export function GachaponUsePage() {
     if (clamped === count) return
     setCount(clamped)
     // 枚数が変わったら冪等キー列を作り直す（前の枚数のキーを流用すると成立済み扱いになる）
-    setOperationId(crypto.randomUUID())
+    setIdempotencyKeys(buildIdempotencyKeys(clamped))
     setErrorMessage('')
   }
 
@@ -79,9 +81,16 @@ export function GachaponUsePage() {
     setUsing(true) // 押下直後に disabled
     setErrorMessage('')
 
+    // 保持しているキー列を使う（再試行でも同じ列 → サーバーが成立済みとして 200 を返し枚数が増えない）。
+    // 枚数とキー列の数がずれたときだけ作り直す（available が減って詰められた場合）
+    let keys = idempotencyKeys
+    if (keys.length !== requested) {
+      keys = buildIdempotencyKeys(requested)
+      setIdempotencyKeys(keys)
+    }
+
     const { summary, stoppedByNoCoins, error } = await spendCoins({
-      count: requested,
-      operationId,
+      keys,
       useCoin: (key) => client.useCoin(eventId, userId, key),
     })
 
@@ -105,7 +114,7 @@ export function GachaponUsePage() {
       return
     }
     setErrorMessage('コインの使用に失敗しました。もう一度お試しください。')
-    // 同じ枚数・同じ操作IDで再試行できる（冪等キーが同じなので枚数は増えない）
+    // 同じ枚数・同じキー列で再試行できる（冪等キーが同じなので枚数は増えない）
   }
 
   const backButton = (

@@ -27,14 +27,22 @@ export type GachaSpendSummary = {
 }
 
 /**
- * 冪等キーの列。**操作ID + ":" + 通し番号**（1 起点）。
+ * 冪等キーの列。**1枚につき1個の UUID。**
  *
- * 同じ操作IDと同じ枚数なら必ず同じキー列になるので、通信エラーで再試行しても
- * サーバーは成立済みの分を `200` で返し、**枚数が増えない**。
- * 枚数を変えたときは呼び出し側が操作IDを作り直す（別の操作として扱う）。
+ * **サーバーは `idempotency_key` を UUID 形式で検証する**（`src/routes/v1/gacha.ts` の
+ * `z.string().uuid()`。形式違反は 400 `INVALID_BODY`。正本は
+ * `docs/specs/gacha-and-award/04-api/participant-api.md`）。
+ * そのため `<操作ID>:<通し番号>` のような派生キーは使えない。**枚数ぶんの UUID を生成する。**
+ *
+ * 呼び出し側は生成したキー列を**画面の状態として保持する**。そうすることで
+ * 同じ枚数での再試行では同じキー列が送られ、サーバーは成立済みの分を `200` で返すので
+ * **枚数が増えない**。枚数を変えたときは呼び出し側がキー列を作り直す（別の操作として扱う）。
  */
-export function buildIdempotencyKeys(operationId: string, count: number): string[] {
-  return Array.from({ length: Math.max(0, count) }, (_, i) => `${operationId}:${i + 1}`)
+export function buildIdempotencyKeys(
+  count: number,
+  newUuid: () => string = () => crypto.randomUUID(),
+): string[] {
+  return Array.from({ length: Math.max(0, count) }, () => newUuid())
 }
 
 /** 枚数の指定を 1〜available に収める。上限は**サーバーが返した `available`**（定数を使わない）。 */
@@ -58,28 +66,28 @@ export type SpendOutcome = {
  * - それ以外の失敗でも止めるが、**成立した分は成立したまま返す**（取り消せないため）
  */
 export async function spendCoins(args: {
-  count: number
-  operationId: string
+  /** 使う枚数ぶんの冪等キー（`buildIdempotencyKeys`）。**呼び出し側が保持したものをそのまま渡す。** */
+  keys: string[]
   useCoin: (idempotencyKey: string) => Promise<GachaUseResult>
 }): Promise<SpendOutcome> {
-  const keys = buildIdempotencyKeys(args.operationId, args.count)
+  const requested = args.keys.length
   const results: GachaUseResult[] = []
 
-  for (const key of keys) {
+  for (const key of args.keys) {
     try {
       results.push(await args.useCoin(key))
     } catch (e) {
       const err = toApiError(e)
       const noCoins = err instanceof ApiError && err.code === NO_COINS_AVAILABLE
       return {
-        summary: summarize(args.count, results),
+        summary: summarize(requested, results),
         stoppedByNoCoins: noCoins,
         error: noCoins ? null : e,
       }
     }
   }
 
-  return { summary: summarize(args.count, results), stoppedByNoCoins: false, error: null }
+  return { summary: summarize(requested, results), stoppedByNoCoins: false, error: null }
 }
 
 function summarize(requested: number, results: GachaUseResult[]): GachaSpendSummary | null {
