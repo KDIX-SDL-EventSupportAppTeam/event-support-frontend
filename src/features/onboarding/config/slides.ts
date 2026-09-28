@@ -2,14 +2,16 @@
  * オンボーディングのスライド定義。
  * 仕様: docs/specs/design-refresh-2026/06-onboarding.md
  *
- * スマホ画面のモックアップ枠は、装飾つき/なしの2種類のアワード投票画面
- * （`onboarding/award-screen-*.png`）を全スライドで代用している（素材未受領のため）。
- * 差し替えが必要になったら、このファイルの `mockup` だけを直せばよい。
+ * スマホ画面のモックアップ枠は、2026-09-27 受領のチュートリアル埋め込み素材
+ * （`onboarding/mockup-*.png`）をスライドごとに使い分ける。
+ * 代用していたアワード投票画面（`onboarding/award-screen-*.png`）は解消済み。
  */
 
-/** 代用素材（アワード投票画面）。装飾つき/なしの2種類しかない。 */
-const MOCKUP_DECORATED = '/onboarding/award-screen-decorated.png'
-const MOCKUP_PLAIN = '/onboarding/award-screen-plain.png'
+/** スライドごとのスマホモックアップ。素材の対応は docs/reference/assets.md を見ること。 */
+const MOCKUP_HOME = '/onboarding/mockup-home.png'
+const MOCKUP_BINGO_CARD = '/onboarding/mockup-bingo-card.png'
+const MOCKUP_VENUE_MAP = '/onboarding/mockup-venue-map.png'
+const MOCKUP_AWARD = '/onboarding/mockup-award.png'
 
 export type OnboardingSlide = {
   id: string
@@ -17,7 +19,7 @@ export type OnboardingSlide = {
   description: string
   /** スライド固有のイラスト（キャラ・図解等） */
   illustrations: { src: string; alt: string; className: string }[]
-  /** 代用中のスマホモックアップ画像。素材受領後はここを差し替える */
+  /** スライドが紹介する画面のスマホモックアップ画像 */
   mockup: { src: string; alt: string }
 }
 
@@ -33,8 +35,7 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
       { src: '/icon/feature/feature-award.png', alt: 'アワード投票', className: 'onboarding-feature-icon' },
       { src: '/icon/feature/feature-schedule.png', alt: 'スケジュール', className: 'onboarding-feature-icon' },
     ],
-    // 代用: 装飾なし版
-    mockup: { src: MOCKUP_PLAIN, alt: '' },
+    mockup: { src: MOCKUP_HOME, alt: 'ホーム画面' },
   },
   {
     id: 'bingo',
@@ -44,8 +45,7 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
       { src: '/onboarding/bingo-flow-steps.png', alt: 'ブース訪問からビンゴ達成までの流れ', className: 'onboarding-flow-image' },
       { src: '/mascot/mascot-cheering.png', alt: '喜ぶマスコット', className: 'onboarding-mascot' },
     ],
-    // 代用: 装飾つき版
-    mockup: { src: MOCKUP_DECORATED, alt: '' },
+    mockup: { src: MOCKUP_BINGO_CARD, alt: 'ビンゴカード画面' },
   },
   {
     id: 'map',
@@ -55,8 +55,7 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
       { src: '/mascot/mascot-with-map.png', alt: '地図を持つマスコット', className: 'onboarding-mascot' },
       { src: '/icon/feature/feature-floor-map.png', alt: 'フロアマップ表示切替', className: 'onboarding-feature-icon' },
     ],
-    // 代用: 装飾なし版
-    mockup: { src: MOCKUP_PLAIN, alt: '' },
+    mockup: { src: MOCKUP_VENUE_MAP, alt: '会場マップ画面' },
   },
   {
     id: 'award',
@@ -65,7 +64,6 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
     illustrations: [
       { src: '/onboarding/award-screen-decorated.png', alt: 'アワード投票画面', className: 'onboarding-award-image' },
     ],
-    // 代用: 装飾つき版
-    mockup: { src: MOCKUP_DECORATED, alt: '' },
+    mockup: { src: MOCKUP_AWARD, alt: 'アワード投票画面' },
   },
 ]

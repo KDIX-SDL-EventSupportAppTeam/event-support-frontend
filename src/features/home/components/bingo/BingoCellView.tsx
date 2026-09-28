@@ -1,4 +1,5 @@
 import type { BingoCell } from '@/shared/types/bingoCard'
+import { BoothIcon } from '@/shared/components/booth/BoothIcon'
 
 type Props = {
   cell: BingoCell
@@ -12,8 +13,11 @@ type Props = {
  * - `is_revealed: false`: 閉じたマス。中身は出さない（サーバーが `booth: null` で返すため中身を補完しない）。
  *   2026年版デザインでは `--pf-surface` の地のみで視覚的なプレースホルダは置かない
  *   （docs/specs/design-refresh-2026/04-home-and-bingo.md）
- * - `is_revealed: true, is_achieved: false`: 開いているが未訪問。ブース名 + 説明
- * - `is_revealed: true, is_achieved: true`: 達成。ブース名 + スタンプ画像
+ * - `is_revealed: true, is_achieved: false`: 開いているが未訪問。ブースアイコン + ブース名
+ * - `is_revealed: true, is_achieved: true`: 達成。ブースアイコン + ブース名 + スタンプ画像
+ *
+ * ブースアイコン（`public/booth/`）は番号が振られているブースにだけ存在する。
+ * 素材が無いマスはアイコン無しのままブース名だけを出す（docs/reference/assets.md「booth」）。
  *
  * 例外として `is_revealed: true` かつ `booth: null` があり得る（サーバー側 E7:
  * INSUFFICIENT_CANDIDATES = 割り当て可能なブースが残っていないまま解放されたマス）。
@@ -84,6 +88,11 @@ export function BingoCellView({ cell, onTap }: Props) {
         <>
           {cell.is_achieved ? (
             <img src="/bingo/bingo-cell-stamp.png" alt="達成" className="bingo-cell-stamp" aria-hidden />
+          ) : null}
+          {/* 達成マスはスタンプが絵柄の役目を果たすので、アイコンは未達成のマスにだけ出す。
+              1マスに両方入れるとマスが小さく（4列）名前まで収まらない */}
+          {!cell.is_achieved ? (
+            <BoothIcon displayCode={cell.booth.display_code} className="bingo-cell-booth-icon" />
           ) : null}
           <span className="bingo-cell-booth-name">{cell.booth.name}</span>
         </>

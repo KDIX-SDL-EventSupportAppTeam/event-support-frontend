@@ -12,6 +12,8 @@ import { useAnalyticsData } from '@/features/admin/hooks/useAnalyticsData'
 import { CHART_ANIMATION_OFF } from '@/features/admin/lib/chartOptions'
 import { fetchBoothAnalytics, type BoothAnalytics } from '@/shared/api/v1Admin'
 import { useAuthStore } from '@/shared/auth/authStore'
+import { useBoothDisplayCodes } from '@/features/admin/hooks/useBoothDisplayCodes'
+import { BoothIcon } from '@/shared/components/booth/BoothIcon'
 
 type SortKey =
   | 'checkin_desc'
@@ -42,16 +44,22 @@ const BoothCard = memo(function BoothCard({
   booth: b,
   maxCheckin,
   avgCheckins,
+  displayCode,
 }: {
   booth: BoothAnalytics['booths'][0]
   maxCheckin: number
   avgCheckins: number
+  /** ブース番号。分析 API が返さないのでブース一覧 API から補う（アイコン用） */
+  displayCode: string | null | undefined
 }) {
   const status = boothStatus(b, avgCheckins)
   return (
     <div className="border rounded p-2 bg-white small" style={{ contentVisibility: 'auto' }}>
       <div className="d-flex justify-content-between align-items-start mb-1">
-        <span className="fw-semibold text-truncate">{b.name}</span>
+        <span className="fw-semibold text-truncate d-flex align-items-center gap-2">
+          <BoothIcon displayCode={displayCode} size="1.75rem" />
+          {b.name}
+        </span>
         {status ? <span className={`badge ${status.className}`}>{status.label}</span> : null}
       </div>
       <div className="text-muted">{b.manual_code}</div>
@@ -105,6 +113,7 @@ export const BoothAnalyticsWindow = memo(function BoothAnalyticsWindow({
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [unvisitedOnly, setUnvisitedOnly] = useState(false)
   const [ratedFilter, setRatedFilter] = useState<'all' | 'rated' | 'unrated'>('all')
+  const boothCodes = useBoothDisplayCodes(eventId, active)
 
   const categories = useMemo(() => {
     if (!data) return []
@@ -243,7 +252,13 @@ export const BoothAnalyticsWindow = memo(function BoothAnalyticsWindow({
             }}
           >
             {filtered.map((b) => (
-              <BoothCard key={b.id} booth={b} maxCheckin={maxCheckin} avgCheckins={avgCheckins} />
+              <BoothCard
+                key={b.id}
+                booth={b}
+                maxCheckin={maxCheckin}
+                avgCheckins={avgCheckins}
+                displayCode={boothCodes.get(b.id)}
+              />
             ))}
           </div>
         </>
