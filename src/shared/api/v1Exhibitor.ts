@@ -12,7 +12,7 @@ export type ExhibitorBoothStats = {
   ratings: {
     count: number
     avg_rating: number | null
-    distribution: Record<number, number> // {1..5: 件数}
+    distribution: Record<number, number> // {1..段階数: 件数}（段階数はサーバー RATING_SCALE 既定4）
   }
   comments: { id: string; rating: number; comment: string; rated_at: string }[]
 }
