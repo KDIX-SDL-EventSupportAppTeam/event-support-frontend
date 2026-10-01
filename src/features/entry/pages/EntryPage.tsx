@@ -49,6 +49,11 @@ export function EntryPage() {
     reload()
   }, [reload])
 
+  // セッションを捨てた（登録し直し・ログアウト）あとに、前のユーザーの進行状態が次のユーザーへ見えないようにする
+  useEffect(() => {
+    if (!hasToken) setMeState(null)
+  }, [hasToken])
+
   /**
    * 開放ゲートの監視は「回答済みなのに未開放」のときだけ動かす。
    * それ以外の段階では待つ理由が無く、30 秒ポーリングは無駄な負荷になる。
