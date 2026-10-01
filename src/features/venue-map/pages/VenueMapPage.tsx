@@ -1,6 +1,4 @@
-// 2026年版の会場マップ素材が未着のため、暫定でビンゴ盤の空グリッド画像を代用する。
-// 差し替え時はこの定数のみを直せばよい（素材は public/map/venue-map.png として置く想定）。
-const VENUE_MAP_IMAGE = '/bingo/bingo-grid-empty.png' // TODO: 会場マップ素材の受領後に差し替え
+const VENUE_MAP_IMAGE = '/map/venue-map.webp'
 
 export function VenueMapPage() {
   return (

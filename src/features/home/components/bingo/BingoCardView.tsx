@@ -7,8 +7,9 @@ import { BingoCellView } from '@/features/home/components/bingo/BingoCellView'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
 import { BingoProgressStepper } from '@/features/home/components/bingo/BingoProgressStepper'
 import { bingoGuideMessage } from '@/features/home/components/bingo/bingoGuideMessage'
+import { useNavigate } from 'react-router-dom'
 import { Modal } from '@/shared/components/modal/Modal'
-import { BoothIcon } from '@/shared/components/booth/BoothIcon'
+import { boothImageSrc } from '@/shared/lib/boothImage'
 import { useLaterRating } from '@/features/checkin/hooks/useLaterRating'
 
 type Props = {
@@ -22,6 +23,7 @@ type Props = {
  * 仕様: docs/specs/bingo-dynamic-unlock/01-card-display.md
  */
 export function BingoCardView({ card, eventId, onRated }: Props) {
+  const navigate = useNavigate()
   const [selectedCell, setSelectedCell] = useState<BingoCell | null>(null)
   // booth_id → 評価済みか。カードが開いたときに1回取得する（issue #115 D2）
   const [ratedByBoothId, setRatedByBoothId] = useState<Map<string, boolean>>(new Map())
@@ -85,19 +87,14 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
           contentClassName="booth-detail-popup text-start"
         >
           <div className="modal-header border-0 pb-0">
-            <h5 id="booth-detail-title" className="modal-title w-100 d-flex align-items-center gap-2">
-              {/* ブース名が無いマスは目印にするアイコンも無いので、見出しは文言だけにする。 */}
-              {selectedCell.booth ? <BoothIcon displayCode={selectedCell.booth.display_code} size="2rem" /> : null}
-              {selectedCell.booth?.name ?? 'すべてのブースを訪問しました'}
-            </h5>
             <button
               type="button"
-              className="btn-close"
+              className="btn-close ms-auto"
               aria-label="閉じる"
               onClick={() => setSelectedCell(null)}
             />
           </div>
-          <div className="modal-body pt-2">
+          <div className="modal-body pt-0">
             {/*
               ブース名が無いマス（is_revealed かつ booth: null。サーバー E7）。
               「ブースが決まらなかった」ではなく**全部回りきった終点**なので、
@@ -115,12 +112,31 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
                 </p>
               </>
             ) : null}
-            {selectedCell.booth?.description ? <p className="mb-2">{selectedCell.booth.description}</p> : null}
+            {selectedCell.booth && boothImageSrc(selectedCell.booth.display_code) ? (
+              <img
+                src={boothImageSrc(selectedCell.booth.display_code)!}
+                alt={selectedCell.booth.name}
+                className="img-fluid rounded mb-3"
+              />
+            ) : null}
+            {selectedCell.booth && !selectedCell.is_achieved ? (
+              <button
+                type="button"
+                className="btn btn-primary w-100 mt-3"
+                onClick={() => {
+                  setSelectedCell(null)
+                  // BoothListPage と同じ理由で booth_id を渡さず QR 読み取り画面へ送る（issue #84）
+                  navigate('/checkin')
+                }}
+              >
+                チェックイン
+              </button>
+            ) : null}
             {canRate(selectedCell) ? (
               <div className="mt-3">
                 <button
                   type="button"
-                  className="btn btn-outline-primary btn-sm"
+                  className="btn btn-outline-primary btn-sm w-100"
                   onClick={() => void rating.open(selectedCell.booth!.id, selectedCell.booth!.name)}
                 >
                   このブースを評価する
@@ -129,11 +145,6 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
               </div>
             ) : null}
             {isRated(selectedCell) ? <p className="text-success small mt-3 mb-0">評価済み</p> : null}
-          </div>
-          <div className="modal-footer border-0 pt-0">
-            <button type="button" className="btn btn-secondary btn-modal-close" onClick={() => setSelectedCell(null)}>
-              閉じる
-            </button>
           </div>
         </Modal>
       ) : null}
