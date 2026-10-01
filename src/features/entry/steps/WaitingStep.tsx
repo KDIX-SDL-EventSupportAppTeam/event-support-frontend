@@ -1,5 +1,6 @@
 import type { AppAccess } from '@/shared/api/appAccess'
 import { EntryLayout } from '@/features/entry/components/EntryLayout'
+import { EntryEscapeActions } from '@/features/entry/components/EntryEscapeActions'
 import { formatOpenSchedule } from '@/features/entry/lib/formatOpenSchedule'
 
 /**
@@ -10,10 +11,13 @@ import { formatOpenSchedule } from '@/features/entry/lib/formatOpenSchedule'
  * この画面は受け取った値を表示するだけにしている。
  */
 export function WaitingStep({
+  eventId,
   access,
   remainingMs,
   error,
 }: {
+  /** 脱出導線（ログアウトして最初からやり直す）が痕跡を消す対象のイベント */
+  eventId: string
   access: AppAccess | null
   remainingMs: number | null
   /**
@@ -47,6 +51,8 @@ export function WaitingStep({
       <p className="text-muted text-center small mt-4 mb-0">
         開放時刻になると、この画面から自動でアプリへ進みます。
       </p>
+      {/* 数日〜数週間続く画面なので、固まったとき自力で抜けられるようにする（issue #173） */}
+      <EntryEscapeActions eventId={eventId} />
     </EntryLayout>
   )
 }

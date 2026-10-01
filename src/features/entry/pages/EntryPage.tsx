@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { completeOnboarding, fetchMeState, type MeState } from '@/features/entry/api/meState'
 import { resolveEntryStep } from '@/features/entry/lib/resolveEntryStep'
 import { EntryLayout } from '@/features/entry/components/EntryLayout'
@@ -10,7 +10,7 @@ import { WaitingStep } from '@/features/entry/steps/WaitingStep'
 import { OnboardingFlow } from '@/features/onboarding/components/OnboardingFlow'
 import { useAppAccess } from '@/shared/hooks/useAppAccess'
 import { useAuthStore } from '@/shared/auth/authStore'
-import { rememberEventId } from '@/shared/lib/lastEventId'
+import { readLastEventId, rememberEventId } from '@/shared/lib/lastEventId'
 
 /**
  * `/e/:eventId` ── 参加者が触る唯一の URL。
@@ -72,16 +72,40 @@ export function EntryPage() {
   })
 
   if (!eventId) {
+    // 配布リンクを紛失した参加者がここで詰まらないよう、戻れる先と問い合わせの案内を出す（issue #173 経路A）
+    const lastEventId = readLastEventId()
     return (
       <EntryLayout title="イベントが指定されていません">
-        <p className="text-center mb-0">お手元の QR コードまたは配布リンクから開いてください。</p>
+        <p className="text-center mb-3">お手元の QR コードまたは配布リンクから開いてください。</p>
+        {lastEventId ? (
+          <div className="d-grid">
+            <Link className="btn btn-primary" to={`/e/${lastEventId}`}>
+              前回のイベントに戻る
+            </Link>
+          </div>
+        ) : null}
+        <p className="text-muted text-center small mt-3 mb-0">
+          リンクが分からない場合は、イベントの運営スタッフにお問い合わせください。
+        </p>
       </EntryLayout>
     )
   }
 
   switch (step) {
     case 'auth':
-      return <AuthStep eventId={eventId} onAuthenticated={reload} />
+      // トークンを持っているのに auth へ戻された＝別イベントのセッションが残っている（経路C）。
+      // 何が起きているか分からない状態を避けるため説明を添える。resolveEntryStep 自体は変えない
+      return (
+        <AuthStep
+          eventId={eventId}
+          onAuthenticated={reload}
+          leadNotice={
+            hasToken && !eventMatches
+              ? '別のイベントのセッションでログイン中です。このイベントに参加するには、もう一度サインインしてください。'
+              : undefined
+          }
+        />
+      )
 
     case 'loading':
       return (
@@ -101,7 +125,7 @@ export function EntryPage() {
       return <SurveyStep eventId={eventId} onAnswered={reload} />
 
     case 'waiting':
-      return <WaitingStep access={access} remainingMs={remainingMs} error={gateError} />
+      return <WaitingStep eventId={eventId} access={access} remainingMs={remainingMs} error={gateError} />
 
     case 'onboarding':
       return (
