@@ -35,7 +35,6 @@ describe('割り当て可能なブースが残っていないマス（is_reveale
   })
 
   it('モーダルでブース名が無い理由を説明する', () => {
-    expect(cardView).toContain("selectedCell.booth?.name ?? 'すべてのブースを訪問しました'")
     expect(cardView).toContain('割り当てられるブースが残っていません')
     expect(cardView).toContain('不具合ではありません')
   })

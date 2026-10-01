@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-do
 import { AdminLoginPage } from '@/features/admin/pages/AdminLoginPage'
 import { AdminMenuPage } from '@/features/admin/pages/AdminMenuPage'
 import { BoothManagePage } from '@/features/admin/pages/BoothManagePage'
+import { BoothBulkRegisterPage } from '@/features/admin/pages/BoothBulkRegisterPage'
 import { BoothQrPrintPage } from '@/features/admin/pages/BoothQrPrintPage'
 import { CategoryManagePage } from '@/features/admin/pages/CategoryManagePage'
 import { DashboardPage } from '@/features/admin/pages/DashboardPage'
@@ -182,6 +183,14 @@ export function AppRoutes() {
         element={
           <RequireAdmin>
             <BoothManagePage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/booths/bulk"
+        element={
+          <RequireAdmin>
+            <BoothBulkRegisterPage />
           </RequireAdmin>
         }
       />

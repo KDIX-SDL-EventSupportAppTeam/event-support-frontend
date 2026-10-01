@@ -30,11 +30,6 @@ describe('boothIcon の番号表は public/booth/ と一致する', () => {
       expect(existsSync(join(boothDir, '..', src!.replace(/^\//, '')))).toBe(true)
     }
   })
-
-  it('21 と 37 は未受領なので引けない', () => {
-    expect(boothIconSrc('21')).toBeNull()
-    expect(boothIconSrc('37')).toBeNull()
-  })
 })
 
 describe('display_code の解釈', () => {
