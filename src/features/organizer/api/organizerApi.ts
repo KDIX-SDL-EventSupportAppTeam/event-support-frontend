@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { useOrganizerStore } from '@/features/organizer/store/organizerStore'
-
-const ORGANIZER_TOKEN_KEY = 'organizer_auth_token'
+import { ORGANIZER_TOKEN_KEY } from '@/shared/config/storageKeys'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
 

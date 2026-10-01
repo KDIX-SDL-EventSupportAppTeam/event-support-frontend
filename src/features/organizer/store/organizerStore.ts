@@ -1,8 +1,6 @@
 import { create } from 'zustand'
 import { isJwtExpired } from '@/shared/auth/authStore'
-
-const ORGANIZER_TOKEN_KEY = 'organizer_auth_token'
-const ORGANIZER_USER_KEY = 'organizer_auth_user'
+import { ORGANIZER_TOKEN_KEY, ORGANIZER_USER_KEY } from '@/shared/config/storageKeys'
 
 export type OrganizerUser = {
   id: string

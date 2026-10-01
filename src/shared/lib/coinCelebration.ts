@@ -1,3 +1,5 @@
+import { eventScopedKey } from '@/shared/config/storageKeys'
+
 /**
  * 「全ガチャコイン獲得」ポップアップの既読管理。
  * 仕様: docs/specs/design-refresh-2026/05-modals.md
@@ -11,7 +13,7 @@
  * 命名・API の作法は `src/shared/lib/onboardingSeen.ts` に倣う。
  * 達成はイベント・ユーザー単位のため、キーに両方を含める（共有端末で他人の達成を出さない）。
  */
-const seenKey = (eventId: string, userId: string) => `coinCompleteSeen_${eventId}_${userId}`
+const seenKey = (eventId: string, userId: string) => eventScopedKey(eventId, userId, 'coin-complete-seen')
 
 /** この端末でまだ「全コイン獲得」を見ていなければ true。 */
 export function hasSeenCoinComplete(eventId: string, userId: string): boolean {

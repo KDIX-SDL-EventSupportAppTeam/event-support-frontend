@@ -1,3 +1,5 @@
+import { eventScopedKey } from '@/shared/config/storageKeys'
+
 /**
  * 「イベントアンケートをこの端末で開いた」の記録（issue #151）。
  *
@@ -9,7 +11,7 @@
  * 命名・API の作法は `src/shared/lib/coinCelebration.ts` に倣う。
  * イベント・ユーザー単位（共有端末で他人の状態を出さない）。
  */
-const openedKey = (eventId: string, userId: string) => `surveyOpened_${eventId}_${userId}`
+const openedKey = (eventId: string, userId: string) => eventScopedKey(eventId, userId, 'survey-opened')
 
 /** この端末でイベントアンケートを開いていれば true。 */
 export function hasOpenedSurvey(eventId: string, userId: string): boolean {
