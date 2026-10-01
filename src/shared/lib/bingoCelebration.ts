@@ -1,3 +1,5 @@
+import { sessionKey } from '@/shared/config/storageKeys'
+
 /**
  * ライン成立演出（ホームの「🎉 BINGO!」モーダル）への受け渡し。
  * 仕様: docs/specs/bingo-dynamic-unlock/03-checkin-flow.md
@@ -5,7 +7,7 @@
  * ガチャは準備中のため、コインの表示・計算は行わない（04-removals.md）。
  * チェックインレスポンスの `new_lines` をそのまま渡す。
  */
-const LINES_KEY = 'newlyCompletedLines'
+const LINES_KEY = sessionKey('new-lines')
 
 /** 今回のチェックインでラインが成立していれば、ホーム側の演出用に記録する。 */
 export function recordBingoCelebration(newLines: number): void {

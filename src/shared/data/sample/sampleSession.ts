@@ -1,9 +1,11 @@
 /** サンプルモード用のブラウザセッション（タブ単位）。本番 API とは無関係。 */
 
-const checkedKey = (userId: string) => `es_sample_checked_${userId}`
-const gachaExtraKey = (userId: string) => `es_sample_gacha_extra_${userId}`
-const cooldownUntilKey = (userId: string) => `es_sample_cooldown_until_${userId}`
-const votesKey = (userId: string) => `es_sample_votes_${userId}`
+import { sessionKey } from '@/shared/config/storageKeys'
+
+const checkedKey = (userId: string) => sessionKey(`sample:checked:${userId}`)
+const gachaExtraKey = (userId: string) => sessionKey(`sample:gacha-extra:${userId}`)
+const cooldownUntilKey = (userId: string) => sessionKey(`sample:cooldown-until:${userId}`)
+const votesKey = (userId: string) => sessionKey(`sample:votes:${userId}`)
 
 function safeParseJson<T>(raw: string | null, fallback: T): T {
   if (!raw) return fallback
