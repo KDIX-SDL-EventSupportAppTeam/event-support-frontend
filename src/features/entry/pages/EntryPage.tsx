@@ -20,6 +20,18 @@ import { readLastEventId, rememberEventId } from '@/shared/lib/lastEventId'
  * これにより、利用者がどこで中断しても同じ URL を踏み直せば続きから再開する
  * （回答から開放まで数日空き、その間に端末が変わり得るため、状態は端末に持たない）。
  */
+/** ホーム画面に追加して standalone で開かれているか（iOS Safari は `navigator.standalone`）。 */
+function isStandaloneDisplay(): boolean {
+  try {
+    return (
+      window.matchMedia?.('(display-mode: standalone)').matches === true ||
+      (navigator as Navigator & { standalone?: boolean }).standalone === true
+    )
+  } catch {
+    return false
+  }
+}
+
 export function EntryPage() {
   const { eventId = '' } = useParams<{ eventId: string }>()
   const navigate = useNavigate()
@@ -79,6 +91,8 @@ export function EntryPage() {
   if (!eventId) {
     // 配布リンクを紛失した参加者がここで詰まらないよう、戻れる先と問い合わせの案内を出す（issue #173 経路A）
     const lastEventId = readLastEventId()
+    // ホーム画面に追加したアプリの起動（manifest の start_url = /e）は、前回のイベントへ自動で戻す（issue #168）
+    if (lastEventId && isStandaloneDisplay()) return <Navigate to={`/e/${lastEventId}`} replace />
     return (
       <EntryLayout title="イベントが指定されていません">
         <p className="text-center mb-3">お手元の QR コードまたは配布リンクから開いてください。</p>
