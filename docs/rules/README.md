@@ -5,6 +5,7 @@
 | ファイル | 内容 |
 |---|---|
 | [git.md](git.md) | ブランチ・コミット・PR |
+| [storage.md](storage.md) | localStorage / sessionStorage のキー規約・`STORAGE_VERSION` を上げる基準 |
 | [coding.md](coding.md) | React / TypeScript の実装規約 |
 | [testing.md](testing.md) | テストの置き場と記録の残し方 |
 | [documentation.md](documentation.md) | ドキュメントの3棚ルールと「棚卸し」 |
