@@ -61,6 +61,7 @@ Vite プロキシ（`vite.config.ts`）: `/api/v1` → `127.0.0.1:3000`、`/api`
 | `/admin/menu` | 運営メニュー（分析ウィンドウ群。サイドバー表示は「分析ボード」） | 閲覧: viewer 可 |
 | `/admin/dashboard` | リアルタイム統計・WebSocket 通知（サイドバー表示は「リアルタイム」） | 閲覧: viewer 可 |
 | `/admin/booths` | ブース CRUD | 閲覧: viewer 可 / 編集・削除: manager のみ |
+| `/admin/booths/bulk` | ブース一括登録（スプレッド風テーブルに直接入力→一括作成。「テンプレートを読み込む」で今回のイベント用39件を流し込める。サイドバー表示は「ブース一括登録」） | manager のみ（viewer はサイドバー非表示・ページ内でも二重にガード） |
 | `/admin/categories` | カテゴリ CRUD | 閲覧: viewer 可 / 編集・削除: manager のみ |
 | `/admin/survey` | アンケート設問 CRUD | 閲覧: viewer 可 / 編集・削除: manager のみ |
 | `/admin/participants` | 参加者一覧・検索・削除 | 閲覧: viewer 可 / 削除: manager のみ |

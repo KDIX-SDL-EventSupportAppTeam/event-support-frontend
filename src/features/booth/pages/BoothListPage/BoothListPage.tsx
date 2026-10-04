@@ -8,6 +8,7 @@ import { fetchV1BingoCard, fetchV1Checkins } from '@/shared/api/v1Participant'
 import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
 import { shouldShowUnratedBadge } from '@/features/booth/lib/boothRatingBadge'
 import { BoothIcon } from '@/shared/components/booth/BoothIcon'
+import { boothImageSrc } from '@/shared/lib/boothImage'
 import '@/features/booth/styles/legacy-booth-list.scss'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
 
@@ -151,22 +152,17 @@ export function BoothListPage() {
         >
           <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title d-flex align-items-center gap-2">
-                  <BoothIcon
-                    displayCode={selected.booth_display_code}
-                    fallback={selected.booth_emoji}
-                    size="2rem"
-                  />
-                  {selected.booth_name}
-                </h5>
-                <button type="button" className="btn-close" aria-label="Close" onClick={() => setSelected(null)} />
+              <div className="modal-header border-0 pb-0">
+                <button type="button" className="btn-close ms-auto" aria-label="Close" onClick={() => setSelected(null)} />
               </div>
-              <div className="modal-body">
-                {selected.booth_image_url ? (
-                  <img src={selected.booth_image_url} alt="" className="img-fluid rounded mb-3" />
+              <div className="modal-body pt-0">
+                {boothImageSrc(selected.booth_display_code) ? (
+                  <img
+                    src={boothImageSrc(selected.booth_display_code)!}
+                    alt={selected.booth_name}
+                    className="img-fluid rounded mb-3"
+                  />
                 ) : null}
-                <p>{selected.booth_description || '説明がありません。'}</p>
                 {!isCheckedIn(selected.booth_id) ? (
                   <button
                     type="button"

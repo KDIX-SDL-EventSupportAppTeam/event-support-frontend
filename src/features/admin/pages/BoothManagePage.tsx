@@ -337,15 +337,23 @@ export function BoothManagePage() {
             ブース一覧
             <span className="badge bg-secondary ms-2">{booths.length}</span>
           </span>
-          {booths.length > 0 ? (
-            <div className="d-flex gap-2 flex-wrap">
-              <Link to="/admin/booths/qr-print" className="btn btn-sm btn-outline-primary">
-                <i className="bi bi-qr-code me-1" />
-                QRコードを一括生成（印刷用）
+          <div className="d-flex gap-2 flex-wrap">
+            {canEdit ? (
+              <Link to="/admin/booths/bulk" className="btn btn-sm btn-outline-primary">
+                <i className="bi bi-table me-1" />
+                ブース一括登録
               </Link>
-              <CopyButton text={exportText} label="一覧をコピー（掲示物作成用）" />
-            </div>
-          ) : null}
+            ) : null}
+            {booths.length > 0 ? (
+              <>
+                <Link to="/admin/booths/qr-print" className="btn btn-sm btn-outline-primary">
+                  <i className="bi bi-qr-code me-1" />
+                  QRコードを一括生成（印刷用）
+                </Link>
+                <CopyButton text={exportText} label="一覧をコピー（掲示物作成用）" />
+              </>
+            ) : null}
+          </div>
         </div>
         {booths.length === 0 ? (
           <div className="card-body text-center text-muted py-5">
