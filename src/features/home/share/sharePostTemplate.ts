@@ -8,7 +8,10 @@
  * issue #63
  */
 
-/** ハッシュタグ（`#` は付けない。X 側で付与される）。フォーマット変更はここを直す。 */
+/**
+ * ハッシュタグ（`#` なし。本文へ入れるときに付ける）。フォーマット変更はここを直す。
+ * X の Intent の `hashtags` パラメータはネイティブアプリに無視されるため、本文に含めて渡す（issue #169）。
+ */
 const HASHTAGS = ['PRoToFES'] as const
 
 export type SharePostParams = {
@@ -19,21 +22,21 @@ export type SharePostParams = {
 }
 
 export type SharePost = {
+  /** URL を除く本文。ハッシュタグを含む */
   text: string
-  hashtags: string[]
   url?: string
 }
 
 /**
  * パラメータからポスト内容を組み立てる純関数。
- * `text` に URL・ハッシュタグは含めない（`xShare` が `url` / `hashtags` パラメータとして組み立てる）。
+ * `text` にハッシュタグを含める（`xShare` は `hashtags` パラメータを持たない）。URL は含めない（`url` パラメータで渡す）。
  */
 export function buildSharePost({ eventName, shareUrl }: SharePostParams = {}): SharePost {
   const name = eventName?.trim() || 'イベント'
   const url = shareUrl?.trim() || undefined
+  const tags = HASHTAGS.map((t) => `#${t}`).join(' ')
   return {
-    text: `${name}に参加中！ ブースをまわってビンゴを埋めよう🎯`,
-    hashtags: [...HASHTAGS],
+    text: `${name}に参加中！ ブースをまわってビンゴを埋めよう🎯\n${tags}`,
     url,
   }
 }
