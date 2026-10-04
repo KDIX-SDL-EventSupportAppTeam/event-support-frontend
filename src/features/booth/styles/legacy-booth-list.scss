@@ -12,18 +12,28 @@
     font-weight: bold;
   }
 
-  .sort-container {
-    text-align: right;
+  .remaining-count {
+    font-weight: bold;
+    font-size: 0.95rem;
   }
 
-  .sort-button {
+  // 3 択のセグメント。375px 幅（iPhone SE 相当）でも折り返さず収まるよう等幅で並べる
+  .filter-segment {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .filter-segment__button {
+    flex: 1 1 0;
+    min-width: 0;
     border: 1px solid #ccc;
     background-color: #fff;
-    font-size: 0.9rem;
-    padding: 0.25rem 0.75rem;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.25rem;
+    white-space: nowrap;
   }
 
-  .sort-button.active {
+  .filter-segment__button.active {
     background-color: #0d6efd;
     color: #fff;
     border-color: #0d6efd;
