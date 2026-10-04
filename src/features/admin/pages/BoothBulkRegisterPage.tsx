@@ -55,6 +55,11 @@ export function BoothBulkRegisterPage() {
       .catch((e) => setCategoriesError(formatClientError(e, 'カテゴリ一覧の取得に失敗しました')))
   }, [eventId])
 
+  // フックは早期 return より前に置く（react-hooks/rules-of-hooks）
+  const validated = useMemo(() => validateBoothBulkRows(rows), [rows])
+  const submittable = useMemo(() => submittableBoothBulkRows(validated), [validated])
+  const errorRowCount = validated.filter((r) => !r.isBlank && r.errors.length > 0).length
+
   if (!isManager) {
     return (
       <AdminShell title="ブース一括登録">
@@ -65,10 +70,6 @@ export function BoothBulkRegisterPage() {
       </AdminShell>
     )
   }
-
-  const validated = useMemo(() => validateBoothBulkRows(rows), [rows])
-  const submittable = useMemo(() => submittableBoothBulkRows(validated), [validated])
-  const errorRowCount = validated.filter((r) => !r.isBlank && r.errors.length > 0).length
 
   function updateRow(key: string, patch: Partial<BoothBulkRow>) {
     setRows((prev) => prev.map((r) => (r.key === key ? { ...r, ...patch } : r)))
