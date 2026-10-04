@@ -63,7 +63,32 @@
   align-items: center;
   justify-content: center;
   height: 100%;
+  // タップ領域を 44px 以上に保証する（--pf-nav-height は 5.6rem なので通常は余る。値を変えたときの保険）
+  min-height: 44px;
+  min-width: 44px;
   border-radius: var(--pf-radius-pill);
+  // 自前の押下フィードバックと OS 既定のハイライトが二重に出ないようにする
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.08s ease-out, background-color 0.12s ease-out;
+
+  // 押した反応。中央FAB は親の .bottom-nav__item--fab に translateY が掛かっていて、
+  // link 側の scale とは干渉しない
+  &:active {
+    transform: scale(0.92);
+  }
+
+  // 選択中の項目。クラスは以前から付いていたがルールが無く、見た目は何も変わっていなかった（issue #176）。
+  // ピルの背景色は専用トークンが無いため、既存の --pf-orange を薄めて使う（新しい生の色値は増やさない）。
+  // color-mix 非対応の古いブラウザ向けに、既存トークン --pf-cream を先に敷く
+  &--active {
+    background-color: var(--pf-cream);
+    background-color: color-mix(in srgb, var(--pf-orange) 18%, transparent);
+
+    .bottom-nav__label {
+      font-weight: 700;
+      color: var(--pf-ink-strong);
+    }
+  }
 
   &:focus-visible {
     outline: 3px solid var(--pf-orange);
@@ -86,6 +111,25 @@
   // 中央FABだけは飛び出す演出のため、他項目よりひとまわり大きく見せる
   width: var(--pf-nav-fab-size);
   height: var(--pf-nav-fab-size);
+}
+
+.bottom-nav__item--fab .bottom-nav__link:active {
+  transform: scale(0.9);
+}
+
+// 動きを減らす設定の利用者には、縮むアニメーションを出さない
+@media (prefers-reduced-motion: reduce) {
+  .bottom-nav__link {
+    transition: none;
+
+    &:active {
+      transform: none;
+    }
+  }
+
+  .bottom-nav__item--fab .bottom-nav__link:active {
+    transform: none;
+  }
 }
 
 .bottom-nav__label {
