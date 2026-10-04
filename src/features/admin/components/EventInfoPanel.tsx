@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { updateAdminEvent, type AdminEvent } from '@/shared/api/v1Admin'
 import { formatClientError } from '@/shared/lib/formatClientError'
+import { validateSurveyUrl } from '@/shared/lib/validateSurveyUrl'
 import { eventStatus, formatRemaining } from '@/shared/lib/eventStatus'
 import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
 import { fetchAdminEventCached, useAdminMenuStore } from '@/features/admin/store/adminMenuStore'
@@ -53,9 +54,13 @@ export function EventInfoPanel({ eventId }: EventInfoPanelProps) {
       setSaveError('イベント名は必須です')
       return
     }
-    if (field === 'survey_url' && value && !/^https?:\/\//.test(value)) {
-      setSaveError('アンケートURLは http(s):// で始めてください')
-      return
+    if (field === 'survey_url' && value) {
+      // サーバーの検証（url・2048 文字以内・http(s)）に揃え、422 を踏ませない（issue #177）
+      const message = validateSurveyUrl(value)
+      if (message) {
+        setSaveError(message)
+        return
+      }
     }
     setSaving(true)
     try {
