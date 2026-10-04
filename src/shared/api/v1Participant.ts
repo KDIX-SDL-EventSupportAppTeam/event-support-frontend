@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/api/client'
-import { unwrapApiData } from '@/shared/api/unwrap'
+import { toApiError, unwrapApiData } from '@/shared/api/unwrap'
 import type { ApiResponse } from '@/shared/types/api'
 import type { BingoCard } from '@/shared/types/bingoCard'
 
@@ -55,6 +55,24 @@ export async function fetchV1BoothDetail(eventId: string, boothId: string): Prom
     `/events/${encodeURIComponent(eventId)}/booths/${encodeURIComponent(boothId)}`,
   )
   return unwrapApiData(res)
+}
+
+/**
+ * 掲示 QR（`/c/<token>`）が指すブースの解決（server#155）。
+ * 他イベント・無効ブース・存在しないトークンはサーバーがすべて 404（`NOT_FOUND`）で返す。
+ * レスポンスに `qr_token` は含まれない。
+ */
+export type V1BoothByQrToken = { id: string; name: string; event_id: string }
+
+export async function resolveBoothByQrToken(token: string): Promise<V1BoothByQrToken> {
+  try {
+    const res = await apiClient.get<ApiResponse<{ booth: V1BoothByQrToken }>>(
+      `/booths/by-qr-token/${encodeURIComponent(token)}`,
+    )
+    return unwrapApiData(res).booth
+  } catch (e) {
+    throw toApiError(e)
+  }
 }
 
 export async function fetchV1Checkins(eventId: string): Promise<V1CheckinItem[]> {

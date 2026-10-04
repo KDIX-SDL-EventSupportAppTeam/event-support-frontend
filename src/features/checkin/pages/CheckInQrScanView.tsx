@@ -14,12 +14,15 @@ import {
   isOverconstrainedError,
   type CameraFailure,
 } from '@/features/checkin/lib/classifyCameraError'
-import { parseQrToBoothId } from '@/features/checkin/lib/parseQrToBoothId'
+import { parseQrToCheckinTarget } from '@/features/checkin/lib/parseQrToCheckinTarget'
 import { CopyButton } from '@/shared/components/CopyButton'
 import { detectInAppBrowser, detectPlatform } from '@/shared/lib/detectEnvironment'
 
 type Props = {
+  /** 旧形式（ブース ID を含む QR）を読み取った */
   onDetected: (boothId: string) => void
+  /** 短縮形式（`/c/<token>`）の QR を読み取った。ブースの解決は呼び出し側（`/c/:token`）が行う（issue #168） */
+  onDetectedToken?: (token: string) => void
   onFallback: () => void
   /** QR が読めないとき用: 手動コード入力へ（issue #86。実 API フローでのみ渡す） */
   onManualCode?: () => void
@@ -94,7 +97,7 @@ async function isCameraPermissionDenied(): Promise<boolean> {
   }
 }
 
-export function CheckInQrScanView({ onDetected, onFallback, onManualCode }: Props) {
+export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onManualCode }: Props) {
   const [phase, setPhase] = useState<Phase>('idle')
   const [failure, setFailure] = useState<CameraFailure | null>(null)
   const [stalled, setStalled] = useState(false)
@@ -119,6 +122,8 @@ export function CheckInQrScanView({ onDetected, onFallback, onManualCode }: Prop
   const startingRef = useRef(false)
   const onDetectedRef = useRef(onDetected)
   onDetectedRef.current = onDetected
+  const onDetectedTokenRef = useRef(onDetectedToken)
+  onDetectedTokenRef.current = onDetectedToken
   // 読み取り枠の要素 id はマウントごとに別にする。html5-qrcode の clear() は id で要素を
   // 引き直して中身を空にするため、前の読み取り画面の後始末が、作り直された新しい画面の
   // 映像を消してしまわないようにする（NG-9 で画面を作り直すようになった）。
@@ -150,8 +155,9 @@ export function CheckInQrScanView({ onDetected, onFallback, onManualCode }: Prop
     const onDecoded = (decodedText: string) => {
       if (handledRef.current) return
       handledRef.current = true
-      const boothId = parseQrToBoothId(decodedText)
-      if (!boothId) {
+      const target = parseQrToCheckinTarget(decodedText)
+      // 短縮形式は受け取り側が無ければ読めなかったものとして扱う
+      if (!target || (target.kind === 'token' && !onDetectedTokenRef.current)) {
         handledRef.current = false
         if (lastErrorRef.current !== OUT_OF_SCOPE_MSG) {
           lastErrorRef.current = OUT_OF_SCOPE_MSG
@@ -159,7 +165,10 @@ export function CheckInQrScanView({ onDetected, onFallback, onManualCode }: Prop
         }
         return
       }
-      void safeStop(scanner).then(() => onDetectedRef.current(boothId))
+      void safeStop(scanner).then(() => {
+        if (target.kind === 'token') onDetectedTokenRef.current?.(target.token)
+        else onDetectedRef.current(target.boothId)
+      })
     }
 
     const startWith = (videoConstraints: CameraVideoConstraints) =>

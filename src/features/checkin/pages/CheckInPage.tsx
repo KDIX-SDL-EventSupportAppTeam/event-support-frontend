@@ -284,6 +284,8 @@ export function CheckInPage() {
     return (
       <div className="reader-container container py-3">
         <CheckInQrScanView
+          // 短縮 QR は /c/:token で解決して、この画面の ?booth_id= へ合流させる（チェックインのロジックを複製しない）
+          onDetectedToken={(token) => navigate(`/c/${encodeURIComponent(token)}`, { replace: true })}
           onDetected={(id) => {
             setBoothSource('qr')
             setSelectedBoothId(id)
