@@ -32,6 +32,7 @@ import { OrganizerEventDetailPage } from '@/features/organizer/pages/OrganizerEv
 import { RequireOrganizer } from '@/features/organizer/guards/RequireOrganizer'
 import { BoothListPage } from '@/features/booth/pages/BoothListPage/BoothListPage'
 import { CheckInPage } from '@/features/checkin/pages/CheckInPage'
+import { CheckInByTokenPage } from '@/features/checkin/pages/CheckInByTokenPage'
 import { ExhibitorDashboardPage } from '@/features/exhibitor/pages/ExhibitorDashboardPage'
 import { HomePage } from '@/features/home/pages/HomePage/HomePage'
 import { EntryPage } from '@/features/entry/pages/EntryPage'
@@ -116,6 +117,8 @@ export function AppRoutes() {
           {/* participant-gated:start ── ここから下は自動でゲート配下 */}
           <Route path="/home" element={<HomePage />} />
           <Route path="/checkin" element={<CheckInRoute />} />
+          {/* 掲示 QR の短縮 URL（issue #168）。ブースを解決して /checkin?booth_id= へ replace で合流する */}
+          <Route path="/c/:token" element={<CheckInByTokenPage />} />
           {/* issue #89。参加者ゲートの内側から出さないこと（未認証で開けてしまう） */}
           <Route path="/award-vote" element={<AwardVotePage />} />
           <Route path="/schedule" element={<SchedulePage />} />

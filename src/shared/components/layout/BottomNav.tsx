@@ -29,18 +29,22 @@ const NAV_ITEMS: NavItem[] = [
     // /icon/nav/nav-map.png は「会場マップ」という文言が焼き込まれており、
     // 07-venue-map.md で追加した /venue-map の導線と紛らわしいため使わない
     icon: '/icon/feature/feature-booth-list.png',
+    // TODO(activeIcon 待ち): 選択中用の素材 `nav-booth-list-active.png`（命名は docs/reference/assets.md）。
+    // CSS の filter で色を変える代替はやらない（素材の色調が項目ごとに違い、結果が揃わない）
     showLabel: true,
   },
   {
     to: '/checkin',
     label: 'チェックイン',
     icon: '/icon/nav/nav-fab-checkin.png',
+    // TODO(activeIcon 待ち): `nav-fab-checkin-active.png`
     isFab: true,
   },
   {
     to: '/schedule',
     label: 'スケジュール',
     icon: '/icon/nav/nav-schedule.png',
+    // TODO(activeIcon 待ち): `nav-schedule-active.png`
     showLabel: true,
   },
   {
@@ -50,6 +54,7 @@ const NAV_ITEMS: NavItem[] = [
     // 焼き込まれている。側の項目の寸法（1.9rem）まで縮めると文字が潰れて読めないため、
     // 文字なしの feature アイコンを使い、ラベルは HTML 側で出す
     icon: '/icon/feature/feature-award.png',
+    // TODO(activeIcon 待ち): `nav-award-vote-active.png`
     showLabel: true,
   },
 ]

@@ -1,0 +1,19 @@
+{
+  "name": "PRoToFES イベントアプリ",
+  "short_name": "PRoToFES",
+  "description": "ブースをまわってビンゴを埋めよう",
+  "start_url": "/e",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fef1d0",
+  "theme_color": "#fcbf01",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

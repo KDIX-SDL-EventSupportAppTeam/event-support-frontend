@@ -10,7 +10,16 @@ import { ApiError } from '@/shared/api/unwrap'
  * 単一 URL の中で切り替えるため、画面遷移ではなくローカル state でモードを持つ。
  * 認証そのものは既存の `features/auth`（`POST /auth/register` / `/auth/login`）をそのまま使う。
  */
-export function AuthStep({ eventId, onAuthenticated }: { eventId: string; onAuthenticated: () => void }) {
+export function AuthStep({
+  eventId,
+  onAuthenticated,
+  leadNotice,
+}: {
+  eventId: string
+  onAuthenticated: () => void
+  /** フォームの上に出す説明（別イベントのセッションが残っているときなど） */
+  leadNotice?: string
+}) {
   const { login, register, loading, error } = useAuth()
   const [mode, setMode] = useState<'signin' | 'signup'>('signup')
   const [displayName, setDisplayName] = useState('')
@@ -52,6 +61,11 @@ export function AuthStep({ eventId, onAuthenticated }: { eventId: string; onAuth
       title={isSignUp ? 'アカウント作成' : 'サインイン'}
       subtitle={isSignUp ? 'イベント参加に使うアカウントを作成します' : '登録済みの方はこちら'}
     >
+      {leadNotice ? (
+        <p className="text-center small text-body-secondary mb-3" data-testid="entry-lead-notice">
+          {leadNotice}
+        </p>
+      ) : null}
       <form onSubmit={onSubmit}>
         {isSignUp ? (
           <div className="mb-3">
