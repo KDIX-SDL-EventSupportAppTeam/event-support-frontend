@@ -16,6 +16,7 @@ import { useUnlockAnimationQueue } from '@/shared/hooks/useUnlockAnimationQueue'
 import { recordBingoCelebration } from '@/shared/lib/bingoCelebration'
 import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
 import { CheckInQrScanView } from '@/features/checkin/pages/CheckInQrScanView'
+import { sanitizeManualCode } from '@/features/checkin/lib/sanitizeManualCode'
 import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
 import { useAuthStore } from '@/shared/auth/authStore'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
@@ -335,11 +336,12 @@ export function CheckInPage() {
             // コード長ちょうど（6）にはしない。ブラウザは貼り付けを trim 前に切り詰めるため、
             // 前後に空白のある「 481502 」を貼ると 5 桁に欠ける（#103 起きてはいけないこと・PR #100）。
             // 桁数の担保は「ちょうど6桁でないと送信不可」の側で行う（下の disabled と handleManualCheckIn）。
+            // 数字だけで 7〜8 桁打てないよう、onChange の sanitizeManualCode で 6 桁へ切り詰める。
             maxLength={8}
             placeholder="例: 481502"
             value={manualCode}
             onChange={(e) => {
-              setManualCode(e.target.value.replace(/[^0-9]/g, ''))
+              setManualCode(sanitizeManualCode(e.target.value))
               // 打ち直しを始めたら前回のエラー文言は消す。残したままだと、正しいコードを
               // 入れ終えても前回の「コードが違います…」が見え続ける（提案-5）。
               setManualError(null)
