@@ -5,6 +5,7 @@ import { useExhibitorStats } from '@/features/exhibitor/hooks/useExhibitorStats'
 import { useExhibitorStore } from '@/features/exhibitor/store/exhibitorStore'
 import { useAuthStore } from '@/shared/auth/authStore'
 import { entryPathForRedirect } from '@/shared/lib/lastEventId'
+import { starFillStates } from '@/shared/config/rating'
 
 /** 運営画面 AnalyticsWindow と同じ体裁の折りたたみカード（admin フィーチャーへの越境importを避け複製） */
 function ExhibitorWindow({
@@ -274,8 +275,7 @@ export function ExhibitorDashboardPage() {
                       <div key={c.id} className="list-group-item px-0">
                         <div className="d-flex justify-content-between align-items-center">
                           <span className="text-warning">
-                            {'★'.repeat(c.rating)}
-                            {'☆'.repeat(Math.max(0, 5 - c.rating))}
+                            {starFillStates(c.rating).map((filled) => (filled ? '★' : '☆')).join('')}
                           </span>
                           <span className="text-muted small">{new Date(c.rated_at).toLocaleString('ja-JP')}</span>
                         </div>
