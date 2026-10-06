@@ -7,7 +7,15 @@ import { CheckInRatingModal } from '@/features/checkin/pages/CheckInRatingModal'
 import { fetchV1BingoCard, fetchV1Checkins } from '@/shared/api/v1Participant'
 import { resolveEventDataSourceMode } from '@/shared/data/createEventDataSource'
 import { shouldShowUnratedBadge } from '@/features/booth/lib/boothRatingBadge'
+import {
+  countUnvisited,
+  emptyReason,
+  filterBooths,
+  sortBoothsByDisplayCode,
+  type BoothFilter,
+} from '@/features/booth/lib/boothFilter'
 import { BoothIcon } from '@/shared/components/booth/BoothIcon'
+import { boothImageSrc } from '@/shared/lib/boothImage'
 import '@/features/booth/styles/legacy-booth-list.scss'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
 
@@ -16,7 +24,8 @@ export function BoothListPage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
   const userId = useAuthStore((s) => s.user?.id)
   const { booths, checkedInBoothIds, loading } = useLegacyBoothList(eventId, userId)
-  const [sortByCheckedIn, setSortByCheckedIn] = useState(false)
+  // 絞り込みは URL にも localStorage にも保存しない（共有・ブックマークする値ではない）
+  const [filter, setFilter] = useState<BoothFilter>('all')
   const [selected, setSelected] = useState<LegacyBooth | null>(null)
   // booth_id → 評価済みか。画面表示時に1回取得する（issue #115 D1/D3）
   const [ratedByBoothId, setRatedByBoothId] = useState<Map<string, boolean>>(new Map())
@@ -62,14 +71,16 @@ export function BoothListPage() {
     return shouldShowUnratedBadge(isCheckedIn(id), ratedByBoothId.get(id))
   }
 
-  const sorted = useMemo(() => {
-    if (!sortByCheckedIn) return booths
-    return [...booths].sort((a, b) => {
-      const ac = checkedInBoothIds.includes(a.booth_id) ? 1 : 0
-      const bc = checkedInBoothIds.includes(b.booth_id) ? 1 : 0
-      return bc - ac
-    })
-  }, [booths, checkedInBoothIds, sortByCheckedIn])
+  const shown = useMemo(
+    () => sortBoothsByDisplayCode(filterBooths(booths, checkedInBoothIds, filter)),
+    [booths, checkedInBoothIds, filter],
+  )
+  const unvisitedCount = useMemo(
+    () => countUnvisited(booths, checkedInBoothIds),
+    [booths, checkedInBoothIds],
+  )
+  const visitedCount = booths.length - unvisitedCount
+  const empty = emptyReason(booths.length, shown.length, filter)
 
   function isCheckedIn(id: string) {
     return checkedInBoothIds.includes(id)
@@ -81,14 +92,33 @@ export function BoothListPage() {
         <h1 className="main-title">ブース一覧</h1>
       </div>
 
-      <div className="sort-container mb-3">
-        <button
-          type="button"
-          className={`btn sort-button ${sortByCheckedIn ? 'active' : ''}`}
-          onClick={() => setSortByCheckedIn((v) => !v)}
-        >
-          チェックイン済みを優先表示
-        </button>
+      {/* 残り件数。読み込み中は 0 が一瞬見えるので出さない */}
+      {!loading && booths.length > 0 ? (
+        <p className="remaining-count text-center mb-2" data-testid="booth-remaining">
+          {unvisitedCount === 0
+            ? '全ブース訪問済み！'
+            : `あと ${unvisitedCount} ブース（全 ${booths.length} ブース中 ${visitedCount} ブース訪問済み）`}
+        </p>
+      ) : null}
+
+      <div className="filter-segment mb-3" role="group" aria-label="ブースの絞り込み">
+        {(
+          [
+            ['all', 'すべて'],
+            ['unvisited', '未チェックイン'],
+            ['visited', 'チェックイン済み'],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            className={`btn filter-segment__button ${filter === value ? 'active' : ''}`}
+            aria-pressed={filter === value}
+            onClick={() => setFilter(value)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {loading ? (
@@ -99,7 +129,22 @@ export function BoothListPage() {
         </div>
       ) : (
         <div className="booth-list">
-          {sorted.map((booth) => (
+          {/* 0 件の理由ごとに文言を分ける（ブース未登録・通信失敗と混ぜると「ブースが消えた」と誤解される） */}
+          {empty === 'no_booths' ? <p className="text-center text-muted py-4">ブースがありません</p> : null}
+          {empty === 'all_visited' ? (
+            <p className="text-center py-4" data-testid="booth-empty-all-visited">
+              全ブース訪問済みです。おつかれさまでした！
+            </p>
+          ) : null}
+          {empty === 'none_visited' ? (
+            <div className="text-center py-4" data-testid="booth-empty-none-visited">
+              <p className="mb-3">まだチェックインしたブースがありません</p>
+              <button type="button" className="btn btn-primary" onClick={() => navigate('/checkin')}>
+                チェックインする
+              </button>
+            </div>
+          ) : null}
+          {shown.map((booth) => (
             <div
               key={booth.booth_id}
               className={`card booth-card ${isCheckedIn(booth.booth_id) ? 'checked-in' : ''}`}
@@ -151,22 +196,17 @@ export function BoothListPage() {
         >
           <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title d-flex align-items-center gap-2">
-                  <BoothIcon
-                    displayCode={selected.booth_display_code}
-                    fallback={selected.booth_emoji}
-                    size="2rem"
-                  />
-                  {selected.booth_name}
-                </h5>
-                <button type="button" className="btn-close" aria-label="Close" onClick={() => setSelected(null)} />
+              <div className="modal-header border-0 pb-0">
+                <button type="button" className="btn-close ms-auto" aria-label="Close" onClick={() => setSelected(null)} />
               </div>
-              <div className="modal-body">
-                {selected.booth_image_url ? (
-                  <img src={selected.booth_image_url} alt="" className="img-fluid rounded mb-3" />
+              <div className="modal-body pt-0">
+                {boothImageSrc(selected.booth_display_code) ? (
+                  <img
+                    src={boothImageSrc(selected.booth_display_code)!}
+                    alt={selected.booth_name}
+                    className="img-fluid rounded mb-3"
+                  />
                 ) : null}
-                <p>{selected.booth_description || '説明がありません。'}</p>
                 {!isCheckedIn(selected.booth_id) ? (
                   <button
                     type="button"

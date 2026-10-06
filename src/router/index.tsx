@@ -2,8 +2,10 @@ import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-do
 import { AdminLoginPage } from '@/features/admin/pages/AdminLoginPage'
 import { AdminMenuPage } from '@/features/admin/pages/AdminMenuPage'
 import { BoothManagePage } from '@/features/admin/pages/BoothManagePage'
+import { BoothBulkRegisterPage } from '@/features/admin/pages/BoothBulkRegisterPage'
 import { BoothQrPrintPage } from '@/features/admin/pages/BoothQrPrintPage'
 import { CategoryManagePage } from '@/features/admin/pages/CategoryManagePage'
+import { ProtofesSetupPage } from '@/features/admin/pages/ProtofesSetupPage'
 import { DashboardPage } from '@/features/admin/pages/DashboardPage'
 import { ParticipantsPage } from '@/features/admin/pages/ParticipantsPage'
 import { SurveyManagePage } from '@/features/admin/pages/SurveyManagePage'
@@ -20,6 +22,7 @@ import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage/For
 import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage/ResetPasswordPage'
 import { AwardVotePage } from '@/features/award/pages/AwardVotePage'
 import { AdminAwardsPage } from '@/features/admin/pages/AdminAwardsPage'
+import { AdminAwardResultsPage } from '@/features/admin/pages/AdminAwardResultsPage'
 import { isAdminUser, useAuthStore } from '@/shared/auth/authStore'
 import { RequireAppOpen } from '@/shared/access/RequireAppOpen'
 import { entryPathForRedirect } from '@/shared/lib/lastEventId'
@@ -31,8 +34,10 @@ import { OrganizerEventDetailPage } from '@/features/organizer/pages/OrganizerEv
 import { RequireOrganizer } from '@/features/organizer/guards/RequireOrganizer'
 import { BoothListPage } from '@/features/booth/pages/BoothListPage/BoothListPage'
 import { CheckInPage } from '@/features/checkin/pages/CheckInPage'
+import { CheckInByTokenPage } from '@/features/checkin/pages/CheckInByTokenPage'
 import { ExhibitorDashboardPage } from '@/features/exhibitor/pages/ExhibitorDashboardPage'
 import { HomePage } from '@/features/home/pages/HomePage/HomePage'
+import { BeforeLeavingPage } from '@/features/home/pages/BeforeLeavingPage/BeforeLeavingPage'
 import { EntryPage } from '@/features/entry/pages/EntryPage'
 import { QaPage } from '@/features/qa/pages/QaPage'
 import { SchedulePage } from '@/features/schedule/pages/SchedulePage'
@@ -115,8 +120,11 @@ export function AppRoutes() {
           {/* participant-gated:start ── ここから下は自動でゲート配下 */}
           <Route path="/home" element={<HomePage />} />
           <Route path="/checkin" element={<CheckInRoute />} />
+          {/* 掲示 QR の短縮 URL（issue #168）。ブースを解決して /checkin?booth_id= へ replace で合流する */}
+          <Route path="/c/:token" element={<CheckInByTokenPage />} />
           {/* issue #89。参加者ゲートの内側から出さないこと（未認証で開けてしまう） */}
           <Route path="/award-vote" element={<AwardVotePage />} />
+          <Route path="/before-leaving" element={<BeforeLeavingPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/booth-list" element={<BoothListPage />} />
           <Route path="/venue-map" element={<VenueMapPage />} />
@@ -186,6 +194,14 @@ export function AppRoutes() {
         }
       />
       <Route
+        path="/admin/booths/bulk"
+        element={
+          <RequireAdmin>
+            <BoothBulkRegisterPage />
+          </RequireAdmin>
+        }
+      />
+      <Route
         path="/admin/booths/qr-print"
         element={
           <RequireAdmin>
@@ -198,6 +214,14 @@ export function AppRoutes() {
         element={
           <RequireAdmin>
             <SurveyManagePage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/protofes-setup"
+        element={
+          <RequireAdmin>
+            <ProtofesSetupPage />
           </RequireAdmin>
         }
       />
@@ -246,6 +270,14 @@ export function AppRoutes() {
         element={
           <RequireAdmin>
             <AdminAwardsPage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/awards/results"
+        element={
+          <RequireAdmin>
+            <AdminAwardResultsPage />
           </RequireAdmin>
         }
       />

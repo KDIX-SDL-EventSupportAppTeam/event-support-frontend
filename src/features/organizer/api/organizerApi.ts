@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { useOrganizerStore } from '@/features/organizer/store/organizerStore'
-
-const ORGANIZER_TOKEN_KEY = 'organizer_auth_token'
+import { ORGANIZER_TOKEN_KEY } from '@/shared/config/storageKeys'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
 
@@ -184,7 +183,9 @@ export type UpdateEventBody = {
   date_start?: string
   date_end?: string
   venue?: string | null
-  survey_url?: string | null
+  // survey_url は含めない（編集口は運営画面に一本化。server#156）。
+  // 型の上でも送れないようにし、実行時に 422 を踏む前にコンパイルで気づけるようにしている。
+  // 作成時の初期値は CreateEventBody.survey_url で従来どおり送れる
   mail_from?: string
 }
 

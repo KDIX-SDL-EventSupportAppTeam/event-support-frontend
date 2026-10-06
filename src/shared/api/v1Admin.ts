@@ -576,6 +576,31 @@ export type AdminAwardTally = {
   /** 降順。同数はそのまま（順位は付けない） */
   booths: { booth_id: string; booth_name: string; votes: number }[]
 }
+/** 運営の結果画面（server: award-api.md「results 応答」）。順位・率・投票者数はサーバーが計算する */
+export type AdminAwardResults = {
+  voting_open: boolean
+  /** サーバーが集計した時刻（ISO） */
+  generated_at: string
+  summary: {
+    total_participants: number
+    /** 1賞以上に投票した参加者数（重複なし） */
+    voters: number
+    /** voters / total_participants。参加者 0 人なら null */
+    voter_rate: number | null
+    total_votes: number
+    award_count: number
+  }
+  awards: {
+    id: string
+    name: string
+    color: string
+    sort_order: number
+    total_votes: number
+    booths_with_votes: number
+    /** 3位以内（同数は同順位。同率があれば3件を超える） */
+    top: { rank: number; booth_id: string; booth_name: string; votes: number; share: number }[]
+  }[]
+}
 export type AdminAwardInput = {
   name?: string
   description?: string | null
@@ -671,6 +696,13 @@ export async function putAdminAppAccess(
   const res = await apiClient.put<ApiResponse<AdminAppAccess>>(
     `/admin/events/${encodeURIComponent(eventId)}/app-access`,
     body,
+  )
+  return unwrapApiData(res)
+}
+
+export async function fetchAdminAwardResults(eventId: string): Promise<AdminAwardResults> {
+  const res = await apiClient.get<ApiResponse<AdminAwardResults>>(
+    `/admin/events/${encodeURIComponent(eventId)}/awards/results`,
   )
   return unwrapApiData(res)
 }

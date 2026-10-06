@@ -223,6 +223,24 @@
   text-align: center;
 }
 
+.checkin-qr-reader-wrap {
+  position: relative;
+}
+
+// カメラ起動前・起動中に、黒い枠が無言で見えないよう状態を重ねる（issue #170）。
+// html5-qrcode は読み取り枠（#reader）の子要素を作り直すため、React の子要素は枠の外（兄弟）に置く
+.checkin-qr-reader-overlay {
+  position: absolute;
+  inset: 0 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+
 .checkin-qr-reader {
   width: 100%;
   aspect-ratio: 1 / 1;

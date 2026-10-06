@@ -13,8 +13,15 @@ export const EVENT_DATE_LABEL_2026 = '10/16(Fri.)'
 export const SCHEDULE_2026: ScheduleDay[] = [
   {
     dayTitle: EVENT_DATE_LABEL_2026,
-    // 段2: 運営から受領した確定タイムテーブルを入れる（tests/fixtures/schedule-2026-10-16.json と一致させる）
-    events: [],
+    // 運営から受領した確定タイムテーブル（docs/tests/fixtures/schedule-2026-10-16.json と一致させる）
+    events: [
+      { time: '11:20', title: '開会式' },
+      { time: '11:40', title: '15秒ピッチ' },
+      { time: '12:00', title: 'ブース展示・投票時間' },
+      { time: '15:30', title: 'アイデア・スプリント①' },
+      { time: '16:20', title: '投票終了 / アイデア・スプリント②' },
+      { time: '17:00', title: '閉会式' },
+    ],
   },
 ]
 

@@ -106,7 +106,6 @@ type EditForm = {
   dateStart: string
   dateEnd: string
   venue: string
-  surveyUrl: string
   mailFrom: string
 }
 
@@ -116,7 +115,6 @@ function toEditForm(event: OrganizerEvent): EditForm {
     dateStart: toLocalInput(event.date_start),
     dateEnd: toLocalInput(event.date_end),
     venue: event.venue ?? '',
-    surveyUrl: event.survey_url ?? '',
     mailFrom: event.mail_from ?? '',
   }
 }
@@ -149,7 +147,6 @@ function EventOverview({
   async function onSave(e: FormEvent) {
     e.preventDefault()
     const name = form.name.trim()
-    const surveyUrl = form.surveyUrl.trim()
     const mailFrom = form.mailFrom.trim()
     const start = new Date(form.dateStart)
     const end = new Date(form.dateEnd)
@@ -163,10 +160,6 @@ function EventOverview({
     }
     if (start.getTime() >= end.getTime()) {
       setSaveError('終了日時は開始日時より後にしてください')
-      return
-    }
-    if (surveyUrl && !/^https?:\/\//.test(surveyUrl)) {
-      setSaveError('アンケートURLは http(s):// で始めてください')
       return
     }
     if (!mailFrom) {
@@ -186,7 +179,6 @@ function EventOverview({
         date_start: start.toISOString(),
         date_end: end.toISOString(),
         venue: form.venue.trim() || null,
-        survey_url: surveyUrl || null,
         mail_from: mailFrom,
       })
       onUpdated(updated)
@@ -270,16 +262,8 @@ function EventOverview({
               />
             </div>
             <div className="mb-3">
-              <label className="form-label small fw-bold" htmlFor="edit-survey">
-                アンケートURL
-              </label>
-              <input
-                id="edit-survey"
-                className="form-control"
-                value={form.surveyUrl}
-                onChange={(e) => update('surveyUrl', e.target.value)}
-                placeholder="https://forms.gle/xxxx"
-              />
+              <div className="form-label small fw-bold">アンケートURL</div>
+              <SurveyUrlReadOnly url={event.survey_url} />
             </div>
             <div className="mb-3">
               <label className="form-label small fw-bold" htmlFor="edit-mail-from">
@@ -328,9 +312,8 @@ function EventOverview({
               <i className="bi bi-geo-alt me-1" />
               {event.venue || '会場未設定'}
             </div>
-            <div className="text-muted small mb-1">
-              <i className="bi bi-link-45deg me-1" />
-              {event.survey_url ?? 'アンケート未設定'}
+            <div className="small mb-1">
+              <SurveyUrlReadOnly url={event.survey_url} />
             </div>
             <div className={`small mb-1 ${event.mail_from ? 'text-muted' : 'text-danger'}`}>
               <i className="bi bi-envelope me-1" />
@@ -350,6 +333,25 @@ function EventOverview({
           <Stat icon="bi-qr-code-scan" label="チェックイン" value={event.stats.checkins} />
         </div>
       </div>
+    </div>
+  )
+}
+
+/**
+ * 事後アンケート URL（`events.survey_url`）の読み取り専用表示。
+ *
+ * 編集口は運営（admin）画面に一本化した（server#156）。オーガナイザー側から更新できると
+ * 後勝ちで運営の設定を上書きしてしまうため。設定値を確認したいニーズは残るので、フィールドは消さない。
+ * 作成時の入力（OrganizerEventCreatePage）は従来どおり。
+ */
+function SurveyUrlReadOnly({ url }: { url: string | null }) {
+  return (
+    <div data-testid="survey-url-readonly">
+      <div className={url ? 'text-break' : 'text-muted'}>
+        <i className="bi bi-link-45deg me-1" />
+        {url || 'アンケート未設定'}
+      </div>
+      <div className="form-text">アンケート URL の変更は運営画面から行います</div>
     </div>
   )
 }

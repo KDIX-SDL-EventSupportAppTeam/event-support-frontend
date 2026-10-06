@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { completeOnboarding, fetchMeState, type MeState } from '@/features/entry/api/meState'
 import { resolveEntryStep } from '@/features/entry/lib/resolveEntryStep'
 import { EntryLayout } from '@/features/entry/components/EntryLayout'
@@ -10,7 +10,7 @@ import { WaitingStep } from '@/features/entry/steps/WaitingStep'
 import { OnboardingFlow } from '@/features/onboarding/components/OnboardingFlow'
 import { useAppAccess } from '@/shared/hooks/useAppAccess'
 import { useAuthStore } from '@/shared/auth/authStore'
-import { rememberEventId } from '@/shared/lib/lastEventId'
+import { readLastEventId, rememberEventId } from '@/shared/lib/lastEventId'
 
 /**
  * `/e/:eventId` ── 参加者が触る唯一の URL。
@@ -20,6 +20,18 @@ import { rememberEventId } from '@/shared/lib/lastEventId'
  * これにより、利用者がどこで中断しても同じ URL を踏み直せば続きから再開する
  * （回答から開放まで数日空き、その間に端末が変わり得るため、状態は端末に持たない）。
  */
+/** ホーム画面に追加して standalone で開かれているか（iOS Safari は `navigator.standalone`）。 */
+function isStandaloneDisplay(): boolean {
+  try {
+    return (
+      window.matchMedia?.('(display-mode: standalone)').matches === true ||
+      (navigator as Navigator & { standalone?: boolean }).standalone === true
+    )
+  } catch {
+    return false
+  }
+}
+
 export function EntryPage() {
   const { eventId = '' } = useParams<{ eventId: string }>()
   const navigate = useNavigate()
@@ -49,6 +61,11 @@ export function EntryPage() {
     reload()
   }, [reload])
 
+  // セッションを捨てた（登録し直し・ログアウト）あとに、前のユーザーの進行状態が次のユーザーへ見えないようにする
+  useEffect(() => {
+    if (!hasToken) setMeState(null)
+  }, [hasToken])
+
   /**
    * 開放ゲートの監視は「回答済みなのに未開放」のときだけ動かす。
    * それ以外の段階では待つ理由が無く、30 秒ポーリングは無駄な負荷になる。
@@ -72,16 +89,42 @@ export function EntryPage() {
   })
 
   if (!eventId) {
+    // 配布リンクを紛失した参加者がここで詰まらないよう、戻れる先と問い合わせの案内を出す（issue #173 経路A）
+    const lastEventId = readLastEventId()
+    // ホーム画面に追加したアプリの起動（manifest の start_url = /e）は、前回のイベントへ自動で戻す（issue #168）
+    if (lastEventId && isStandaloneDisplay()) return <Navigate to={`/e/${lastEventId}`} replace />
     return (
       <EntryLayout title="イベントが指定されていません">
-        <p className="text-center mb-0">お手元の QR コードまたは配布リンクから開いてください。</p>
+        <p className="text-center mb-3">お手元の QR コードまたは配布リンクから開いてください。</p>
+        {lastEventId ? (
+          <div className="d-grid">
+            <Link className="btn btn-primary" to={`/e/${lastEventId}`}>
+              前回のイベントに戻る
+            </Link>
+          </div>
+        ) : null}
+        <p className="text-muted text-center small mt-3 mb-0">
+          リンクが分からない場合は、イベントの運営スタッフにお問い合わせください。
+        </p>
       </EntryLayout>
     )
   }
 
   switch (step) {
     case 'auth':
-      return <AuthStep eventId={eventId} onAuthenticated={reload} />
+      // トークンを持っているのに auth へ戻された＝別イベントのセッションが残っている（経路C）。
+      // 何が起きているか分からない状態を避けるため説明を添える。resolveEntryStep 自体は変えない
+      return (
+        <AuthStep
+          eventId={eventId}
+          onAuthenticated={reload}
+          leadNotice={
+            hasToken && !eventMatches
+              ? '別のイベントのセッションでログイン中です。このイベントに参加するには、もう一度サインインしてください。'
+              : undefined
+          }
+        />
+      )
 
     case 'loading':
       return (
@@ -101,7 +144,7 @@ export function EntryPage() {
       return <SurveyStep eventId={eventId} onAnswered={reload} />
 
     case 'waiting':
-      return <WaitingStep access={access} remainingMs={remainingMs} error={gateError} />
+      return <WaitingStep eventId={eventId} access={access} remainingMs={remainingMs} error={gateError} />
 
     case 'onboarding':
       return (
