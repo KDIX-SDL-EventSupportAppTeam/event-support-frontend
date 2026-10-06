@@ -33,8 +33,9 @@ export function BingoCellView({ cell, onTap }: Props) {
   // 割り当て可能なブースが残っていなかったマス（is_revealed かつ booth: null）。
   // 「全部回りきった」という意味なので、ブース名が無いことの説明をモーダルで出す
   const isAllVisited = cell.is_revealed && !cell.booth
-  // 開いているマスはタップできる。ブース名が無いマスも、空のモーダルではなく説明を出す
-  const tappable = cell.is_revealed
+  // 全マスをタップできる。ブース名が無いマスも、空のモーダルではなく説明を出す。
+  // 未解放マスはタップで解放条件を説明する
+  const tappable = true
   const isPresurvey = cell.source === 'PRESURVEY'
   const isCenter = cell.zone === 'CENTER'
   // 中央マスは「後出し割当」でどのブースにチェックインしても即達成扱いになる（サーバー: assignCenterCell）。
