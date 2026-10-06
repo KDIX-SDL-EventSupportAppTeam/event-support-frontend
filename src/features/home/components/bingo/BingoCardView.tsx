@@ -63,8 +63,6 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
       <div className="d-flex justify-content-between align-items-center mb-2">
         <h1 className="mb-0 main-title">
           <img src="/brand/logo-protofes.png" alt="PRoTo FES" className="bingo-logo pf-logo" />
-          <br />
-          BINGO
         </h1>
       </div>
 
@@ -101,7 +99,19 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
               なぜブース名が無いのかをここで説明する。
               ブース数不足（運営都合）との出し分けは event-support-server#150 以降。
             */}
-            {!selectedCell.booth ? (
+            {!selectedCell.is_revealed ? (
+              <p className="mb-0">
+                {selectedCell.zone === 'CENTER'
+                  ? 'どのブースにチェックインしても、このマスが埋まります。'
+                  : (
+                    <>
+                      まだ解放されていないマスです。
+                      <br />
+                      解放済みのマスを埋めてビンゴを進めると、ロックが解除されます。
+                    </>
+                  )}
+              </p>
+            ) : !selectedCell.booth ? (
               <>
                 <p className="mb-2">
                   このマスに割り当てられるブースが残っていません。あなたが回れるブースは、すべて訪問済みです。

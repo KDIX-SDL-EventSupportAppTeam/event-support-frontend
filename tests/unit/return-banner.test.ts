@@ -6,7 +6,7 @@ const { resolveReturnBannerState } = await import('@/features/home/components/re
 
 const src = (p: string) => readFileSync(path.resolve(__dirname, '../../src', p), 'utf-8')
 const homePage = src('features/home/pages/HomePage/HomePage.tsx')
-const banner = src('features/home/components/ReturnBeforeLeavingBanner.tsx')
+const banner = src('features/home/pages/BeforeLeavingPage/BeforeLeavingPage.tsx')
 /** コメント（「〜と書かない」という説明そのもの）を除いた実コード。 */
 const stripComments = (text: string) =>
   text
@@ -82,24 +82,24 @@ describe('resolveReturnBannerState', () => {
 })
 
 describe('ホームの導線（issue #151）', () => {
+  it('ホームから「帰宅する方へ」画面へ遷移できる', () => {
+    expect(homePage).toContain('帰宅する方へ')
+    expect(homePage).toContain("navigate('/before-leaving')")
+  })
+
+  it('「帰宅する方へ」はサブアクションより下にある', () => {
+    expect(homePage.indexOf("navigate('/before-leaving')")).toBeGreaterThan(homePage.indexOf('sub-actions'))
+  })
+})
+
+describe('「帰宅する方へ」画面（issue #151）', () => {
   it('アワード投票へ遷移できる', () => {
-    expect(homePage).toContain("navigate('/award-vote')")
+    expect(banner).toContain("navigate('/award-vote')")
   })
 
-  it('アンケートは確認モーダル経由（window.open の直呼びを増やしていない）', () => {
-    expect(homePage).toContain('setSurveyConfirmOpen(true)')
-    // window.open は「アプリフィードバック」「イベントアンケート」の確認モーダル内の2箇所のみ
-    expect(homePage.split('window.open').length - 1).toBe(2)
-  })
-
-  it('バナーは5列グリッドより上にある', () => {
-    expect(homePage.indexOf('<ReturnBeforeLeavingBanner')).toBeLessThan(homePage.indexOf('sub-actions'))
-  })
-
-  it('「アプリフィードバック」と混ざっていない（別の URL・別のボタン）', () => {
-    expect(homePage).toContain('FEEDBACK_FORM_URL')
-    expect(bannerCode).not.toContain('FEEDBACK')
-    expect(bannerCode).not.toContain('フィードバック')
+  it('アンケートは確認モーダル経由（window.open は確認モーダル内の1箇所のみ）', () => {
+    expect(banner).toContain('setSurveyConfirmOpen(true)')
+    expect(banner.split('window.open').length - 1).toBe(1)
   })
 
   it('見出しに「閉会式を待たずに」と書いていない（離脱を促さない）', () => {
@@ -107,14 +107,13 @@ describe('ホームの導線（issue #151）', () => {
     expect(bannerCode).not.toContain('閉会式')
   })
 
-  it('アンケートは常に button（非活性の span にしない）', () => {
+  it('アンケートは開いたあとも押せる button（非活性にしない）', () => {
     const surveyBlock = bannerCode.slice(bannerCode.indexOf('{state.survey ?'))
-    expect(surveyBlock).toContain('onClick={onOpenSurveyConfirm}')
-    expect(surveyBlock).not.toContain('return-banner-done')
+    expect(surveyBlock).toContain('onClick={() => setSurveyConfirmOpen(true)}')
   })
 
   it('起きてはいけないこと: 投票済みを localStorage で捏造する', () => {
-    expect(homePage).toContain('getAwardVoteSnapshot')
+    expect(banner).toContain('getAwardVoteSnapshot')
     expect(stripComments(surveyFlag)).not.toContain('回答済み')
     expect(bannerCode).not.toContain('回答済み')
   })

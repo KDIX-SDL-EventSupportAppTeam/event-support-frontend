@@ -29,9 +29,13 @@ describe('割り当て可能なブースが残っていないマス（is_reveale
     expect(block).toContain('/bingo/bingo-cell-stamp.png')
   })
 
-  it('タップできる（開いているマスはタップ可能）', () => {
-    expect(cellCode).toContain('const tappable = cell.is_revealed')
+  it('タップできる（未解放マスも含め全マスがタップ可能）', () => {
+    expect(cellCode).toContain('const tappable = true')
     expect(cellCode).not.toContain('cell.is_revealed && Boolean(cell.booth)')
+  })
+
+  it('未解放マスはモーダルで解放条件を説明する', () => {
+    expect(cardView).toContain('ロックが解除されます')
   })
 
   it('モーダルでブース名が無い理由を説明する', () => {

@@ -45,3 +45,17 @@ export function emptyReason(
   if (filter === 'visited') return 'none_visited'
   return null
 }
+
+/**
+ * ブース番号（display_code）順に並べる。"A2" < "A10" となるよう数値部分を自然順で比較し、
+ * 番号の無いブースは末尾に置く。
+ */
+export function sortBoothsByDisplayCode<T extends { booth_display_code?: string | null }>(booths: readonly T[]): T[] {
+  return [...booths].sort((a, b) => {
+    const x = a.booth_display_code
+    const y = b.booth_display_code
+    if (!x) return y ? 1 : 0
+    if (!y) return -1
+    return x.localeCompare(y, 'ja', { numeric: true, sensitivity: 'base' })
+  })
+}

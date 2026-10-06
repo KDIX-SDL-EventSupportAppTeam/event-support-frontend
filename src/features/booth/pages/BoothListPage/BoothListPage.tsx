@@ -11,6 +11,7 @@ import {
   countUnvisited,
   emptyReason,
   filterBooths,
+  sortBoothsByDisplayCode,
   type BoothFilter,
 } from '@/features/booth/lib/boothFilter'
 import { BoothIcon } from '@/shared/components/booth/BoothIcon'
@@ -71,7 +72,7 @@ export function BoothListPage() {
   }
 
   const shown = useMemo(
-    () => filterBooths(booths, checkedInBoothIds, filter),
+    () => sortBoothsByDisplayCode(filterBooths(booths, checkedInBoothIds, filter)),
     [booths, checkedInBoothIds, filter],
   )
   const unvisitedCount = useMemo(

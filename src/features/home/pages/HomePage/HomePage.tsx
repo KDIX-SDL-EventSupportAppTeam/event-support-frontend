@@ -13,14 +13,9 @@ import {
   resolveBingoCelebrationLines,
   shouldShowCoinCompleteArt,
 } from '@/features/home/celebration/bingoCelebrationView'
-import { hasOpenedSurvey, markSurveyOpened } from '@/shared/lib/surveyOpenedFlag'
-import { createParticipantClient } from '@/shared/data/createParticipantClient'
-import { ReturnBeforeLeavingBanner } from '@/features/home/components/ReturnBeforeLeavingBanner'
-import { resolveReturnBannerState } from '@/features/home/components/returnBannerView'
 import { BingoCardView } from '@/features/home/components/bingo/BingoCardView'
 import { createGachaClient, type GachaCoins } from '@/features/gachapon/api/gachaClient'
 import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
-import { HomeTutorialModal } from '@/features/home/pages/HomePage/HomeTutorialModal'
 import { XShareButton } from '@/features/home/components/XShareButton'
 import { buildSharePost } from '@/features/home/share/sharePostTemplate'
 import { openXShare } from '@/shared/lib/xShare'
@@ -28,9 +23,6 @@ import { Modal } from '@/shared/components/modal/Modal'
 import '@/features/home/styles/legacy-home.scss'
 import '@/features/home/styles/bingo-card.scss'
 import { entryPathForRedirect } from '@/shared/lib/lastEventId'
-
-const FEEDBACK_FORM_URL =
-  (import.meta.env.VITE_FEEDBACK_FORM_URL as string | undefined) ?? 'https://forms.gle/7jf7E6DVHvBmLNKA6'
 
 /** X ポストに併記する URL（未設定なら本文のみ）。文面本体は sharePostTemplate.ts */
 const X_SHARE_URL = (import.meta.env.VITE_X_SHARE_URL as string | undefined)?.trim() || undefined
@@ -91,8 +83,6 @@ export function HomePage() {
     }
   }, [eventId, userId, card])
 
-  const [tutorialOpen, setTutorialOpen] = useState(false)
-  const [feedbackConfirmOpen, setFeedbackConfirmOpen] = useState(false)
   // ライン成立モーダル。開いた時点の本数を固定して、開いたあとにカードが再取得されても
   // 中身が切り替わらないようにする。**専用アートは常に出す**（issue #149）
   const [bingoModal, setBingoModal] = useState<{ lines: number | null } | null>(null)
@@ -100,15 +90,7 @@ export function HomePage() {
   // この来訪でビンゴ達成モーダルを出したか。コイン満タン側のアートを抑えるために覚えておく
   const [bingoCelebrationShown, setBingoCelebrationShown] = useState(false)
   const [coinCompleteOpen, setCoinCompleteOpen] = useState(false)
-  const [tweetsComingSoonOpen, setTweetsComingSoonOpen] = useState(false)
   const [xShareConfirmOpen, setXShareConfirmOpen] = useState(false)
-  const [surveyUrl, setSurveyUrl] = useState<string | null>(null)
-  // 「お帰りの前に」バナー（issue #151）。アンケートの確認モーダルは既存の feedbackConfirmOpen と同じ作り
-  const [surveyConfirmOpen, setSurveyConfirmOpen] = useState(false)
-  const [surveyOpened, setSurveyOpened] = useState(false)
-  // アワード投票の状態。取得できないうちは null（受付中・未投票として扱い、導線を隠さない）
-  const [votingOpen, setVotingOpen] = useState<boolean | null>(null)
-  const [awardVotes, setAwardVotes] = useState<Record<string, string> | null>(null)
   const [eventName, setEventName] = useState<string | null>(null)
 
   useEffect(() => {
@@ -116,10 +98,7 @@ export function HomePage() {
     let active = true
     fetchPublicEvent(eventId)
       .then((e) => {
-        if (active) {
-          setSurveyUrl(e.survey_url)
-          setEventName(e.name)
-        }
+        if (active) setEventName(e.name)
       })
       .catch(() => {
         /* 未設定扱いで非表示（モック/サンプルモード・通信失敗時も壊さない） */
@@ -128,29 +107,6 @@ export function HomePage() {
       active = false
     }
   }, [eventId])
-
-  // 投票済み・受付終了の判定はサーバーのスナップショット（voting_open / votes）をそのまま使う。
-  // localStorage で投票済みを捏造しない（issue #151）。
-  useEffect(() => {
-    if (!eventId || !userId) return
-    let active = true
-    setSurveyOpened(hasOpenedSurvey(eventId, userId))
-    createParticipantClient()
-      .getAwardVoteSnapshot(eventId, userId)
-      .then((snap) => {
-        if (!active) return
-        setVotingOpen(snap.votingOpen)
-        setAwardVotes(snap.votes)
-      })
-      .catch(() => {
-        /* 取得できないときは導線を出したままにする（回収の機会を減らさない） */
-      })
-    return () => {
-      active = false
-    }
-  }, [eventId, userId])
-
-  const returnBanner = resolveReturnBannerState({ votingOpen, votes: awardVotes, surveyUrl, surveyOpened })
 
   // チェックイン画面から渡されたライン成立の合図。カード（成立本数の正）が届いてから開く
   const [pendingBingoLines, setPendingBingoLines] = useState(0)
@@ -248,68 +204,6 @@ export function HomePage() {
         </Modal>
       ) : null}
 
-      {feedbackConfirmOpen ? (
-        <Modal
-          titleId="feedback-confirm-title"
-          onClose={() => setFeedbackConfirmOpen(false)}
-          contentClassName="text-center"
-        >
-          <h5 id="feedback-confirm-title" className="modal-title">
-            アンケートを開きます
-          </h5>
-          <p className="modal-body-text">アンケートフォームを新しいタブで開きます。よろしいですか？</p>
-          <div className="modal-footer-buttons">
-            <button type="button" className="btn-custom-secondary" onClick={() => setFeedbackConfirmOpen(false)}>
-              キャンセル
-            </button>
-            <button
-              type="button"
-              className="btn-custom-primary-red"
-              onClick={() => {
-                window.open(FEEDBACK_FORM_URL, '_blank', 'noopener,noreferrer')
-                setFeedbackConfirmOpen(false)
-              }}
-            >
-              はい
-            </button>
-          </div>
-        </Modal>
-      ) : null}
-
-      {surveyConfirmOpen && surveyUrl ? (
-        <Modal
-          titleId="survey-confirm-title"
-          onClose={() => setSurveyConfirmOpen(false)}
-          contentClassName="text-center"
-        >
-          <h5 id="survey-confirm-title" className="modal-title">
-            イベントアンケートを開きます
-          </h5>
-          <p className="modal-body-text">
-            イベントアンケートのフォームを新しいタブで開きます。よろしいですか？
-          </p>
-          <div className="modal-footer-buttons">
-            <button type="button" className="btn-custom-secondary" onClick={() => setSurveyConfirmOpen(false)}>
-              キャンセル
-            </button>
-            <button
-              type="button"
-              className="btn-custom-primary-red"
-              onClick={() => {
-                window.open(surveyUrl, '_blank', 'noopener,noreferrer')
-                if (eventId && userId) {
-                  markSurveyOpened(eventId, userId)
-                  setSurveyOpened(true)
-                }
-                setSurveyConfirmOpen(false)
-              }}
-            >
-              はい
-            </button>
-          </div>
-        </Modal>
-      ) : null}
-
       {xShareConfirmOpen ? (
         <Modal
           titleId="x-share-confirm-title"
@@ -339,22 +233,6 @@ export function HomePage() {
           </div>
         </Modal>
       ) : null}
-
-      {tweetsComingSoonOpen ? (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="tweets-modal-title">
-          <div className="modal-content text-center">
-            <h5 id="tweets-modal-title" className="modal-title">
-              つぶやき
-            </h5>
-            <p className="modal-body-text">この機能は準備中です。もうしばらくお待ちください。</p>
-            <button type="button" className="btn btn-primary" onClick={() => setTweetsComingSoonOpen(false)}>
-              閉じる
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {tutorialOpen ? <HomeTutorialModal onClose={() => setTutorialOpen(false)} /> : null}
 
       {currentUnlock ? <UnlockAnimation positions={currentUnlock.positions} onDone={closeUnlockAnimation} /> : null}
 
@@ -437,28 +315,11 @@ export function HomePage() {
         </div>
       ) : null}
 
-      <div className="row g-2 mt-2">
-        <div className="col-12">
-          <XShareButton onClick={() => setXShareConfirmOpen(true)} />
-        </div>
-      </div>
 
-      {/* 「お帰りの前に」バナー。5列グリッドより上に置く（issue #151） */}
-      <ReturnBeforeLeavingBanner
-        state={returnBanner}
-        onVote={() => navigate('/award-vote')}
-        onOpenSurveyConfirm={() => setSurveyConfirmOpen(true)}
-      />
-
-      <div className="row row-cols-5 g-2 mt-2 sub-actions">
+      <div className="row row-cols-2 g-2 mt-2 sub-actions">
         <div className="col">
           <button type="button" className="btn btn-sub-action" onClick={() => navigate('/venue-map')}>
             会場マップ
-          </button>
-        </div>
-        <div className="col">
-          <button type="button" className="btn btn-sub-action" onClick={() => setTutorialOpen(true)}>
-            アプリ説明
           </button>
         </div>
         <div className="col">
@@ -466,20 +327,26 @@ export function HomePage() {
             Q&amp;A
           </button>
         </div>
-        <div className="col">
-          <button type="button" className="btn btn-sub-action" onClick={() => setFeedbackConfirmOpen(true)}>
-            アプリ
-            <br />
-            フィードバック
-          </button>
-        </div>
-        <div className="col">
-          <button type="button" className="btn btn-sub-action" onClick={() => setTweetsComingSoonOpen(true)}>
-            <i className="bi bi-chat-dots me-1" aria-hidden="true" />
-            つぶやき
+      </div>
+
+      {/* 帰宅前のアワード投票・イベント後アンケートへの導線（必ず回収したいので目立たせる） */}
+      <div className="row g-2 mt-3">
+        <div className="col-12">
+          <button type="button" className="btn-before-leaving" onClick={() => navigate('/before-leaving')}>
+            <span className="btn-before-leaving-icon" aria-hidden="true">
+              🏠
+            </span>
+            <span className="btn-before-leaving-label">
+              <strong>帰宅する方へ</strong>
+              <small>アワード投票・アンケートのお願い</small>
+            </span>
+            <i className="bi bi-chevron-right" aria-hidden="true" />
           </button>
         </div>
       </div>
+
+      {/* X にポストする。スクロールしても右下（ボトムナビの上）に固定 */}
+      <XShareButton onClick={() => setXShareConfirmOpen(true)} />
     </div>
   )
 }
