@@ -234,7 +234,7 @@ export function HomePage() {
         </Modal>
       ) : null}
 
-      {currentUnlock ? <UnlockAnimation positions={currentUnlock.positions} onDone={closeUnlockAnimation} /> : null}
+      {currentUnlock ? <UnlockAnimation key={currentUnlock.pairKey} positions={currentUnlock.positions} onDone={closeUnlockAnimation} /> : null}
 
       {loading ? (
         <div className="text-center p-5">
