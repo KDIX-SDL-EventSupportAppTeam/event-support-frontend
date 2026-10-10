@@ -22,8 +22,12 @@ describe('解放通知モーダルの文言', () => {
 })
 
 describe('解放通知モーダルの秒数', () => {
-  it('1.5 秒後にボタンが押せるようになる', () => {
-    expect(UNLOCK_MODAL_BUTTON_ENABLE_MS).toBe(1500)
+  it('0.3 秒後にボタンが押せるようになる（issue #193）', () => {
+    expect(UNLOCK_MODAL_BUTTON_ENABLE_MS).toBe(300)
+  })
+
+  it('起きてはいけないこと: 0 にして、チェックインのタップがそのまま「閉じる」に当たる', () => {
+    expect(UNLOCK_MODAL_BUTTON_ENABLE_MS).toBeGreaterThan(0)
   })
 
   it('3 秒後に自動で閉じる', () => {
@@ -61,7 +65,7 @@ describe('解放通知モーダルの構成', () => {
   })
 
   it('起きてはいけないこと: 自動クローズが外れて操作が無期限にブロックされる', () => {
-    expect(component).toContain('window.setTimeout(onDone, UNLOCK_MODAL_AUTO_CLOSE_MS)')
+    expect(component).toContain('window.setTimeout(() => onDoneRef.current(), UNLOCK_MODAL_AUTO_CLOSE_MS)')
   })
 })
 
@@ -74,5 +78,13 @@ describe('呼び出し元（CheckInPage / HomePage）', () => {
 
   it('再生済み管理は pair_key ごと（キューの仕組みを変えていない）', () => {
     expect(src('shared/lib/bingoUnlockFlag.ts')).toContain('pair_key')
+  })
+})
+
+describe('呼び出し元は解放ごとに作り直す（issue #193）', () => {
+  it('key={currentUnlock.pairKey} を付ける', () => {
+    for (const p of ['features/checkin/pages/CheckInPage.tsx', 'features/home/pages/HomePage/HomePage.tsx']) {
+      expect(src(p)).toContain('key={currentUnlock.pairKey}')
+    }
   })
 })
