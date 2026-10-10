@@ -23,15 +23,4 @@ export const BASIC_CAMERA_CONSTRAINTS: CameraVideoConstraints = {
   facingMode: 'environment',
 }
 
-/**
- * 読み取り枠の大きさ。枠は「目安」でデコード範囲を絞る目的では使わないため、短辺の 90% にする
- * （クロップはデコード対象領域を狭めるので、狭いほど枠に収めきれていない QR を取り逃がす）。
- */
-export const QRBOX_RATIO = 0.9
-
-export function qrboxSize(viewfinderWidth: number, viewfinderHeight: number): { width: number; height: number } {
-  const size = Math.floor(Math.min(viewfinderWidth, viewfinderHeight) * QRBOX_RATIO)
-  return { width: size, height: size }
-}
-
 export const SCAN_FPS = 15

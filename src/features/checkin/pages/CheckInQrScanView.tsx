@@ -5,7 +5,6 @@ import {
   BASIC_CAMERA_CONSTRAINTS,
   FULL_CAMERA_CONSTRAINTS,
   SCAN_FPS,
-  qrboxSize,
   type CameraVideoConstraints,
 } from '@/features/checkin/lib/cameraConstraints'
 import { hasCameraStartedThisSession, markCameraStarted } from '@/features/checkin/lib/cameraSession'
@@ -178,7 +177,6 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
         { facingMode: 'environment' },
         {
           fps: SCAN_FPS,
-          qrbox: qrboxSize,
           videoConstraints,
         },
         onDecoded,
@@ -290,6 +288,7 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
       <h2 className="result-title">{phase === 'running' ? 'QRコードをかざしてください' : 'QRコードを読み取る'}</h2>
       <div className="checkin-qr-reader-wrap">
         <div id={readerId} className="checkin-qr-reader" />
+        {phase === 'running' ? <div className="checkin-qr-reader-guide" aria-hidden="true" /> : null}
         {phase !== 'running' ? (
           <div className="checkin-qr-reader-overlay" aria-live="polite">
             {phase === 'starting' ? 'カメラを起動しています…' : null}
