@@ -4,10 +4,8 @@ import { Link } from 'react-router-dom'
 import { AdminShell } from '@/features/admin/components/AdminShell'
 import { RoleBadge } from '@/features/admin/components/RoleBadge'
 import {
-  deleteAdminExhibitorInvite,
   fetchAdminExhibitors,
   patchAdminUserRole,
-  type AdminExhibitorInvite,
   type AdminExhibitorList,
   type AdminExhibitorMember,
 } from '@/shared/api/v1Admin'
@@ -17,8 +15,7 @@ import { formatClientError } from '@/shared/lib/formatClientError'
 /**
  * 登録済み出展者の一覧。ブースごとにまとめ、ブース番号順に並べる。
  * まとめ方・並び順はサーバーの応答をそのまま使う（AGENTS.md 原則3）。
- * ロールの変更（出展者 → 参加者）と仮登録の取り消しは manager のみ。
- * 仮登録 = 運営がメアドとブースだけ登録し、本人がまだ参加者登録していない出展者。
+ * ロールの変更（出展者 → 参加者）は manager のみ。
  */
 export function ExhibitorListPage() {
   const eventId = useAuthStore((s) => s.user?.event_id)
@@ -54,20 +51,6 @@ export function ExhibitorListPage() {
       setError(formatClientError(e, 'ロールの変更に失敗しました'))
       // 409: 別の運営が先に変更していた。表示を最新に揃える
       if (axios.isAxiosError(e) && e.response?.status === 409) await reload().catch(() => {})
-    } finally {
-      setBusyUserId(null)
-    }
-  }
-
-  async function onCancelInvite(invite: AdminExhibitorInvite) {
-    if (!eventId || !confirm(`${invite.email}（${invite.booth_name}）の仮登録を取り消します。よろしいですか？`)) return
-    setBusyUserId(`${invite.email}\0${invite.booth_id}`)
-    setError(null)
-    try {
-      await deleteAdminExhibitorInvite(eventId, invite.email, invite.booth_id)
-      await reload()
-    } catch (e) {
-      setError(formatClientError(e, '仮登録の取り消しに失敗しました'))
     } finally {
       setBusyUserId(null)
     }
@@ -126,7 +109,7 @@ export function ExhibitorListPage() {
         </div>
       </div>
 
-      {data && data.booths.length === 0 && data.unassigned.length === 0 && data.invites.length === 0 ? (
+      {data && data.booths.length === 0 && data.unassigned.length === 0 ? (
         <div className="card border-0 shadow-sm">
           <div className="card-body text-center text-muted py-5">
             <i className="bi bi-person-badge fs-1 d-block mb-2" />
@@ -156,43 +139,6 @@ export function ExhibitorListPage() {
         <div className="card border-warning mb-3">
           <div className="card-header bg-warning-subtle fw-bold">ブース未割り当て</div>
           <div className="list-group list-group-flush">{data.unassigned.map(renderMember)}</div>
-        </div>
-      ) : null}
-
-      {data && data.invites.length > 0 ? (
-        <div className="card border-0 shadow-sm mb-3">
-          <div className="card-header bg-white">
-            <span className="fw-bold">仮登録（本人未登録）</span>
-            <span className="text-muted small ms-2">
-              このメールアドレスで参加者登録すると、出展者になり担当ブースが紐付きます
-            </span>
-          </div>
-          <div className="list-group list-group-flush">
-            {data.invites.map((inv) => (
-              <div
-                key={`${inv.email}\0${inv.booth_id}`}
-                className="list-group-item d-flex align-items-center gap-3 px-3 py-2"
-              >
-                <div className="flex-grow-1 min-w-0">
-                  <div className="text-truncate">{inv.email}</div>
-                  <div className="text-muted small">
-                    <span className="badge text-bg-light me-1">{inv.display_code ?? '—'}</span>
-                    {inv.booth_name}
-                  </div>
-                </div>
-                {canEdit ? (
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-danger flex-shrink-0"
-                    disabled={busyUserId === `${inv.email}\0${inv.booth_id}`}
-                    onClick={() => onCancelInvite(inv)}
-                  >
-                    取り消す
-                  </button>
-                ) : null}
-              </div>
-            ))}
-          </div>
         </div>
       ) : null}
     </AdminShell>
