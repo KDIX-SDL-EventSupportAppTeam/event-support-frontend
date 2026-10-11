@@ -158,6 +158,6 @@ export function EntryPage() {
       )
 
     case 'app':
-      return <Navigate to="/home" replace />
+      return <Navigate to={user?.role === 'exhibitor' ? '/exhibitor' : '/home'} replace />
   }
 }
