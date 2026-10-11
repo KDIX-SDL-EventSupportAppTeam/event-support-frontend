@@ -16,7 +16,7 @@
   ├ survey_answered: false          → S3 アンケート回答
   ├ app_access.is_open: false       → S4 開放待ち（30 秒ポーリングで開放に追随）
   ├ onboarding_completed: false     → S5 オンボーディング
-  └ すべて済み                       → /home（出展者もここ。ホームの切替ボタンから /exhibitor へ）
+  └ すべて済み                       → /home（出展者は /exhibitor）
 ```
 
 回答完了から開放までは数日〜数週間空き、その間にセッションが切れ端末も変わる。

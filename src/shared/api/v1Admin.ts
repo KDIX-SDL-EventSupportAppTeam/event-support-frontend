@@ -534,19 +534,17 @@ export async function fetchAdminAuditLogs(
   )
   return unwrapApiData(res)
 }
-/** パスワードは渡さない。未登録のメアドは仮登録になり、本人が参加者登録した時点で出展者になる */
-export type ExhibitorBulkAccount = { email: string; booth_id: string }
+export type ExhibitorBulkAccount = { email: string; password: string; booth_id: string }
 export type ExhibitorBulkRowResult = {
   index: number
   email: string
   booth_id: string
-  /** invited: 仮登録した（本人未登録）/ updated: 既存の参加者・出展者に紐付けた */
-  status: 'invited' | 'updated' | 'skipped' | 'error'
-  user_id?: string | null
+  status: 'created' | 'updated' | 'skipped' | 'error'
+  user_id?: string
   error?: { code: string; message: string }
 }
 export type ExhibitorBulkResult = {
-  summary: { total: number; invited: number; updated: number; skipped: number; failed: number }
+  summary: { total: number; created: number; updated: number; skipped: number; failed: number }
   results: ExhibitorBulkRowResult[]
 }
 
@@ -577,35 +575,17 @@ export type AdminExhibitorBoothGroup = {
   display_code: string | null
   exhibitors: AdminExhibitorMember[]
 }
-export type AdminExhibitorInvite = {
-  email: string
-  booth_id: string
-  booth_name: string
-  display_code: string | null
-  created_at: string
-}
 export type AdminExhibitorList = {
   booths: AdminExhibitorBoothGroup[]
   /** role=exhibitor だがどのブースにも紐付いていない出展者 */
   unassigned: AdminExhibitorMember[]
-  /** 仮登録（本人がまだ参加者登録していない） */
-  invites: AdminExhibitorInvite[]
 }
 
 export async function fetchAdminExhibitors(eventId: string): Promise<AdminExhibitorList> {
   const res = await apiClient.get<ApiResponse<AdminExhibitorList>>(
     `/admin/events/${encodeURIComponent(eventId)}/exhibitors`,
   )
-  const data = unwrapApiData(res)
-  // invites を返さない server（仮登録機能より前の版）でも一覧を描けるようにする
-  return { ...data, invites: data.invites ?? [] }
-}
-
-/** 仮登録の取り消し（manager 限定） */
-export async function deleteAdminExhibitorInvite(eventId: string, email: string, boothId: string): Promise<void> {
-  await apiClient.delete(`/admin/events/${encodeURIComponent(eventId)}/exhibitor-invites`, {
-    params: { email, booth_id: boothId },
-  })
+  return unwrapApiData(res)
 }
 
 export type AdminRoleChange =

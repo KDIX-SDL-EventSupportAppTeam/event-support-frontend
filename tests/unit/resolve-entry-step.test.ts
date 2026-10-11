@@ -70,13 +70,10 @@ describe('resolveEntryStep', () => {
     expect(step).toBe('verify')
   })
 
-  it('出展者も参加者と同じ導線（メール確認 → アンケート → 開放待ち）に乗せる', () => {
-    expect(resolveEntryStep({ ...base, role: 'exhibitor', meState: null })).toBe('loading')
+  it('出展者はアンケート導線に乗せずアプリへ通す', () => {
     expect(
-      resolveEntryStep({ ...base, role: 'exhibitor', meState: meState({ email_verified: false, survey_answered: false }) }),
-    ).toBe('verify')
-    expect(resolveEntryStep({ ...base, role: 'exhibitor', meState: meState({ survey_answered: false }) })).toBe('survey')
-    expect(resolveEntryStep({ ...base, role: 'exhibitor', meState: meState(), isOpen: false })).toBe('waiting')
+      resolveEntryStep({ ...base, role: 'exhibitor', meState: null, isOpen: false }),
+    ).toBe('app')
   })
 
   it('運営（manager / viewer / admin）も参加者と同じくアンケート導線に乗せる', () => {
