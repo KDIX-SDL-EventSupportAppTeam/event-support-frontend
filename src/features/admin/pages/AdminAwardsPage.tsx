@@ -1,4 +1,5 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react'
+import { AWARD_COLORS } from '@/features/admin/lib/masterDataPreset'
 import { AdminShell } from '@/features/admin/components/AdminShell'
 import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
 import {
@@ -328,7 +329,7 @@ function AwardFormFields({ form, onChange }: { form: AwardForm; onChange: (f: Aw
           value={form.color}
           onChange={(e) => onChange({ ...form, color: e.target.value })}
         >
-          {['pink', 'purple', 'green', 'yellow', 'orange', 'cyan', 'deep-pink', 'gray'].map((c) => (
+          {AWARD_COLORS.map((c) => (
             <option key={c} value={c}>
               {c}
             </option>

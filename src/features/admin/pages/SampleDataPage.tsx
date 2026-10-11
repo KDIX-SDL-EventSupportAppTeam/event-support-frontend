@@ -8,14 +8,14 @@ export function SampleDataPage() {
 
   if (!eventId) {
     return (
-      <AdminShell>
+      <AdminShell devTool>
         <p className="text-danger">イベント ID が取得できません</p>
       </AdminShell>
     )
   }
 
   return (
-    <AdminShell>
+    <AdminShell devTool>
       <div className="d-flex flex-column gap-3">
         <div>
           <h1 className="h5 fw-bold mb-1">

@@ -30,7 +30,7 @@ export function ExhibitorBulkRegisterPage() {
 
   if (!isManager) {
     return (
-      <AdminShell title="出展者一括登録">
+      <AdminShell title="出展者一括登録" devTool>
         <div className="alert alert-danger d-flex align-items-center gap-2">
           <i className="bi bi-exclamation-triangle-fill" />
           運営管理者権限が必要です
@@ -75,7 +75,7 @@ export function ExhibitorBulkRegisterPage() {
   const canSubmit = rows.length > 0 && errorCount === 0 && !submitting
 
   return (
-    <AdminShell title="出展者一括登録">
+    <AdminShell title="出展者一括登録" devTool>
       {phase === 'input' ? (
         <>
           <p className="text-muted small">

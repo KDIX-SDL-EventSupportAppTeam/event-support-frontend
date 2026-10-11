@@ -62,7 +62,7 @@ export function BoothBulkRegisterPage() {
 
   if (!isManager) {
     return (
-      <AdminShell title="ブース一括登録">
+      <AdminShell title="ブース一括登録" devTool>
         <div className="alert alert-danger d-flex align-items-center gap-2">
           <i className="bi bi-exclamation-triangle-fill" />
           運営管理者権限が必要です
@@ -160,7 +160,7 @@ export function BoothBulkRegisterPage() {
   }
 
   return (
-    <AdminShell title="ブース一括登録">
+    <AdminShell title="ブース一括登録" devTool>
       <p className="text-muted small">
         表に直接入力し、「一括作成」で全行まとめてブースを作成します。「テンプレートを読み込む」で
         今回のイベント用の39ブース分（番号・ブース名・紹介文）を一気に流し込めます。ジャンルは空欄なら
