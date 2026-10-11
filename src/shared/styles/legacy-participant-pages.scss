@@ -250,9 +250,28 @@
   border-radius: 8px;
   background-color: #000;
 
+  // html5-qrcode は video の幅を起動時の親の幅でピクセル固定する。iOS は途中で映像の寸法が
+  // 変わることがあり、一部にしか映らなくなるため、インラインの指定に勝って枠いっぱいに広げる（issue #192）
   video {
+    width: 100% !important;
+    height: 100% !important;
     object-fit: cover;
   }
+}
+
+// 読み取りの目安枠。ライブラリの qrbox は起動時のピクセル寸法で固定されるため使わず、CSS で重ねる。
+// #reader の子にするとライブラリに作り直されるので、overlay と同じく兄弟に置く（issue #192）
+.checkin-qr-reader-guide {
+  position: absolute;
+  left: 15%;
+  width: 70%;
+  aspect-ratio: 1 / 1;
+  // 正方形（.checkin-qr-reader）の中央。下の margin-bottom: 1rem 分だけ wrap が高い
+  top: calc(50% - 0.5rem);
+  transform: translateY(-50%);
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  pointer-events: none;
 }
 
 .checkin-qr-fallback-link {
