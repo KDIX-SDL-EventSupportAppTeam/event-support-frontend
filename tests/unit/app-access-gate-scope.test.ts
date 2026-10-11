@@ -93,8 +93,9 @@ describe('開放状態の取得口', () => {
     'utf-8',
   )
 
-  it('ゲートは出展者を判定前に締め出す', () => {
-    expect(gateSrc).toMatch(/role === 'exhibitor'/)
+  it('ゲートは出展者を判定せずに参加者画面へ通す（出展者画面と行き来できる）', () => {
+    expect(gateSrc).toMatch(/role === 'exhibitor'\) return <Outlet \/>/)
+    expect(gateSrc).not.toMatch(/<Navigate to="\/exhibitor"/)
   })
 
   it('ゲートは参加者向けに shared/features/entry/api/meState から取得する', () => {
