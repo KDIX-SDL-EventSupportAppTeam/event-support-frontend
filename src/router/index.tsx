@@ -13,6 +13,9 @@ import { SampleDataPage } from '@/features/admin/pages/SampleDataPage'
 import { AuditLogPage } from '@/features/admin/pages/AuditLogPage'
 import { BoothCommentsPage } from '@/features/admin/pages/BoothCommentsPage'
 import { ExhibitorBulkRegisterPage } from '@/features/admin/pages/ExhibitorBulkRegisterPage'
+import { ExhibitorListPage } from '@/features/admin/pages/ExhibitorListPage'
+import { DevToolsPage } from '@/features/admin/pages/DevToolsPage'
+import { MasterDataBulkPage } from '@/features/admin/pages/MasterDataBulkPage'
 import { LegacyPlaceholderPage } from '@/features/admin/pages/LegacyPlaceholderPage'
 import { GachaponIntroPage } from '@/features/gachapon/pages/GachaponIntroPage'
 import { GachaponUsePage } from '@/features/gachapon/pages/GachaponUsePage'
@@ -261,7 +264,31 @@ export function AppRoutes() {
         path="/admin/exhibitors"
         element={
           <RequireAdmin>
+            <ExhibitorListPage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/exhibitors/bulk"
+        element={
+          <RequireAdmin>
             <ExhibitorBulkRegisterPage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/dev-tools"
+        element={
+          <RequireAdmin>
+            <DevToolsPage />
+          </RequireAdmin>
+        }
+      />
+      <Route
+        path="/admin/dev-tools/master-data"
+        element={
+          <RequireAdmin>
+            <MasterDataBulkPage />
           </RequireAdmin>
         }
       />

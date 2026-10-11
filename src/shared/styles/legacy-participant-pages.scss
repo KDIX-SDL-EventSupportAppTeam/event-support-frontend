@@ -632,3 +632,27 @@
 .award-vote-page .award-item .form-select {
   border-radius: 10px;
 }
+
+// プロトフェス 2026 本番アワード 8 種のテーマカラー（「プロトフェス OP」資料のアイコン色に合わせる）。
+// awards.color にこのトークン名を入れる（src/features/admin/lib/masterDataPreset.ts）
+$protofes-award-colors: (
+  'pf-yell': #ef4a6a,
+  'pf-smile': #f5a623,
+  'pf-backstory': #4e61bd,
+  'pf-hirameki': #718699,
+  'pf-heartcatch': #f7811e,
+  'pf-newhope': #2fb05a,
+  'pf-sustainable': #17a99e,
+  'pf-trend': #e8338f,
+);
+@each $name, $value in $protofes-award-colors {
+  .award-vote-page .bg-#{$name} {
+    background-color: $value;
+  }
+  .award-vote-page .color-#{$name} {
+    color: $value;
+  }
+  .award-vote-page .border-#{$name} {
+    border-color: $value;
+  }
+}

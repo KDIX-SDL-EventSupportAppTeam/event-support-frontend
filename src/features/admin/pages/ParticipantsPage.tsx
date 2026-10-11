@@ -1,7 +1,15 @@
+import axios from 'axios'
 import { useEffect, useMemo, useState } from 'react'
 import { AdminShell } from '@/features/admin/components/AdminShell'
+import { PromoteToExhibitorDialog } from '@/features/admin/components/PromoteToExhibitorDialog'
+import { RoleBadge } from '@/features/admin/components/RoleBadge'
 import { isManagerUser, useAuthStore } from '@/shared/auth/authStore'
-import { deleteAdminParticipant, fetchAdminParticipants, type AdminParticipant } from '@/shared/api/v1Admin'
+import {
+  deleteAdminParticipant,
+  fetchAdminParticipants,
+  patchAdminUserRole,
+  type AdminParticipant,
+} from '@/shared/api/v1Admin'
 import { formatClientError } from '@/shared/lib/formatClientError'
 
 export function ParticipantsPage() {
@@ -10,6 +18,9 @@ export function ParticipantsPage() {
   const [items, setItems] = useState<AdminParticipant[]>([])
   const [error, setError] = useState<string | null>(null)
   const [query, setQuery] = useState('')
+  /** 出展者への変更ダイアログの対象。manager のみ開ける */
+  const [promoting, setPromoting] = useState<AdminParticipant | null>(null)
+  const [promoteBusy, setPromoteBusy] = useState(false)
 
   async function reload() {
     if (!eventId) return
@@ -34,6 +45,27 @@ export function ParticipantsPage() {
       await reload()
     } catch (err) {
       setError(formatClientError(err, '削除に失敗しました'))
+    }
+  }
+
+  async function onPromote(boothIds: string[]) {
+    if (!eventId || !promoting) return
+    setPromoteBusy(true)
+    setError(null)
+    try {
+      await patchAdminUserRole(eventId, promoting.id, { role: 'exhibitor', booth_ids: boothIds })
+      setPromoting(null)
+      // 出展者になった人は参加者一覧（role=participant のみ）から消える
+      await reload()
+    } catch (err) {
+      setError(formatClientError(err, 'ロールの変更に失敗しました'))
+      // 409: 別の運営が先に変更していた（または運営アカウント）。ダイアログを閉じて一覧を取り直す
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        setPromoting(null)
+        await reload().catch(() => {})
+      }
+    } finally {
+      setPromoteBusy(false)
     }
   }
 
@@ -129,6 +161,18 @@ export function ParticipantsPage() {
                 <div className="text-muted flex-shrink-0 d-none d-md-block" style={{ fontSize: '0.75rem' }}>
                   {p.created_at?.slice(0, 10)}
                 </div>
+                <div className="flex-shrink-0">
+                  <RoleBadge role="participant" />
+                </div>
+                {canEdit ? (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-warning flex-shrink-0"
+                    onClick={() => setPromoting(p)}
+                  >
+                    出展者にする
+                  </button>
+                ) : null}
                 {canEdit ? (
                   <button type="button" className="btn btn-sm btn-outline-danger flex-shrink-0" onClick={() => onDelete(p.id)}>
                     <i className="bi bi-trash" />
@@ -139,6 +183,16 @@ export function ParticipantsPage() {
           </div>
         )}
       </div>
+
+      {promoting && eventId ? (
+        <PromoteToExhibitorDialog
+          eventId={eventId}
+          userLabel={promoting.display_name ?? promoting.email}
+          busy={promoteBusy}
+          onCancel={() => setPromoting(null)}
+          onConfirm={onPromote}
+        />
+      ) : null}
     </AdminShell>
   )
 }

@@ -319,11 +319,13 @@ export function HomePage() {
       <div className="row row-cols-2 g-2 mt-2 sub-actions">
         <div className="col">
           <button type="button" className="btn btn-sub-action" onClick={() => navigate('/venue-map')}>
+            <i className="bi bi-map" aria-hidden="true" />
             会場マップ
           </button>
         </div>
         <div className="col">
           <button type="button" className="btn btn-sub-action" onClick={() => navigate('/qa')}>
+            <i className="bi bi-question-circle" aria-hidden="true" />
             Q&amp;A
           </button>
         </div>

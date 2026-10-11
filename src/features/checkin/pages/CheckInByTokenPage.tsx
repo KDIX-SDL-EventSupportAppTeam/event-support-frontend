@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { resolveBoothByQrToken } from '@/shared/api/v1Participant'
 import { ApiError, toApiError } from '@/shared/api/unwrap'
+import { SHOW_BOOTH_LIST_FALLBACK } from '@/features/checkin/lib/boothListFallback'
 
 type State = { kind: 'loading' } | { kind: 'not_found' } | { kind: 'error' }
 
@@ -61,9 +62,11 @@ export function CheckInByTokenPage() {
           <Link className="btn btn-primary btn-lg" to="/checkin">
             QRを読み取る
           </Link>
-          <Link className="btn btn-outline-secondary" to="/booth-list">
-            ブース一覧から選ぶ
-          </Link>
+          {SHOW_BOOTH_LIST_FALLBACK ? (
+            <Link className="btn btn-outline-secondary" to="/booth-list">
+              ブース一覧から選ぶ
+            </Link>
+          ) : null}
         </div>
       </div>
     )

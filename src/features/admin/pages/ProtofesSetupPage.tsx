@@ -106,7 +106,7 @@ export function ProtofesSetupPage() {
 
   if (!isManager) {
     return (
-      <AdminShell title="プロトフェス用初期設定">
+      <AdminShell title="プロトフェス用初期設定" devTool>
         <div className="alert alert-danger d-flex align-items-center gap-2">
           <i className="bi bi-exclamation-triangle-fill" />
           運営管理者権限が必要です
@@ -116,7 +116,7 @@ export function ProtofesSetupPage() {
   }
 
   return (
-    <AdminShell title="プロトフェス用初期設定">
+    <AdminShell title="プロトフェス用初期設定" devTool>
       {error ? <div className="alert alert-danger">{error}</div> : null}
       {message ? <div className="alert alert-success">{message}</div> : null}
 

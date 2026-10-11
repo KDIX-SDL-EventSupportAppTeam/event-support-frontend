@@ -28,9 +28,18 @@ export function WaitingStep({
   error?: unknown
 }) {
   return (
-    <EntryLayout title="ご回答ありがとうございました">
-      <p className="text-center mb-4">
-        当日はいただいた内容を参考に、より楽しんでいただけるよう準備いたします。
+    <EntryLayout title="ご登録ありがとうございました">
+      <div className="alert alert-success text-center mb-3" role="status">
+        <i className="bi bi-check-circle-fill me-1" aria-hidden="true" />
+        参加登録と事前アンケートの回答が完了しました。
+      </div>
+      <p className="text-center mb-2">
+        アプリはイベント当日、開場時刻から使えるようになります。
+        <br />
+        それまではこの先へ進めませんので、当日をお楽しみに！
+      </p>
+      <p className="text-muted text-center small mb-4">
+        いただいた回答は、当日のおすすめブースのご案内に使わせていただきます。
       </p>
       <div className="d-grid">
         <button type="button" className="btn btn-primary btn-lg" disabled>

@@ -9,7 +9,7 @@ import type { AppAccess } from '@/shared/api/appAccess'
  */
 export function formatOpenSchedule(access: AppAccess, remainingMs: number | null): string {
   if (access.mode !== 'scheduled' || !access.app_opens_at) {
-    return 'アプリは現在ご利用いただけません。'
+    return 'イベント当日の開場までお待ちください。'
   }
   const opensAt = new Date(access.app_opens_at)
   const dateLabel = `${opensAt.getMonth() + 1}/${opensAt.getDate()} ${String(opensAt.getHours()).padStart(2, '0')}:${String(

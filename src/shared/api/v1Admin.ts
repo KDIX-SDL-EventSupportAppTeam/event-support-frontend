@@ -559,6 +559,52 @@ export async function bulkRegisterExhibitors(
   return unwrapApiData(res)
 }
 
+// ---- 出展者一覧・ロール変更（server #185: docs/specs/exhibitor-list-and-role-change/README.md） ----
+// PATCH のエラー: 422 VALIDATION_ERROR / 404 NOT_FOUND / 409 CONFLICT（運営アカウント・ロール不一致・同時更新）
+
+export type AdminExhibitorMember = {
+  user_id: string
+  email: string
+  display_name: string | null
+  created_at: string
+}
+/** ブース単位にまとめた出展者。並び順（ブース番号順）はサーバーが決める */
+export type AdminExhibitorBoothGroup = {
+  booth_id: string
+  booth_name: string
+  display_code: string | null
+  exhibitors: AdminExhibitorMember[]
+}
+export type AdminExhibitorList = {
+  booths: AdminExhibitorBoothGroup[]
+  /** role=exhibitor だがどのブースにも紐付いていない出展者 */
+  unassigned: AdminExhibitorMember[]
+}
+
+export async function fetchAdminExhibitors(eventId: string): Promise<AdminExhibitorList> {
+  const res = await apiClient.get<ApiResponse<AdminExhibitorList>>(
+    `/admin/events/${encodeURIComponent(eventId)}/exhibitors`,
+  )
+  return unwrapApiData(res)
+}
+
+export type AdminRoleChange =
+  | { role: 'exhibitor'; booth_ids: string[] }
+  | { role: 'participant' }
+
+/** 参加者⇔出展者のロール変更（manager 限定。server は 403） */
+export async function patchAdminUserRole(
+  eventId: string,
+  userId: string,
+  body: AdminRoleChange,
+): Promise<{ user_id: string; role: 'participant' | 'exhibitor' }> {
+  const res = await apiClient.patch<ApiResponse<{ user_id: string; role: 'participant' | 'exhibitor' }>>(
+    `/admin/events/${encodeURIComponent(eventId)}/users/${encodeURIComponent(userId)}/role`,
+    body,
+  )
+  return unwrapApiData(res)
+}
+
 // ---- アワード（server #124: docs/specs/gacha-and-award/06-api/award-api.md） ----
 // 閲覧（一覧・集計）は viewer 可、変更・開閉は manager 限定（server が 403）。
 export type AdminAward = {
