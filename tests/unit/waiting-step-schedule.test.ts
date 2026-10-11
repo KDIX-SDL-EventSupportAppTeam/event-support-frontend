@@ -51,13 +51,13 @@ describe('formatOpenSchedule', () => {
 
   it('scheduled でなければ開放予定時刻を出さない', () => {
     expect(formatOpenSchedule(makeAccess({ mode: 'closed' }), null)).toBe(
-      'アプリは現在ご利用いただけません。',
+      'イベント当日の開場までお待ちください。',
     )
   })
 
   it('app_opens_at が無ければ開放予定時刻を出さない', () => {
     expect(formatOpenSchedule(makeAccess({ app_opens_at: null }), null)).toBe(
-      'アプリは現在ご利用いただけません。',
+      'イベント当日の開場までお待ちください。',
     )
   })
 })
