@@ -5,7 +5,7 @@ import { useAuthStore } from '@/shared/auth/authStore'
 
 type GateResult = {
   isOpen: boolean
-  /** 事前アンケート回答済みか。出展者は対象外なので常に true */
+  /** 事前アンケート回答済みか */
   surveyAnswered: boolean
 }
 
@@ -15,11 +15,10 @@ type GateResult = {
  * 参加者ルートをまとめて配下に入れるレイアウトルートとして使う
  * （`docs/specs/app-access-gate-scope`。1画面ずつ書き足す形にしない）。
  *
- * ここは参加者専用ルートなので、出展者トークンは判定を待たず即座に `/exhibitor` へ戻す
- * （以前は出展者にも `is_open` 判定を通していたため、参加者画面が一瞬見えてから
- * 出展者画面へバウンスする不具合があった）。
+ * 出展者も参加者と同じに扱う（事前アンケート・開放待ちの対象）。出展者画面 `/exhibitor` も
+ * このゲートの配下に置き、ホームの切替ボタンから行き来する。
  *
- * 出展者以外は、次のどちらかなら入口 `/e/:eventId` へ戻す。入口が現在地に応じた画面を描く。
+ * 次のどちらかなら入口 `/e/:eventId` へ戻す。入口が現在地に応じた画面を描く。
  * - アプリが未開放（`is_open === false`）
  * - 事前アンケートが未回答（初回ログイン時に必ず回答させる。
  *   `/home` などを直接開いてアンケートを飛ばせないようにする）
@@ -37,7 +36,7 @@ export function RequireAppOpen() {
   const [checked, setChecked] = useState(false)
 
   useEffect(() => {
-    if (!eventId || role === 'exhibitor') {
+    if (!eventId) {
       setChecked(true)
       return
     }
@@ -64,9 +63,6 @@ export function RequireAppOpen() {
   }, [eventId, role])
 
   if (!checked) return null
-  // 参加者専用ルート配下。出展者トークンは参加者画面に入れず出展者画面へ戻す
-  // （fetchAppAccess を介した誤許可・フラッシュ→バウンスの原因だったため明示的に拒否する）。
-  if (role === 'exhibitor') return <Navigate to="/exhibitor" replace />
   // 取得できなかった場合（gate が null）は締め出さない。
   // ここで undefined を踏んでアプリ全体が白画面になるのを防ぐ。
   if (eventId && gate && (!gate.isOpen || !gate.surveyAnswered)) {

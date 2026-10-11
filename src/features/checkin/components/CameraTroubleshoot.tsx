@@ -1,6 +1,7 @@
 import type { CameraFailure } from '@/features/checkin/lib/classifyCameraError'
 import type { Platform } from '@/shared/lib/detectEnvironment'
 import { CopyButton } from '@/shared/components/CopyButton'
+import { SHOW_BOOTH_LIST_FALLBACK } from '@/features/checkin/lib/boothListFallback'
 
 type Props = {
   failure: CameraFailure
@@ -81,9 +82,11 @@ export function CameraTroubleshoot({ failure, platform, onManualCode, onFallback
           </button>
         ) : null}
         {!manualFirst ? manualButton : null}
-        <button type="button" className="btn btn-outline-secondary" onClick={onFallback}>
-          ブース一覧から選ぶ
-        </button>
+        {SHOW_BOOTH_LIST_FALLBACK ? (
+          <button type="button" className="btn btn-outline-secondary" onClick={onFallback}>
+            ブース一覧から選ぶ
+          </button>
+        ) : null}
       </div>
     </div>
   )

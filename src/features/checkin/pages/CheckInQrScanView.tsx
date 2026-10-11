@@ -5,7 +5,6 @@ import {
   BASIC_CAMERA_CONSTRAINTS,
   FULL_CAMERA_CONSTRAINTS,
   SCAN_FPS,
-  qrboxSize,
   type CameraVideoConstraints,
 } from '@/features/checkin/lib/cameraConstraints'
 import { hasCameraStartedThisSession, markCameraStarted } from '@/features/checkin/lib/cameraSession'
@@ -17,6 +16,7 @@ import {
 import { parseQrToCheckinTarget } from '@/features/checkin/lib/parseQrToCheckinTarget'
 import { CopyButton } from '@/shared/components/CopyButton'
 import { detectInAppBrowser, detectPlatform } from '@/shared/lib/detectEnvironment'
+import { SHOW_BOOTH_LIST_FALLBACK } from '@/features/checkin/lib/boothListFallback'
 
 type Props = {
   /** 旧形式（ブース ID を含む QR）を読み取った */
@@ -28,7 +28,9 @@ type Props = {
   onManualCode?: () => void
 }
 
-const OUT_OF_SCOPE_MSG = 'このQRコードは読み取れませんでした。もう一度かざすか、ブース一覧から選んでください。'
+const OUT_OF_SCOPE_MSG = SHOW_BOOTH_LIST_FALLBACK
+  ? 'このQRコードは読み取れませんでした。もう一度かざすか、ブース一覧から選んでください。'
+  : 'このQRコードは読み取れませんでした。もう一度かざすか、コードを入力してください。'
 
 /**
  * フォールバック導線（ブース一覧から選ぶ）を出すまでの待ち時間。
@@ -178,7 +180,6 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
         { facingMode: 'environment' },
         {
           fps: SCAN_FPS,
-          qrbox: qrboxSize,
           videoConstraints,
         },
         onDecoded,
@@ -290,6 +291,7 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
       <h2 className="result-title">{phase === 'running' ? 'QRコードをかざしてください' : 'QRコードを読み取る'}</h2>
       <div className="checkin-qr-reader-wrap">
         <div id={readerId} className="checkin-qr-reader" />
+        {phase === 'running' ? <div className="checkin-qr-reader-guide" aria-hidden="true" /> : null}
         {phase !== 'running' ? (
           <div className="checkin-qr-reader-overlay" aria-live="polite">
             {phase === 'starting' ? 'カメラを起動しています…' : null}
@@ -307,9 +309,11 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
               コードを入力してチェックイン
             </button>
           ) : null}
-          <button type="button" className="btn btn-outline-secondary" onClick={onFallback}>
-            ブース一覧から選ぶ
-          </button>
+          {SHOW_BOOTH_LIST_FALLBACK ? (
+            <button type="button" className="btn btn-outline-secondary" onClick={onFallback}>
+              ブース一覧から選ぶ
+            </button>
+          ) : null}
         </div>
       ) : null}
 
@@ -324,9 +328,11 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
                 コードを入力してチェックイン
               </button>
             ) : null}
-            <button type="button" className="btn btn-outline-secondary" onClick={onFallback}>
-              ブース一覧から選ぶ
-            </button>
+            {SHOW_BOOTH_LIST_FALLBACK ? (
+              <button type="button" className="btn btn-outline-secondary" onClick={onFallback}>
+                ブース一覧から選ぶ
+              </button>
+            ) : null}
           </div>
         </div>
       ) : null}
@@ -347,7 +353,7 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
       {phase === 'running' || phase === 'starting' ? (
         <>
           {error ? <p className="checkin-error-box">{error}</p> : null}
-          {phase === 'running' && showFallbackLink ? (
+          {SHOW_BOOTH_LIST_FALLBACK && phase === 'running' && showFallbackLink ? (
             <button type="button" className="checkin-qr-fallback-link" onClick={onFallback}>
               ブース一覧から選ぶ
             </button>

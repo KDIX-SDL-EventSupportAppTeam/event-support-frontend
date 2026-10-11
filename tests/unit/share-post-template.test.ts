@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { buildSharePost } from '@/features/home/share/sharePostTemplate'
-import { buildXIntentUrl } from '@/shared/lib/xShare'
+import { buildXIntentUrl, openXShare } from '@/shared/lib/xShare'
 
 describe('buildSharePost', () => {
   it('イベント名を文面に差し込む', () => {
@@ -52,5 +52,39 @@ describe('buildXIntentUrl', () => {
   it('url 未指定なら url パラメータを付けない', () => {
     const q = new URL(buildXIntentUrl({ text: 't' })).searchParams
     expect(q.has('url')).toBe(false)
+  })
+})
+
+describe('openXShare', () => {
+  const UA = {
+    ios: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Safari/604.1',
+    android: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36',
+    pc: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0 Safari/537.36',
+  }
+
+  function setup(userAgent: string) {
+    const open = vi.fn()
+    const location = { href: 'https://app.example/' }
+    vi.stubGlobal('navigator', { userAgent })
+    vi.stubGlobal('window', { open, location })
+    return { open, location }
+  }
+
+  afterEach(() => vi.unstubAllGlobals())
+
+  const expected = buildXIntentUrl({ text: 'こんにちは' })
+
+  it.each([['iOS', UA.ios], ['Android', UA.android]])('%s は同じタブで開き、window.open を呼ばない', (_n, ua) => {
+    const { open, location } = setup(ua)
+    openXShare({ text: 'こんにちは' })
+    expect(location.href).toBe(expected)
+    expect(open).not.toHaveBeenCalled()
+  })
+
+  it('PC は新規タブで開き、現在のタブは遷移しない', () => {
+    const { open, location } = setup(UA.pc)
+    openXShare({ text: 'こんにちは' })
+    expect(open).toHaveBeenCalledWith(expected, '_blank', 'noopener,noreferrer')
+    expect(location.href).toBe('https://app.example/')
   })
 })

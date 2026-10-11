@@ -61,7 +61,7 @@ export const AdminSidebar = memo(function AdminSidebar({
 
       <nav className="flex-grow-1 overflow-auto py-2">
         <div className="px-3 py-1 text-white-50 small text-uppercase">フルページ</div>
-        {navItems.map((item) => (
+        {navItems.filter((item) => !item.devOnly).map((item) => (
           <Link
             key={item.to}
             to={item.to}
@@ -74,6 +74,25 @@ export const AdminSidebar = memo(function AdminSidebar({
             {item.label}
           </Link>
         ))}
+
+        {navItems.some((item) => item.devOnly) ? (
+          <>
+            <div className="px-3 py-1 mt-2 text-danger small text-uppercase">開発者向け</div>
+            {navItems.filter((item) => item.devOnly).map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`d-flex align-items-center gap-2 px-3 py-2 text-decoration-none ${
+                  pathname.startsWith(item.to) ? 'bg-danger text-white' : 'text-danger'
+                }`}
+                style={{ fontSize: '0.85rem' }}
+              >
+                <i className={`bi ${item.icon}`} />
+                {item.label}
+              </Link>
+            ))}
+          </>
+        ) : null}
 
         <div className="px-3 py-1 mt-2 text-white-50 small text-uppercase">ウィンドウ</div>
         {WINDOW_REGISTRY.map((item) => (

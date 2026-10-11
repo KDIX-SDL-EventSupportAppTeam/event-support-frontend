@@ -30,7 +30,7 @@ export function ExhibitorBulkRegisterPage() {
 
   if (!isManager) {
     return (
-      <AdminShell title="出展者一括登録">
+      <AdminShell title="出展者一括登録" devTool>
         <div className="alert alert-danger d-flex align-items-center gap-2">
           <i className="bi bi-exclamation-triangle-fill" />
           運営管理者権限が必要です
@@ -52,7 +52,7 @@ export function ExhibitorBulkRegisterPage() {
     try {
       const res = await bulkRegisterExhibitors(
         eventId,
-        rows.map((r) => ({ email: r.email, password: r.password, booth_id: r.boothId! })),
+        rows.map((r) => ({ email: r.email, booth_id: r.boothId! })),
       )
       setResult(res)
       setPhase('done')
@@ -75,11 +75,17 @@ export function ExhibitorBulkRegisterPage() {
   const canSubmit = rows.length > 0 && errorCount === 0 && !submitting
 
   return (
-    <AdminShell title="出展者一括登録">
+    <AdminShell title="出展者一括登録" devTool>
       {phase === 'input' ? (
         <>
           <p className="text-muted small">
-            1行 = 1アカウント。「メールアドレス[タブまたはカンマ]パスワード[タブまたはカンマ]ブース名」の形式で貼り付けてください（スプレッドシートの行コピーがそのまま貼れます）
+            1行 = 1件。「メールアドレス[タブまたはカンマ]ブース名」の形式で貼り付けてください（スプレッドシートの行コピーがそのまま貼れます）。
+            複数ブースを担当する場合は、同じメールアドレスでブースごとに1行ずつ書きます
+          </p>
+          <p className="text-muted small">
+            パスワードは設定しません。まだ参加者登録していないメールアドレスは「仮登録」になり、
+            本人がそのメールアドレスで参加者登録した時点で出展者になります（メール確認・事前アンケートは参加者と同じです）。
+            すでに参加者登録済みのメールアドレスは、その場で出展者に切り替わります
           </p>
           {boothsError ? (
             <div className="alert alert-danger d-flex align-items-center gap-2">
@@ -116,7 +122,6 @@ export function ExhibitorBulkRegisterPage() {
                 <tr>
                   <th>行</th>
                   <th>メールアドレス</th>
-                  <th>パスワード</th>
                   <th>担当ブース</th>
                   <th>状態</th>
                 </tr>
@@ -126,7 +131,6 @@ export function ExhibitorBulkRegisterPage() {
                   <tr key={r.line} className={r.errors.length > 0 ? 'table-danger' : undefined}>
                     <td>{r.line}</td>
                     <td>{r.email}</td>
-                    <td>{r.password}</td>
                     <td>{r.boothName}</td>
                     <td>
                       {r.errors.length > 0 ? (
@@ -163,8 +167,8 @@ export function ExhibitorBulkRegisterPage() {
             <div className="col-6 col-md-3">
               <div className="card border-0 shadow-sm">
                 <div className="card-body text-center">
-                  <div className="fw-bold fs-4">{result.summary.created}</div>
-                  <div className="text-muted small">新規作成</div>
+                  <div className="fw-bold fs-4">{result.summary.invited}</div>
+                  <div className="text-muted small">仮登録（本人未登録）</div>
                 </div>
               </div>
             </div>
@@ -172,7 +176,7 @@ export function ExhibitorBulkRegisterPage() {
               <div className="card border-0 shadow-sm">
                 <div className="card-body text-center">
                   <div className="fw-bold fs-4">{result.summary.updated}</div>
-                  <div className="text-muted small">既存に付与</div>
+                  <div className="text-muted small">登録済みの人に付与</div>
                 </div>
               </div>
             </div>

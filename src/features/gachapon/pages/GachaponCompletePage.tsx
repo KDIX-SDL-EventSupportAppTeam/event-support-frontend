@@ -60,7 +60,9 @@ export function GachaponCompletePage() {
         )}
 
         <p className="text-muted mb-4">
-          ガチャポン筐体でお楽しみください。プロトフェスを引き続きお楽しみください。
+          ガチャポン筐体でお楽しみください。
+          <br />
+          プロトフェスを引き続きお楽しみください。
         </p>
         <div className="d-grid">
           <button

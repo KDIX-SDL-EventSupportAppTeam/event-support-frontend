@@ -1,10 +1,10 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { classifyCameraError, isOverconstrainedError } from '@/features/checkin/lib/classifyCameraError'
 import {
   BASIC_CAMERA_CONSTRAINTS,
   FULL_CAMERA_CONSTRAINTS,
-  QRBOX_RATIO,
-  qrboxSize,
 } from '@/features/checkin/lib/cameraConstraints'
 
 /** DOMException 相当（node 環境でも name だけで判定できることを確かめる） */
@@ -65,10 +65,23 @@ describe('カメラ制約（issue #167）', () => {
     })
     expect(BASIC_CAMERA_CONSTRAINTS).toEqual({ facingMode: 'environment' })
   })
+})
 
-  it('読み取り枠は短辺の 90%', () => {
-    expect(QRBOX_RATIO).toBe(0.9)
-    expect(qrboxSize(400, 300)).toEqual({ width: 270, height: 270 })
-    expect(qrboxSize(300, 400)).toEqual({ width: 270, height: 270 })
+describe('QR 読み取り画面の枠（issue #192）', () => {
+  const root = path.resolve(__dirname, '../../src')
+  const view = readFileSync(path.join(root, 'features/checkin/pages/CheckInQrScanView.tsx'), 'utf-8')
+  const styles = readFileSync(path.join(root, 'shared/styles/legacy-participant-pages.scss'), 'utf-8')
+
+  it('起きてはいけないこと: ライブラリの qrbox（起動時のピクセル固定）を渡す', () => {
+    expect(view).not.toMatch(/\bqrbox\b/)
+  })
+
+  it('目安枠は #reader の兄弟として、running のときだけ出す', () => {
+    expect(view).toContain("{phase === 'running' ? <div className=\"checkin-qr-reader-guide\"")
+    expect(styles).toMatch(/\.checkin-qr-reader-guide\s*{[^}]*pointer-events: none/)
+  })
+
+  it('映像はインラインの固定幅に勝って枠いっぱいに広げる', () => {
+    expect(styles).toMatch(/video\s*{[^}]*width: 100% !important;[^}]*height: 100% !important;[^}]*object-fit: cover/)
   })
 })

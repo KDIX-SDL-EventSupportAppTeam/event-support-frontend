@@ -22,6 +22,7 @@ import { useAuthStore } from '@/shared/auth/authStore'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
 import type { CheckInResult } from '@/shared/types/checkin'
 import { entryPathForRedirect } from '@/shared/lib/lastEventId'
+import { SHOW_BOOTH_LIST_FALLBACK } from '@/features/checkin/lib/boothListFallback'
 
 // チェックイン成功モーダルの順序（docs/specs/bingo-dynamic-unlock/03-checkin-flow.md）:
 //   1. 評価ステップ（今回チェックインしたブースの評価を先頭で聞く。未評価の過去ブースはマスから手動評価）
@@ -388,7 +389,7 @@ export function CheckInPage() {
   }
 
   if (view === 'unlock' && currentUnlock) {
-    return <UnlockAnimation positions={currentUnlock.positions} onDone={afterUnlockAnimation} />
+    return <UnlockAnimation key={currentUnlock.pairKey} positions={currentUnlock.positions} onDone={afterUnlockAnimation} />
   }
 
   if (view === 'already_visited') {
@@ -515,16 +516,18 @@ export function CheckInPage() {
           >
             もう一度読み取る
           </button>
-          <button
-            type="button"
-            className="btn btn-outline-secondary w-100"
-            onClick={() => {
-              setBoothSource('list')
-              setSelectedBoothId('')
-            }}
-          >
-            ブース一覧から選ぶ
-          </button>
+          {SHOW_BOOTH_LIST_FALLBACK ? (
+            <button
+              type="button"
+              className="btn btn-outline-secondary w-100"
+              onClick={() => {
+                setBoothSource('list')
+                setSelectedBoothId('')
+              }}
+            >
+              ブース一覧から選ぶ
+            </button>
+          ) : null}
         </div>
       ) : null}
 

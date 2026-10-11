@@ -197,6 +197,7 @@ export function GachaponUsePage() {
 
             <p className="text-muted small mb-3">
               「{count}枚使う」を押すと、その場でコインが{count}枚消費されます。
+              <br />
               <strong>使用後は取り消せません。</strong>
             </p>
             <div className="d-grid gap-2">
