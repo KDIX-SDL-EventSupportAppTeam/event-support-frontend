@@ -5,10 +5,11 @@ import { useAuthStore } from '@/shared/auth/authStore'
 import { purgeEventScopedKeys } from '@/shared/config/storageKeys'
 import { clearLastEventId } from '@/shared/lib/lastEventId'
 
-type Pending = 'other-event' | 'logout' | null
+type Pending = 'logout' | null
 
 /**
- * 入口の行き止まりから自力で出るための 2 ボタン（issue #173）。
+ * 入口の行き止まりから自力で出るためのボタン（issue #173）。
+ * 「別のイベントに参加する」は不要になったため置かない。
  *
  * 「エラーを表示する画面に、そこから出る導線が無い」という同じ形の袋小路が複数あるため、
  * 待機画面などにこれを置く。どちらも破壊的なので 1 段の確認を挟む。
@@ -17,12 +18,6 @@ export function EntryEscapeActions({ eventId }: { eventId?: string }) {
   const navigate = useNavigate()
   const clearSession = useAuthStore((s) => s.clearSession)
   const [pending, setPending] = useState<Pending>(null)
-
-  function goOtherEvent() {
-    clearLastEventId()
-    setPending(null)
-    navigate('/e', { replace: true })
-  }
 
   function logoutAndRestart() {
     clearSession()
@@ -35,28 +30,15 @@ export function EntryEscapeActions({ eventId }: { eventId?: string }) {
 
   return (
     <>
-      <div className="d-grid gap-2 mt-4" data-testid="entry-escape-actions">
-        <button type="button" className="btn btn-outline-secondary" onClick={() => setPending('other-event')}>
-          別のイベントに参加する
-        </button>
-        <button type="button" className="btn btn-outline-danger" onClick={() => setPending('logout')}>
+      <div className="text-center mt-4" data-testid="entry-escape-actions">
+        <button
+          type="button"
+          className="btn btn-link btn-sm text-muted text-decoration-underline"
+          onClick={() => setPending('logout')}
+        >
           ログアウトして最初からやり直す
         </button>
       </div>
-
-      {pending === 'other-event' ? (
-        <ConfirmActionModal
-          titleId="escape-other-event-title"
-          title="別のイベントに参加しますか？"
-          confirmLabel="別のイベントへ"
-          onConfirm={goOtherEvent}
-          onCancel={() => setPending(null)}
-        >
-          <p className="mb-0">
-            このイベントの控えを消して、案内ページへ移ります。参加するイベントの QR コードまたは配布リンクから開き直してください。
-          </p>
-        </ConfirmActionModal>
-      ) : null}
 
       {pending === 'logout' ? (
         <ConfirmActionModal
