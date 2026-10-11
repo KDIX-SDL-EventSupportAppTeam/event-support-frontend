@@ -388,7 +388,7 @@ export function CheckInPage() {
   }
 
   if (view === 'unlock' && currentUnlock) {
-    return <UnlockAnimation positions={currentUnlock.positions} onDone={afterUnlockAnimation} />
+    return <UnlockAnimation key={currentUnlock.pairKey} positions={currentUnlock.positions} onDone={afterUnlockAnimation} />
   }
 
   if (view === 'already_visited') {

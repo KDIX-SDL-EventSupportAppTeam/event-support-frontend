@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   UNLOCK_MODAL_AUTO_CLOSE_MS,
   UNLOCK_MODAL_BUTTON_ENABLE_MS,
@@ -24,14 +24,21 @@ type Props = {
 export function UnlockAnimation({ positions, onDone }: Props) {
   const [closable, setClosable] = useState(false)
 
+  // onDone は親のレンダーごとに作り直される。依存に入れると親が再レンダーされるたびに
+  // タイマーが両方リセットされ、閉じられなくなる（issue #193: CheckInPage はクールダウンで毎秒再レンダー）。
+  // 最新の関数だけ ref で参照し、タイマーは表示した最初の1回だけ仕込む。
+  // キューの次の解放は呼び出し側が key={pairKey} で作り直して表示する。
+  const onDoneRef = useRef(onDone)
+  onDoneRef.current = onDone
+
   useEffect(() => {
     const enableTimer = window.setTimeout(() => setClosable(true), UNLOCK_MODAL_BUTTON_ENABLE_MS)
-    const closeTimer = window.setTimeout(onDone, UNLOCK_MODAL_AUTO_CLOSE_MS)
+    const closeTimer = window.setTimeout(() => onDoneRef.current(), UNLOCK_MODAL_AUTO_CLOSE_MS)
     return () => {
       window.clearTimeout(enableTimer)
       window.clearTimeout(closeTimer)
     }
-  }, [onDone])
+  }, [])
 
   const count = positions.length
 
