@@ -98,28 +98,22 @@ export function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
+      {/*
+        参加者が触る画面はすべてこのゲート配下に置く（docs/specs/app-access-gate-scope）。
+        1画面ずつ RequireAuth / RequireAppOpen を書き足さない。ここに Route を足せば
+        自動で「認証必須 + アプリ公開ゲート」が掛かる構造にしておく。
+        入口（/e, /e/:eventId）とメール確認（/verify-email）はこの外に置くこと。
+        出展者画面 /exhibitor も参加者と同じゲート配下（レイアウトだけ ParticipantLayout の外）。
+      */}
       <Route
-        path="/exhibitor"
         element={
           <RequireAuth>
-            <ExhibitorDashboardPage />
+            <RequireAppOpen />
           </RequireAuth>
         }
-      />
-      <Route element={<ParticipantLayout />}>
-        {/*
-          参加者が触る画面はすべてこのゲート配下に置く（docs/specs/app-access-gate-scope）。
-          1画面ずつ RequireAuth / RequireAppOpen を書き足さない。ここに Route を足せば
-          自動で「認証必須 + アプリ公開ゲート」が掛かる構造にしておく。
-          入口（/e, /e/:eventId）とメール確認（/verify-email）はこの外に置くこと。
-        */}
-        <Route
-          element={
-            <RequireAuth>
-              <RequireAppOpen />
-            </RequireAuth>
-          }
-        >
+      >
+        <Route path="/exhibitor" element={<ExhibitorDashboardPage />} />
+        <Route element={<ParticipantLayout />}>
           {/* participant-gated:start ── ここから下は自動でゲート配下 */}
           <Route path="/home" element={<HomePage />} />
           <Route path="/checkin" element={<CheckInRoute />} />

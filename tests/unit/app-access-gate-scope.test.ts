@@ -93,8 +93,8 @@ describe('開放状態の取得口', () => {
     'utf-8',
   )
 
-  it('ゲートは出展者を判定せずに参加者画面へ通す（出展者画面と行き来できる）', () => {
-    expect(gateSrc).toMatch(/role === 'exhibitor'\) return <Outlet \/>/)
+  it('ゲートは出展者も参加者と同じに判定する（素通しの分岐を持たない）', () => {
+    expect(gateSrc).not.toMatch(/role === 'exhibitor'/)
     expect(gateSrc).not.toMatch(/<Navigate to="\/exhibitor"/)
   })
 
