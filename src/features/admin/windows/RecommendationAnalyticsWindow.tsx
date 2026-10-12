@@ -64,7 +64,7 @@ export const RecommendationAnalyticsWindow = memo(function RecommendationAnalyti
               <div className="border rounded p-2 text-center">
                 <div className="fw-bold">{data.summary.total_recommendations}</div>
                 <div className="text-muted" style={{ fontSize: '0.7rem' }}>
-                  総推薦回数
+                  候補提示数
                 </div>
               </div>
             </div>
@@ -80,7 +80,7 @@ export const RecommendationAnalyticsWindow = memo(function RecommendationAnalyti
               <div className="border rounded p-2 text-center">
                 <div className="fw-bold">{data.summary.open_count}</div>
                 <div className="text-muted" style={{ fontSize: '0.7rem' }}>
-                  オープン推薦
+                  未採用の候補
                 </div>
               </div>
             </div>
@@ -95,8 +95,9 @@ export const RecommendationAnalyticsWindow = memo(function RecommendationAnalyti
           </div>
 
           <div className="alert alert-light border small mb-3 py-2">
-            <strong>MAB（マルチアームドバンディット）</strong>
-            : 過去のチェックイン・評価データをもとに、参加者ごとに最適なブース候補を提示します。
+            <strong>候補提示数</strong>
+            : マス解放のたびに推薦エンジンが採点した候補の延べ数です（解放回数ではありません）。
+            アルゴリズムは解放で最も多く使われた戦略で、事前アンケートで決まる初期マスは含みません。
             提示されているのに選ばれないブースは運営フォローのサインになります。
           </div>
 
