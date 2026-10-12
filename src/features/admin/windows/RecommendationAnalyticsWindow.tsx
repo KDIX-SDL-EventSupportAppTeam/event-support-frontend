@@ -72,7 +72,7 @@ export const RecommendationAnalyticsWindow = memo(function RecommendationAnalyti
               <div className="border rounded p-2 text-center">
                 <div className="fw-bold">{data.summary.acceptance_rate}%</div>
                 <div className="text-muted" style={{ fontSize: '0.7rem' }}>
-                  選択率
+                  割当率
                 </div>
               </div>
             </div>
@@ -80,7 +80,7 @@ export const RecommendationAnalyticsWindow = memo(function RecommendationAnalyti
               <div className="border rounded p-2 text-center">
                 <div className="fw-bold">{data.summary.open_count}</div>
                 <div className="text-muted" style={{ fontSize: '0.7rem' }}>
-                  未採用の候補
+                  割り当てなかった候補
                 </div>
               </div>
             </div>
@@ -98,7 +98,8 @@ export const RecommendationAnalyticsWindow = memo(function RecommendationAnalyti
             <strong>候補提示数</strong>
             : マス解放のたびに推薦エンジンが採点した候補の延べ数です（解放回数ではありません）。
             アルゴリズムは解放で最も多く使われた戦略で、事前アンケートで決まる初期マスは含みません。
-            提示されているのに選ばれないブースは運営フォローのサインになります。
+            割当率は候補のうちシステムがマスに割り当てた割合で、参加者が実際に訪れたかは「推薦→チェックイン」で見ます。
+            候補に挙がるのに割り当てられないブースは運営フォローのサインになります。
           </div>
 
           {chartData.length > 0 ? (
@@ -107,8 +108,8 @@ export const RecommendationAnalyticsWindow = memo(function RecommendationAnalyti
                 <BarChart data={chartData} layout="vertical" margin={{ left: 50 }}>
                   <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10 }} />
                   <YAxis type="category" dataKey="name" width={48} tick={{ fontSize: 9 }} />
-                  <Tooltip formatter={(v) => [`${v}%`, '採用率']} />
-                  <Bar {...CHART_ANIMATION_OFF} dataKey="rate" fill="#6f42c1" name="採用率" />
+                  <Tooltip formatter={(v) => [`${v}%`, '割当率']} />
+                  <Bar {...CHART_ANIMATION_OFF} dataKey="rate" fill="#6f42c1" name="割当率" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
