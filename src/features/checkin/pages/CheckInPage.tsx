@@ -4,6 +4,7 @@ import {
   fetchV1BingoCard,
   postV1CheckIn,
   postV1CheckInRating,
+  postV1CheckInRatingSkip,
   type V1CheckInResponse,
 } from '@/shared/api/v1Participant'
 import { ApiError } from '@/shared/api/unwrap'
@@ -230,8 +231,8 @@ export function CheckInPage() {
     }
   }
 
-  // 星（中央値なし）＋ コメント欄 ＋「完了」ボタン1つ。星未選択のまま完了しても
-  // 評価を送らず次へ進む（スキップ扱い、エラーにしない）。送信失敗は静かに握りつぶす
+  // 星（中央値なし）＋ コメント欄 ＋「完了」「スキップ」。「完了」は星を選ぶまで押せない
+  // （星0 で来た場合は念のため送らない）。送信失敗は静かに握りつぶす
   // （チェックイン成功の表示を妨げない。未回収分はブース一覧・ホームのマスから後で評価できる）
   // 直後評価は今回のチェックインに対して行う（context: 'IMMEDIATE'）
   async function completeRating(rating: number, comment: string) {
@@ -246,6 +247,23 @@ export function CheckInPage() {
     setSubmitting(true)
     try {
       await postV1CheckInRating(eventId, checkInResponse.checkin_id, rating, comment, 'IMMEDIATE')
+    } catch {
+      /* noop */
+    } finally {
+      setSubmitting(false)
+      setStep('result')
+    }
+  }
+
+  // 「スキップ」はサーバーに記録する（server#199）。失敗しても画面は止めない
+  async function skipRating() {
+    if (!eventId || !checkInResponse) {
+      setStep('result')
+      return
+    }
+    setSubmitting(true)
+    try {
+      await postV1CheckInRatingSkip(eventId, checkInResponse.checkin_id, 'IMMEDIATE')
     } catch {
       /* noop */
     } finally {
@@ -384,6 +402,7 @@ export function CheckInPage() {
         ratingScale={ratingScale}
         submitting={submitting}
         onComplete={(r, c) => void completeRating(r, c)}
+        onSkip={() => void skipRating()}
       />
     )
   }

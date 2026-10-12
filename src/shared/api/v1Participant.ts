@@ -142,6 +142,21 @@ export async function postV1CheckInRating(
 }
 
 /**
+ * 評価画面の「スキップ」を記録する（server#199）。再送信してもサーバー側で冪等。
+ */
+export async function postV1CheckInRatingSkip(
+  eventId: string,
+  checkinId: string,
+  context: V1RatingContext = 'IMMEDIATE',
+): Promise<void> {
+  const res = await apiClient.post<ApiResponse<{ skipped: boolean }>>(
+    `/events/${encodeURIComponent(eventId)}/checkins/${encodeURIComponent(checkinId)}/rating/skip`,
+    { context },
+  )
+  unwrapApiData(res)
+}
+
+/**
  * 動的段階解放ビンゴカードを取得する。
  * 仕様: docs/specs/bingo-dynamic-unlock/01-card-display.md
  */
