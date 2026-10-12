@@ -153,7 +153,7 @@ export function AdminAwardResultsPage() {
             </div>
           )}
           <p className="small text-muted mt-3 mb-0">
-            同票は同順位です（同率があると4件以上表示されます）。集計対象は参加者・出展者・閲覧者の票で、管理者（manager）の試し投票は含みません。
+            同票は同順位です（同率があると4件以上表示されます）。集計対象は管理者を含む全員の票です。
           </p>
         </>
       )}

@@ -187,6 +187,15 @@
   border: 1px solid #000;
   font-size: 1rem;
   font-weight: bold;
+
+}
+
+// 評価画面で星を選ぶ前のボタン（frontend#217）。星を選ぶと黄色の「完了」に変わるので、
+// 見た目でも区別できるよう白地にする
+.checkin-skip-button {
+  background-color: #fff;
+  color: var(--pf-ink-muted);
+  border-color: var(--pf-ink-muted);
 }
 
 .checkin-error-box {
@@ -691,5 +700,29 @@ $protofes-award-colors: (
   }
   .award-vote-page .border-#{$name} {
     border-color: $value;
+  }
+}
+
+// チェックイン結果画面の評価状態（frontend#217）。評価済みと未評価で色とアイコンを分ける
+.checkin-rating-status {
+  margin: 0.75rem 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--pf-radius-sm);
+  font-size: 0.85rem;
+}
+
+.checkin-rating-status-done {
+  background: var(--pf-cream-light);
+  color: var(--pf-ink);
+}
+
+.checkin-rating-status-pending {
+  border: 2px solid var(--pf-orange);
+  background: var(--pf-surface);
+  color: var(--pf-ink-strong);
+  font-weight: 600;
+
+  .bi {
+    color: var(--pf-orange);
   }
 }

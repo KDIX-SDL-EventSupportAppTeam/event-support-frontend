@@ -169,7 +169,7 @@ export function BoothListPage() {
                       </span>
                     ) : null}
                     {isUnratedCheckedIn(booth.booth_id) ? (
-                      <span className="badge text-bg-warning">未評価</span>
+                      <span className="badge" style={{ background: 'var(--pf-orange)', color: '#fff' }}>未評価</span>
                     ) : null}
                   </div>
                   <p className="card-text small mb-0">{booth.booth_description}</p>
@@ -256,6 +256,7 @@ export function BoothListPage() {
           ratingScale={ratingScale}
           submitting={rating.submitting}
           onComplete={(r, c) => void rating.submit(r, c)}
+          onSkip={rating.close}
         />
       ) : null}
 

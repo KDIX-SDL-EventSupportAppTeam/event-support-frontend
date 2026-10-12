@@ -4,6 +4,8 @@ import { BoothIcon } from '@/shared/components/booth/BoothIcon'
 type Props = {
   cell: BingoCell
   onTap: (cell: BingoCell) => void
+  /** 訪問済み（達成）だが、まだ評価していないマス。「未評価」の印を付ける */
+  unrated?: boolean
 }
 
 /**
@@ -29,7 +31,7 @@ type Props = {
  * 意味が正反対だが、**サーバーが両者を区別するフィールドを返すのは
  * event-support-server#150 以降**。それまでは全制覇として扱う。
  */
-export function BingoCellView({ cell, onTap }: Props) {
+export function BingoCellView({ cell, onTap, unrated = false }: Props) {
   // 割り当て可能なブースが残っていなかったマス（is_revealed かつ booth: null）。
   // 「全部回りきった」という意味なので、ブース名が無いことの説明をモーダルで出す
   const isAllVisited = cell.is_revealed && !cell.booth
@@ -56,6 +58,7 @@ export function BingoCellView({ cell, onTap }: Props) {
     `bingo-cell-zone-${cell.zone.toLowerCase()}`,
     isPresurvey ? 'bingo-cell-presurvey' : '',
     isAllVisited ? 'bingo-cell-all-visited' : '',
+    unrated ? 'bingo-cell-unrated' : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -96,6 +99,7 @@ export function BingoCellView({ cell, onTap }: Props) {
             <BoothIcon displayCode={cell.booth.display_code} className="bingo-cell-booth-icon" />
           ) : null}
           <span className="bingo-cell-booth-name">{cell.booth.name}</span>
+          {unrated ? <span className="bingo-cell-unrated-badge">未評価</span> : null}
         </>
       ) : (
         <>
