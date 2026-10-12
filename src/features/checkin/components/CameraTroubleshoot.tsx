@@ -1,11 +1,9 @@
 import type { CameraFailure } from '@/features/checkin/lib/classifyCameraError'
-import type { Platform } from '@/shared/lib/detectEnvironment'
 import { CopyButton } from '@/shared/components/CopyButton'
 import { SHOW_BOOTH_LIST_FALLBACK } from '@/features/checkin/lib/boothListFallback'
 
 type Props = {
   failure: CameraFailure
-  platform: Platform
   /** 手動コード入力へ（実 API フローでのみ渡る） */
   onManualCode?: () => void
   onFallback: () => void
@@ -14,19 +12,12 @@ type Props = {
 }
 
 /**
- * 権限を戻す手順。**端末を判定して 1 つだけ出す**（全 OS を並べると当日読まれない）。
- * 文言は OS のバージョンで変わるため、実機で現物を見て直すこと（issue #171）。
+ * 権限を戻す案内。**機種・OS・ブラウザごとの具体的な手順は書かない**
+ * （メニュー名や位置が違いすぎて、外れた手順はかえって迷わせる）。どの端末でも通じる一般的な説明に留め、
+ * 確実に進める経路として手動コード入力を最上位に置く。
  */
-function permissionSteps(platform: Platform): string {
-  switch (platform) {
-    case 'ios':
-      return 'アドレスバー左の「ぁあ」→「Webサイトの設定」→「カメラ」→「許可」を選び、このページを再読み込みしてください。'
-    case 'android':
-      return 'アドレスバー左の鍵アイコン →「権限」→「カメラ」→「許可」を選び、このページを再読み込みしてください。'
-    default:
-      return 'ブラウザのサイト設定からカメラを許可し、このページを再読み込みしてください。'
-  }
-}
+const PERMISSION_HELP =
+  'お使いのブラウザ、またはスマートフォンの設定でこのサイトのカメラを「許可」にしてから、ページを再読み込みしてください。'
 
 /**
  * カメラが使えなかったときの理由別の案内（issue #171）。
@@ -36,7 +27,7 @@ function permissionSteps(platform: Platform): string {
  * 押しても何も起きない UI は悪化でしかないので、「アプリ内で直す」ではなく「直し方を案内する」。
  * `in_use` / `unknown` の再試行ボタンは意味があるので置く。
  */
-export function CameraTroubleshoot({ failure, platform, onManualCode, onFallback, onRetry }: Props) {
+export function CameraTroubleshoot({ failure, onManualCode, onFallback, onRetry }: Props) {
   // 権限拒否・カメラ無し・非対応の参加者が完遂できる唯一の経路が 6 桁手動コード。最上位のボタンで出す
   const manualFirst = failure === 'denied' || failure === 'not_found' || failure === 'unsupported'
 
@@ -56,12 +47,13 @@ export function CameraTroubleshoot({ failure, platform, onManualCode, onFallback
         {failure === 'denied' ? (
           <>
             <p className="fw-bold mb-1">カメラの使用が許可されていません</p>
-            <p className="mb-0 small">{permissionSteps(platform)}</p>
+            <p className="mb-1 small">{PERMISSION_HELP}</p>
+            <p className="mb-0 small">うまくいかない場合は、下の「コードを入力してチェックイン」から進めます。</p>
           </>
         ) : null}
-        {failure === 'not_found' ? <p className="mb-0">カメラが見つかりません。</p> : null}
+        {failure === 'not_found' ? <p className="mb-0">カメラが見つかりません。下の「コードを入力してチェックイン」から進めます。</p> : null}
         {failure === 'in_use' ? (
-          <p className="mb-0">他のアプリがカメラを使用中です。カメラアプリを閉じてから再試行してください。</p>
+          <p className="mb-0">カメラを起動できませんでした。他のアプリでカメラを使っている場合は閉じてから、もう一度お試しください。</p>
         ) : null}
         {failure === 'unsupported' ? (
           <>

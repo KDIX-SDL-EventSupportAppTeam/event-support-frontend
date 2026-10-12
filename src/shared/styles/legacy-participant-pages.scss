@@ -65,6 +65,22 @@
   opacity: 0.3;
 }
 
+/* 使用確認画面: スタッフに画面を見せる案内。押す前に目に入るよう強調する。 */
+.gachapon-container .gachapon-show-staff {
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  border: 3px solid #fa8072;
+  border-radius: 12px;
+  background-color: #fff4f2;
+  font-size: 1.5rem;
+  font-weight: bold;
+  line-height: 1.5;
+  color: #c0392b;
+}
+
 /* 使う枚数のステッパー（− n ＋）。手動入力は採らない（issue #150）。
    375px 幅でも押しやすいよう、ボタンは 44px 角以上を確保する。 */
 .gachapon-container .coin-count-stepper {
@@ -407,7 +423,30 @@
 .qa-page .qa-list {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.5rem;
+}
+
+.qa-page .qa-item {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.qa-page button.question {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.75rem;
+  border: 0;
+  background: #fff;
+  color: inherit;
+  font-weight: bold;
+  align-items: center;
+}
+
+.qa-page .qa-chevron {
+  margin-left: auto;
+  padding-left: 0.5rem;
+  color: #888;
 }
 
 .qa-page .question,
@@ -448,10 +487,8 @@
 }
 
 .qa-page .answer {
-  margin-top: 1rem;
   background-color: #f8f9fa;
-  padding: 1rem;
-  border-radius: 8px;
+  padding: 0.75rem;
 }
 
 .qa-page .footer {

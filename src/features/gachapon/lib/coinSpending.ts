@@ -20,7 +20,12 @@ export type GachaSpendSummary = {
   used_count: number
   /** 成立したコインの `coin_index`（0 起点）を成立順に並べたもの。 */
   coin_indexes: number[]
-  /** 最後に成立した使用の時刻（ISO 8601）。 */
+  /**
+   * 最後に成立した使用の時刻（ISO 8601）。
+   * **端末がレスポンスを受け取った時刻**を入れる。サーバーの `used_at` は DB の
+   * `DEFAULT CURRENT_TIMESTAMP`（MySQL のセッション TZ）に `Z` を付けて返すため、
+   * DB が JST で動いていると 9 時間ずれる。完了画面は使用直後に出るので端末時刻で十分正確。
+   */
   used_at: string
   /** 使用後の残り枚数。最後に成立したレスポンスの `available` をそのまま使う。 */
   available: number
@@ -69,7 +74,9 @@ export async function spendCoins(args: {
   /** 使う枚数ぶんの冪等キー（`buildIdempotencyKeys`）。**呼び出し側が保持したものをそのまま渡す。** */
   keys: string[]
   useCoin: (idempotencyKey: string) => Promise<GachaUseResult>
+  now?: () => Date
 }): Promise<SpendOutcome> {
+  const now = args.now ?? (() => new Date())
   const requested = args.keys.length
   const results: GachaUseResult[] = []
 
@@ -80,24 +87,28 @@ export async function spendCoins(args: {
       const err = toApiError(e)
       const noCoins = err instanceof ApiError && err.code === NO_COINS_AVAILABLE
       return {
-        summary: summarize(requested, results),
+        summary: summarize(requested, results, now),
         stoppedByNoCoins: noCoins,
         error: noCoins ? null : e,
       }
     }
   }
 
-  return { summary: summarize(requested, results), stoppedByNoCoins: false, error: null }
+  return { summary: summarize(requested, results, now), stoppedByNoCoins: false, error: null }
 }
 
-function summarize(requested: number, results: GachaUseResult[]): GachaSpendSummary | null {
+function summarize(
+  requested: number,
+  results: GachaUseResult[],
+  now: () => Date,
+): GachaSpendSummary | null {
   const last = results[results.length - 1]
   if (!last) return null
   return {
     requested,
     used_count: results.length,
     coin_indexes: results.map((r) => r.coin_index),
-    used_at: last.used_at,
+    used_at: now().toISOString(),
     available: last.available,
   }
 }
@@ -118,4 +129,18 @@ export function usedCoinLabel(summary: GachaSpendSummary): string {
   if (numbers.length === 0) return '—'
   if (numbers.length === 1) return `${numbers[0]}枚目`
   return `${numbers.join('・')}枚目（計${numbers.length}枚）`
+}
+
+/** 使用時刻の表示（日本時間の「HH時MM分」）。端末のタイムゾーン設定に左右されない。 */
+export function formatUsedTime(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  const parts = new Intl.DateTimeFormat('ja-JP', {
+    timeZone: 'Asia/Tokyo',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(d)
+  const get = (type: string) => parts.find((p) => p.type === type)?.value.padStart(2, '0') ?? '00'
+  return `${get('hour')}時${get('minute')}分`
 }
