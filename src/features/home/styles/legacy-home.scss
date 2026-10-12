@@ -213,9 +213,9 @@
     justify-content: center;
     font-size: 1.4rem;
     line-height: 1;
-    color: #fff;
-    background-color: #000; // X のアプリアイコン（黒地に白ロゴ）に合わせる
-    border: 2px solid var(--pf-surface);
+    color: var(--pf-orange); // 確認モーダルの「はい」（btn-custom-primary-red）と同じ赤系
+    background-color: var(--pf-surface); // ビンゴカードのマスと同じ背景色
+    border: 2px solid var(--pf-orange);
     border-radius: 50%;
     box-shadow: 0 4px 10px rgb(39 22 3 / 25%);
     cursor: pointer;
@@ -382,6 +382,25 @@
     &:active {
       transform: translateY(2px);
       box-shadow: 0 1px 0 0 var(--pf-ink-strong);
+    }
+  }
+
+  // 出展者画面へ。行き先（出展者画面）のテーマ色の水色にして、参加者向けボタンと区別する
+  .btn-sub-action--exhibitor {
+    background-color: var(--pf-exhibitor-sky-strong);
+    border-color: var(--pf-exhibitor-sky-deep);
+    box-shadow: 0 3px 0 0 var(--pf-exhibitor-sky-deep);
+    color: #fff;
+
+    &:hover,
+    &:focus-visible {
+      background-color: var(--pf-exhibitor-sky-deep);
+      border-color: var(--pf-exhibitor-sky-deep);
+      color: #fff;
+    }
+
+    &:active {
+      box-shadow: 0 1px 0 0 var(--pf-exhibitor-sky-deep);
     }
   }
 

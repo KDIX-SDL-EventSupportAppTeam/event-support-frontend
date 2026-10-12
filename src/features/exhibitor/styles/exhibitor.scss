@@ -1,0 +1,420 @@
+// 出展者画面（/exhibitor）。参加者画面と同じ「スマホ優先・1カラム・角丸カード」の体裁で、
+// テーマカラーだけ優しい水色に差し替えて参加者画面と見分けられるようにする。
+// 色は .exhibitor-page 配下だけで効くトークンとして持つ（:root の --pf-* は参加者用なので触らない）。
+
+.exhibitor-page {
+  --ex-sky: var(--pf-exhibitor-sky);
+  --ex-sky-strong: var(--pf-exhibitor-sky-strong);
+  --ex-sky-soft: #bfe6f8;
+  --ex-sky-light: var(--pf-exhibitor-sky-light);
+  --ex-surface: #f4fbff;
+  --ex-ink: #1f3a4d;
+  --ex-ink-muted: #5f7686;
+  --ex-divider: rgb(47 159 214 / 18%);
+  --ex-shadow-card: 0 2px 8px rgb(31 58 77 / 8%);
+
+  min-height: 100vh;
+  background-color: var(--ex-sky-light);
+  color: var(--ex-ink);
+}
+
+// ヘッダー（スクロールしても上に残す）
+.exhibitor-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, var(--ex-sky) 0%, var(--ex-sky-strong) 100%);
+  color: #fff;
+  box-shadow: var(--ex-shadow-card);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.exhibitor-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+}
+
+.exhibitor-header__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.exhibitor-header__badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  background-color: rgb(255 255 255 / 25%);
+  margin-bottom: 0.2rem;
+}
+
+.exhibitor-header__booth {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.exhibitor-header__user {
+  font-size: 0.72rem;
+  opacity: 0.85;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.exhibitor-header__action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.2rem;
+  padding: 0.35rem 0.4rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background-color: rgb(255 255 255 / 18%);
+  color: #fff;
+  font-size: 0.65rem;
+  line-height: 1.2;
+
+  i {
+    font-size: 1.15rem;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background-color: rgb(255 255 255 / 32%);
+  }
+}
+
+// 本文
+.exhibitor-body {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1rem 1rem calc(2rem + env(safe-area-inset-bottom, 0px));
+}
+
+// 担当ブースの切替（横スクロールのチップ）
+.exhibitor-booth-tabs {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  margin: 0 -1rem 1rem;
+  padding: 0 1rem 0.25rem;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.exhibitor-booth-tab {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid var(--ex-sky-soft);
+  border-radius: 999px;
+  background-color: #fff;
+  color: var(--ex-ink-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  &--active {
+    border-color: var(--ex-sky-strong);
+    background-color: var(--ex-sky-strong);
+    color: #fff;
+  }
+}
+
+// カード
+.exhibitor-card {
+  background-color: #fff;
+  border-radius: 1.25rem;
+  box-shadow: var(--ex-shadow-card);
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.exhibitor-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 0;
+  background: none;
+  color: var(--ex-ink);
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: left;
+
+  .bi:first-child {
+    color: var(--ex-sky-strong);
+    margin-right: 0.4rem;
+  }
+}
+
+.exhibitor-card__toggle {
+  color: var(--ex-ink-muted);
+}
+
+.exhibitor-card__body {
+  padding: 0 1rem 1rem;
+}
+
+// 統計タイル
+.exhibitor-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.exhibitor-stat {
+  background-color: var(--ex-surface);
+  border: 1px solid var(--ex-divider);
+  border-radius: 0.75rem;
+  padding: 0.75rem 0.25rem;
+  text-align: center;
+}
+
+.exhibitor-stat__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ex-ink);
+}
+
+.exhibitor-stat__label {
+  margin-top: 0.2rem;
+  font-size: 0.7rem;
+  color: var(--ex-ink-muted);
+}
+
+.exhibitor-star {
+  color: #f5b301;
+}
+
+// コメント
+.exhibitor-comments {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.exhibitor-comment {
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--ex-divider);
+
+  &:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+}
+
+.exhibitor-comment__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--ex-ink-muted);
+}
+
+.exhibitor-comment__text {
+  margin-top: 0.3rem;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.exhibitor-empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ex-ink-muted);
+}
+
+// ロード中・権限なしなどの全面メッセージ
+.exhibitor-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--ex-ink);
+}
+
+.exhibitor-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.6rem 1.5rem;
+  background-color: var(--ex-sky-strong);
+  color: #fff;
+  font-weight: 700;
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--pf-exhibitor-sky-deep);
+    color: #fff;
+  }
+}
+
+// PC では少し余白を広げる（レイアウトは1カラムのまま）
+@media (min-width: 768px) {
+  .exhibitor-body {
+    padding-top: 1.5rem;
+  }
+
+  .exhibitor-stat__value {
+    font-size: 1.9rem;
+  }
+
+  .exhibitor-stat__label {
+    font-size: 0.8rem;
+  }
+}
+
+// イメージキャラ（素材は黄色なので、水色の地に置いても参加者画面のテーマ色とは混ざらない）
+.exhibitor-greeting {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.exhibitor-greeting__mascot {
+  flex-shrink: 0;
+  width: 5.5rem;
+  height: 5.5rem;
+  object-fit: contain;
+}
+
+.exhibitor-greeting__bubble {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 1.25rem;
+  background-color: #fff;
+  box-shadow: var(--ex-shadow-card);
+
+  // 吹き出しのしっぽ（キャラ側）
+  &::before {
+    content: '';
+    position: absolute;
+    left: -0.45rem;
+    bottom: 0.9rem;
+    border-width: 0.45rem 0.55rem 0.45rem 0;
+    border-style: solid;
+    border-color: transparent #fff transparent transparent;
+  }
+}
+
+.exhibitor-greeting__title {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--ex-sky-strong);
+}
+
+.exhibitor-greeting__text {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: var(--ex-ink-muted);
+}
+
+.exhibitor-empty-mascot {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  img {
+    flex-shrink: 0;
+    width: 4rem;
+    height: 4rem;
+    object-fit: contain;
+  }
+}
+
+.exhibitor-state__mascot {
+  width: 8rem;
+  height: 8rem;
+  object-fit: contain;
+}
+
+@media (min-width: 768px) {
+  .exhibitor-greeting__mascot {
+    width: 7rem;
+    height: 7rem;
+  }
+}
+
+// 参加者画面へのボタン。行き先の画面のテーマ色（--pf-yellow）をあえて使い、水色の中で目立たせる
+.exhibitor-to-participant {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.9rem 1.1rem;
+  border: 0;
+  border-radius: 1.25rem;
+  background-color: var(--pf-yellow);
+  color: var(--pf-ink-strong);
+  box-shadow: 0 4px 0 #d9a200, var(--ex-shadow-card);
+  text-align: left;
+  transition: transform 0.1s, box-shadow 0.1s;
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--pf-yellow-strong);
+  }
+
+  &:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #d9a200, var(--ex-shadow-card);
+  }
+
+  .bi-chevron-right {
+    font-size: 1.2rem;
+  }
+}
+
+.exhibitor-to-participant__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background-color: #fff;
+  font-size: 1.35rem;
+}
+
+.exhibitor-to-participant__label {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+
+  small {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--pf-ink-muted);
+  }
+}
