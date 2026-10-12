@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
+  formatUsedTime,
   spendResultMessage,
   usedCoinLabel,
   type GachaSpendSummary,
@@ -16,14 +17,6 @@ import {
 export function GachaponCompletePage() {
   const navigate = useNavigate()
   const state = useLocation().state as GachaSpendSummary | null
-
-  function formatTime(iso: string): string {
-    const d = new Date(iso)
-    if (Number.isNaN(d.getTime())) return iso
-    const hh = String(d.getHours()).padStart(2, '0')
-    const mm = String(d.getMinutes()).padStart(2, '0')
-    return `${hh}時${mm}分`
-  }
 
   return (
     <div className="gachapon-container">
@@ -48,7 +41,7 @@ export function GachaponCompletePage() {
             </li>
             <li className="list-group-item d-flex justify-content-between">
               <span>使用時刻</span>
-              <strong>{formatTime(state.used_at)}</strong>
+              <strong>{formatUsedTime(state.used_at)}</strong>
             </li>
             <li className="list-group-item d-flex justify-content-between">
               <span>残りのコイン</span>

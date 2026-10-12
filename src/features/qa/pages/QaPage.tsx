@@ -7,6 +7,7 @@ export function QaPage() {
   const navigate = useNavigate()
   const [items, setItems] = useState<QaItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   useEffect(() => {
     const client = createParticipantClient()
@@ -28,18 +29,31 @@ export function QaPage() {
         </div>
       ) : (
         <div className="qa-list">
-          {items.map((item, index) => (
-            <div key={index} className="qa-item">
-              <div className="question">
-                <span className="q-icon">Q</span>
-                <p>{item.question}</p>
+          {/* 質問だけを並べ、タップした項目の答えだけを開く（全文を並べると長くて探せない） */}
+          {items.map((item, index) => {
+            const open = openIndex === index
+            return (
+              <div key={index} className={`qa-item${open ? ' is-open' : ''}`}>
+                <button
+                  type="button"
+                  className="question"
+                  aria-expanded={open}
+                  aria-controls={`qa-answer-${index}`}
+                  onClick={() => setOpenIndex(open ? null : index)}
+                >
+                  <span className="q-icon">Q</span>
+                  <p>{item.question}</p>
+                  <i className={`bi ${open ? 'bi-chevron-up' : 'bi-chevron-down'} qa-chevron`} aria-hidden />
+                </button>
+                {open ? (
+                  <div className="answer" id={`qa-answer-${index}`}>
+                    <span className="a-icon">A</span>
+                    <p>{item.answer}</p>
+                  </div>
+                ) : null}
               </div>
-              <div className="answer">
-                <span className="a-icon">A</span>
-                <p>{item.answer}</p>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
       <div className="footer">

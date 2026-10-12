@@ -130,6 +130,14 @@ export function GachaponUsePage() {
   return (
     <div className="gachapon-container">
       <div className="card p-4 text-center">
+        {/* 使える状態のときだけ、見出しより先に目に入るよう最上部に出す */}
+        {coins && coins.is_enabled && coins.available > 0 ? (
+          <p className="gachapon-show-staff mb-4" role="note">
+            こちらの画面を
+            <br />
+            スタッフにお見せください
+          </p>
+        ) : null}
         <h2 className="mb-3">コインを使用しますか？</h2>
 
         {loading ? (
@@ -195,11 +203,7 @@ export function GachaponUsePage() {
               </div>
             ) : null}
 
-            <p className="text-muted small mb-3">
-              「{count}枚使う」を押すと、その場でコインが{count}枚消費されます。
-              <br />
-              <strong>使用後は取り消せません。</strong>
-            </p>
+            <p className="text-muted small mb-3">使用後は取り消せません。</p>
             <div className="d-grid gap-2">
               <button
                 type="button"

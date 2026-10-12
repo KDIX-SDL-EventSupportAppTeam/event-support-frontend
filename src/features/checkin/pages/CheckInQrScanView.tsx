@@ -15,7 +15,7 @@ import {
 } from '@/features/checkin/lib/classifyCameraError'
 import { parseQrToCheckinTarget } from '@/features/checkin/lib/parseQrToCheckinTarget'
 import { CopyButton } from '@/shared/components/CopyButton'
-import { detectInAppBrowser, detectPlatform } from '@/shared/lib/detectEnvironment'
+import { detectInAppBrowser } from '@/shared/lib/detectEnvironment'
 import { SHOW_BOOTH_LIST_FALLBACK } from '@/features/checkin/lib/boothListFallback'
 
 type Props = {
@@ -108,7 +108,6 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
 
   const userAgent = typeof navigator === 'undefined' ? '' : navigator.userAgent
   const inAppBrowser = detectInAppBrowser(userAgent)
-  const platform = detectPlatform(userAgent)
 
   useEffect(() => {
     const timer = window.setTimeout(() => setFallbackVisible(true), FALLBACK_DELAY_MS)
@@ -340,7 +339,6 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
       {phase === 'failed' && failure ? (
         <CameraTroubleshoot
           failure={failure}
-          platform={platform}
           onManualCode={onManualCode}
           onFallback={onFallback}
           onRetry={() => {

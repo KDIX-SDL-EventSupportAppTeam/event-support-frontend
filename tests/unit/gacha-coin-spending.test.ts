@@ -9,6 +9,7 @@ const {
   clampCoinCount,
   spendCoins,
   spendResultMessage,
+  formatUsedTime,
   usedCoinLabel,
 } = await import('@/features/gachapon/lib/coinSpending')
 
@@ -225,5 +226,22 @@ describe('使用確認画面（issue #150）', () => {
 
   it('起きてはいけないこと: 並行に投げる（coin_index が競合する）', () => {
     expect(usePage).not.toContain('Promise.all')
+  })
+})
+
+describe('使用時刻（サーバーの used_at の TZ ずれを持ち込まない）', () => {
+  it('summary の used_at は端末がレスポンスを受け取った時刻', async () => {
+    const server = fakeServer(2)
+    const out = await spendCoins({
+      keys: buildIdempotencyKeys(2),
+      useCoin: server.useCoin,
+      now: () => new Date('2026-10-16T03:05:00.000Z'),
+    })
+    expect(out.summary?.used_at).toBe('2026-10-16T03:05:00.000Z')
+  })
+
+  it('日本時間の「HH時MM分」で出す（UTC 03:05 → 12時05分）', () => {
+    expect(formatUsedTime('2026-10-16T03:05:00.000Z')).toBe('12時05分')
+    expect(formatUsedTime('2026-10-15T15:00:00.000Z')).toBe('00時00分')
   })
 })
