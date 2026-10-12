@@ -12,6 +12,25 @@ import type { Award } from '@/shared/types/award'
  * 関門はサーバー（`POST /events/:id/awards/vote` が 403 NOT_CHECKED_IN / 409 VOTING_CLOSED を返す）。
  * UI の選択肢制限は表示の都合であって関門ではない。
  */
+/** 投票画面に表示する禁止事項。システムで弾いているのは重複投票のみ */
+const VOTE_RULES = [
+  {
+    icon: 'bi-files',
+    title: '同じブースへの重複投票',
+    detail: '1つのブースに投票できるのは1つのアワードまで',
+  },
+  {
+    icon: 'bi-building',
+    title: '自分の所属先への投票',
+    detail: '所属する企業・研究室（ゼミ）のブースには投票不可',
+  },
+  {
+    icon: 'bi-people-fill',
+    title: '組織票',
+    detail: '他団体との協力や、出展者による投票先の指定は禁止',
+  },
+] as const
+
 export function AwardVotePage() {
   const navigate = useNavigate()
   const eventId = useAuthStore((s) => s.user?.event_id)
@@ -182,23 +201,36 @@ export function AwardVotePage() {
             <h1 className="h3">アワード投票</h1>
             <p className="mb-0">チェックインしたブースにだけ投票できます</p>
           </div>
-          <div className="alert alert-danger mb-4" role="note">
-            <p className="fw-bold text-center mb-2">⚠️ 投票の禁止事項</p>
-            <ul className="mb-0 ps-3">
-              <li>
-                <span className="fw-bold">重複投票</span>
-                ：1つのブースに投票できるのは1つのアワードまでです。同じブースを複数のアワードに選ぶことはできません。
-              </li>
-              <li>
-                <span className="fw-bold">自分の所属先への投票</span>
-                ：自分が所属する企業・研究室（ゼミ）のブースには投票できません。
-              </li>
-              <li>
-                <span className="fw-bold">組織票</span>
-                ：他団体と協力して票を集めること、出展者が投票先を指定することは禁止です。
-              </li>
+          <section className="mb-4" aria-labelledby="vote-rules-heading">
+            <h2 id="vote-rules-heading" className="h6 fw-bold text-danger text-center mb-2">
+              <i className="bi bi-exclamation-triangle-fill me-1" aria-hidden="true" />
+              投票の禁止事項
+            </h2>
+            <ul className="list-unstyled d-grid gap-2 mb-0">
+              {VOTE_RULES.map((rule) => (
+                <li
+                  key={rule.title}
+                  className="d-flex align-items-center gap-3 p-3 rounded-3 border border-danger-subtle bg-danger-subtle"
+                >
+                  <span
+                    className="position-relative flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle bg-white text-danger"
+                    style={{ width: 48, height: 48 }}
+                    aria-hidden="true"
+                  >
+                    <i className={`bi ${rule.icon} fs-4`} />
+                    <i
+                      className="bi bi-slash-circle position-absolute text-danger"
+                      style={{ fontSize: 48, lineHeight: 1, opacity: 0.85 }}
+                    />
+                  </span>
+                  <div className="text-start">
+                    <div className="fw-bold text-danger-emphasis">{rule.title}</div>
+                    <div className="small text-body">{rule.detail}</div>
+                  </div>
+                </li>
+              ))}
             </ul>
-          </div>
+          </section>
           {checkedBooths.length > 0 ? (
             awards.map((award) => (
               <div key={award.id} className="award-item mb-3">
