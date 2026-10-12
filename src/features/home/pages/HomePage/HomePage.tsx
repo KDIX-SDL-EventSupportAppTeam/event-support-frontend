@@ -214,7 +214,11 @@ export function HomePage() {
             X にポストします
           </h5>
           <p className="modal-body-text">
-            X の投稿画面を新しいタブで開きます。文面はあとから編集できます。よろしいですか？
+            X の投稿画面を開きます。
+            <br />
+            文面はあとから編集できます。
+            <br />
+            よろしいですか？
           </p>
           <div className="modal-footer-buttons">
             <button type="button" className="btn-custom-secondary" onClick={() => setXShareConfirmOpen(false)}>
@@ -305,7 +309,7 @@ export function HomePage() {
           <div className="col-12">
             <button
               type="button"
-              className="btn btn-sub-action w-100"
+              className="btn btn-sub-action btn-sub-action--exhibitor w-100"
               onClick={() => navigate('/exhibitor')}
             >
               <i className="bi bi-shop me-1" />
