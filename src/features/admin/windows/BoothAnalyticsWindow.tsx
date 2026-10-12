@@ -89,7 +89,7 @@ const BoothCard = memo(function BoothCard({
         QR {b.checkin_by_method.qr} / 手動 {b.checkin_by_method.manual}
       </div>
       {b.recommendation_acceptance_rate != null ? (
-        <div className="text-muted">推薦採用 {b.recommendation_acceptance_rate}%</div>
+        <div className="text-muted">推薦割当 {b.recommendation_acceptance_rate}%</div>
       ) : null}
     </div>
   )
@@ -191,7 +191,7 @@ export const BoothAnalyticsWindow = memo(function BoothAnalyticsWindow({
               <option value="checkin_asc">チェックイン少ない順</option>
               <option value="rating_desc">評価高い順</option>
               <option value="rating_asc">評価低い順</option>
-              <option value="rec_desc">推薦採用率高い順</option>
+              <option value="rec_desc">推薦割当率高い順</option>
               <option value="code_asc">コード昇順</option>
               <option value="code_desc">コード降順</option>
               <option value="created_desc">作成新しい順</option>
