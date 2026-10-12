@@ -44,9 +44,9 @@ describe('割り当て可能なブースが残っていないマス（is_reveale
   })
 
   it('起きてはいけないこと: 評価導線（星）が出る', () => {
-    // canRate / isRated は booth があることを条件にしているので、booth: null では出ない
+    // canRate / isUnrated / isRated は booth があることを条件にしているので、booth: null では出ない
     expect(cardView).toContain('cell.is_achieved && Boolean(cell.booth) && ratedByBoothId')
-    expect(cardView.match(/Boolean\(cell\.booth\)/g)).toHaveLength(2)
+    expect(cardView.match(/Boolean\(cell\.booth\)/g)).toHaveLength(3)
   })
 
   it('4×4 で溢れないよう文言とスタンプを小さくしている（375px 幅）', () => {

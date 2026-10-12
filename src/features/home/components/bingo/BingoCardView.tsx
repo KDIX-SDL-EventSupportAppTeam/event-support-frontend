@@ -51,6 +51,10 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
   // source は問わない: is_achieved が真なら事前推薦マスでも実際に訪問済みで check_ins 行がある。
   const canRate = (cell: BingoCell) =>
     cell.is_achieved && Boolean(cell.booth) && ratedByBoothId.get(cell.booth!.id) !== true
+  // マスの「未評価」印。チェックイン履歴を取得できて、評価済みでないと分かったときだけ出す
+  // （取得前・取得失敗で全マスに印が出ないよう、canRate と違い === false で判定する）
+  const isUnrated = (cell: BingoCell) =>
+    cell.is_achieved && Boolean(cell.booth) && ratedByBoothId.get(cell.booth!.id) === false
   const isRated = (cell: BingoCell) =>
     cell.is_achieved && Boolean(cell.booth) && ratedByBoothId.get(cell.booth!.id) === true
 
@@ -73,7 +77,7 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
       <div className="row g-1 g-sm-2 mt-1">
         {card.cells.map((cell) => (
           <div key={cell.position} className="col-3">
-            <BingoCellView cell={cell} onTap={setSelectedCell} />
+            <BingoCellView cell={cell} onTap={setSelectedCell} unrated={isUnrated(cell)} />
           </div>
         ))}
       </div>
@@ -165,6 +169,7 @@ export function BingoCardView({ card, eventId, onRated }: Props) {
           ratingScale={card.rating_scale}
           submitting={rating.submitting}
           onComplete={(r, c) => void rating.submit(r, c)}
+          onSkip={rating.close}
         />
       ) : null}
     </div>
