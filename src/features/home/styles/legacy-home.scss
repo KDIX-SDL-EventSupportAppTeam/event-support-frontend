@@ -213,9 +213,9 @@
     justify-content: center;
     font-size: 1.4rem;
     line-height: 1;
-    color: #fff;
-    background-color: #000; // X のアプリアイコン（黒地に白ロゴ）に合わせる
-    border: 2px solid var(--pf-surface);
+    color: var(--pf-orange); // 確認モーダルの「はい」（btn-custom-primary-red）と同じ赤系
+    background-color: var(--pf-surface); // ビンゴカードのマスと同じ背景色
+    border: 2px solid var(--pf-orange);
     border-radius: 50%;
     box-shadow: 0 4px 10px rgb(39 22 3 / 25%);
     cursor: pointer;

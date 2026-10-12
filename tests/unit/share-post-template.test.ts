@@ -35,9 +35,9 @@ describe('buildSharePost', () => {
 })
 
 describe('buildXIntentUrl', () => {
-  it('正規のエンドポイント x.com/intent/post を使う', () => {
+  it('iOS アプリがネイティブで扱える x.com/intent/tweet を使う', () => {
     const url = buildXIntentUrl({ text: 'a b🎯' })
-    expect(url.startsWith('https://x.com/intent/post?')).toBe(true)
+    expect(url.startsWith('https://x.com/intent/tweet?')).toBe(true)
     expect(new URL(url).searchParams.get('text')).toBe('a b🎯')
   })
 

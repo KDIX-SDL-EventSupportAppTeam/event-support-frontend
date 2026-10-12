@@ -18,7 +18,7 @@ export function XShareButton({ onClick }: Props) {
       aria-label="このイベントの様子を X にポストする"
       title="X にポストする"
     >
-      <i className="bi bi-twitter-x" aria-hidden="true" />
+      <i className="bi bi-pencil-fill" aria-hidden="true" />
     </button>
   )
 }

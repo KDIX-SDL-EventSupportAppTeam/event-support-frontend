@@ -214,7 +214,11 @@ export function HomePage() {
             X にポストします
           </h5>
           <p className="modal-body-text">
-            X の投稿画面を新しいタブで開きます。文面はあとから編集できます。よろしいですか？
+            X の投稿画面を開きます。
+            <br />
+            文面はあとから編集できます。
+            <br />
+            よろしいですか？
           </p>
           <div className="modal-footer-buttons">
             <button type="button" className="btn-custom-secondary" onClick={() => setXShareConfirmOpen(false)}>
