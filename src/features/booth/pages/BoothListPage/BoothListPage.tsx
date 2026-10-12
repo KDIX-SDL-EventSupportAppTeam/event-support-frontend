@@ -256,9 +256,7 @@ export function BoothListPage() {
           ratingScale={ratingScale}
           submitting={rating.submitting}
           onComplete={(r, c) => void rating.submit(r, c)}
-          // あとから評価は自分で開いた画面なので、スキップは記録せず閉じるだけ
           onSkip={rating.close}
-          skipLabel="閉じる"
         />
       ) : null}
 

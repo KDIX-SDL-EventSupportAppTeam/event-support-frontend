@@ -5,10 +5,8 @@ type Props = {
   boothName: string
   /** 星を選んで「完了」したとき。rating は常に 1 以上 */
   onComplete: (rating: number, comment: string) => void
-  /** 「スキップ」（または skipLabel のボタン）を押したとき。評価は送らない */
+  /** 星を選ばずに「スキップ」を押したとき。評価は送らない */
   onSkip: () => void
-  /** スキップボタンの文言。チェックイン直後は「スキップ」、あとから評価では「閉じる」 */
-  skipLabel?: string
   submitting: boolean
   /**
    * 評価の段階数。ハードコードしない。
@@ -71,15 +69,14 @@ export function nextCommentValue(raw: string, isComposing: boolean): string {
  * チェックイン成功モーダルの評価ステップ。
  * 仕様: docs/specs/bingo-dynamic-unlock/03-checkin-flow.md
  *
- * 星（中央値なし）＋ コメント欄 ＋「完了」「スキップ」ボタン（server#199 / frontend#217）。
- * 「完了」は星を選ぶまで押せない。評価しないときは「スキップ」を押す
- * （旧仕様の「星未選択で完了＝スキップ」は記録が残らないため廃止）。
+ * 星（中央値なし）＋ コメント欄 ＋ ボタン1つ（frontend#217）。
+ * ボタンは星を選ぶまで「スキップ」、星を選ぶと「完了」に切り替わる。
+ * どちらを押したかが文言で分かるので、評価せずに進んだことを本人が自覚できる。
  */
 export function CheckInRatingModal({
   boothName,
   onComplete,
   onSkip,
-  skipLabel = 'スキップ',
   submitting,
   ratingScale,
 }: Props) {
@@ -109,7 +106,7 @@ export function CheckInRatingModal({
         <p className="result-message mb-3">
           「{boothName}」はいかがでしたか？
           <br />
-          星を選んで「完了」を押してください
+          星を選ぶと「完了」になります
         </p>
         <div className="checkin-rating-stars mb-4" role="group" aria-label="評価">
           {Array.from({ length: scale }, (_, i) => i + 1).map((n) => (
@@ -145,17 +142,20 @@ export function CheckInRatingModal({
           </div>
         </div>
         <div className="d-grid gap-2">
-          <button
-            type="button"
-            className="checkin-home-button"
-            disabled={submitting || rating < 1}
-            onClick={() => onComplete(rating, clampComment(comment))}
-          >
-            {submitting ? '送信中…' : '完了'}
-          </button>
-          <button type="button" className="btn btn-link text-muted" disabled={submitting} onClick={onSkip}>
-            {skipLabel}
-          </button>
+          {rating >= 1 ? (
+            <button
+              type="button"
+              className="checkin-home-button"
+              disabled={submitting}
+              onClick={() => onComplete(rating, clampComment(comment))}
+            >
+              {submitting ? '送信中…' : '完了'}
+            </button>
+          ) : (
+            <button type="button" className="checkin-home-button checkin-skip-button" disabled={submitting} onClick={onSkip}>
+              スキップ
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -188,13 +188,14 @@
   font-size: 1rem;
   font-weight: bold;
 
-  // 評価画面の「完了」は星を選ぶまで押せない（frontend#217）。押せないことが見て分かるよう灰色にする
-  &:disabled {
-    cursor: not-allowed;
-    background-color: var(--pf-divider);
-    color: var(--pf-ink-muted);
-    border-color: var(--pf-divider);
-  }
+}
+
+// 評価画面で星を選ぶ前のボタン（frontend#217）。星を選ぶと黄色の「完了」に変わるので、
+// 見た目でも区別できるよう白地にする
+.checkin-skip-button {
+  background-color: #fff;
+  color: var(--pf-ink-muted);
+  border-color: var(--pf-ink-muted);
 }
 
 .checkin-error-box {
