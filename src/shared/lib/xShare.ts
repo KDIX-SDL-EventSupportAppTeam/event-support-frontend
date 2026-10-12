@@ -11,10 +11,14 @@
 import { detectPlatform } from '@/shared/lib/detectEnvironment'
 
 /**
- * 正規の Intent URL。旧 `twitter.com/intent/tweet` は今もリダイレクトで動くが、
- * 余計なリダイレクトを 1 段挟むとネイティブアプリへの引き渡しが不安定になる（issue #169）。
+ * Intent URL。ドメインは `x.com`（`twitter.com` はリダイレクトを 1 段挟み、ネイティブアプリへの
+ * 引き渡しが不安定になる。issue #169）。
+ *
+ * パスは `/intent/post` ではなく `/intent/tweet` を使う。iOS の X アプリは `/intent/post` を
+ * ネイティブの投稿画面として扱えず、アプリ内ブラウザで Web 版を開いてしまい、
+ * ハッシュタグもタグとして認識されない（Android はどちらでも問題ない）。
  */
-const X_INTENT_ENDPOINT = 'https://x.com/intent/post'
+const X_INTENT_ENDPOINT = 'https://x.com/intent/tweet'
 
 export type XSharePayload = {
   /**
