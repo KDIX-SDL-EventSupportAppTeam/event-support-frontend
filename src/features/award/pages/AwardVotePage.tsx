@@ -182,10 +182,22 @@ export function AwardVotePage() {
             <h1 className="h3">アワード投票</h1>
             <p className="mb-0">チェックインしたブースにだけ投票できます</p>
           </div>
-          <div className="alert alert-danger fw-bold text-center mb-4" role="note">
-            ⚠️ 1つのブースに投票できるのは1つのアワードまでです。
-            <br />
-            同じブースを複数のアワードに重複して選ぶことはできません。
+          <div className="alert alert-danger mb-4" role="note">
+            <p className="fw-bold text-center mb-2">⚠️ 投票の禁止事項</p>
+            <ul className="mb-0 ps-3">
+              <li>
+                <span className="fw-bold">重複投票</span>
+                ：1つのブースに投票できるのは1つのアワードまでです。同じブースを複数のアワードに選ぶことはできません。
+              </li>
+              <li>
+                <span className="fw-bold">自分の所属先への投票</span>
+                ：自分が所属する企業・研究室（ゼミ）のブースには投票できません。
+              </li>
+              <li>
+                <span className="fw-bold">組織票</span>
+                ：他団体と協力して票を集めること、出展者が投票先を指定することは禁止です。
+              </li>
+            </ul>
           </div>
           {checkedBooths.length > 0 ? (
             awards.map((award) => (
