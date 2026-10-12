@@ -12,6 +12,25 @@ import type { Award } from '@/shared/types/award'
  * 関門はサーバー（`POST /events/:id/awards/vote` が 403 NOT_CHECKED_IN / 409 VOTING_CLOSED を返す）。
  * UI の選択肢制限は表示の都合であって関門ではない。
  */
+/** 投票画面に表示する禁止事項。システムで弾いているのは重複投票のみ */
+const VOTE_RULES = [
+  {
+    icon: 'bi-files',
+    title: '同じブースへの重複投票',
+    detail: '1つのブースに投票できるのは1つのアワードまで',
+  },
+  {
+    icon: 'bi-building',
+    title: '自分の所属先への投票',
+    detail: '所属する企業・研究室（ゼミ）のブースには投票不可',
+  },
+  {
+    icon: 'bi-people-fill',
+    title: '組織票',
+    detail: '他団体との協力や、出展者による投票先の指定は禁止',
+  },
+] as const
+
 export function AwardVotePage() {
   const navigate = useNavigate()
   const eventId = useAuthStore((s) => s.user?.event_id)
@@ -57,6 +76,11 @@ export function AwardVotePage() {
   }, [eventId, userId])
 
   function handleSelect(awardId: string, boothId: string | null) {
+    // 同じブースを複数の賞に選べない。選択肢側でも disabled にしているが念のため
+    if (boothId && usedByOtherAward(awardId, boothId)) {
+      window.alert('このブースは既に他のアワードに選ばれています。同じブースを複数のアワードに選ぶことはできません。')
+      return
+    }
     setSaved(false)
     setVotes((prev) => {
       const next = { ...prev }
@@ -69,6 +93,19 @@ export function AwardVotePage() {
     })
   }
 
+  /** 指定ブースを awardId 以外の賞で選択済みなら、その賞の名前を返す */
+  function usedByOtherAward(awardId: string, boothId: string): string | null {
+    for (const [id, selected] of Object.entries(votes)) {
+      if (id !== awardId && selected === boothId) return awards.find((a) => a.id === id)?.name ?? '他のアワード'
+    }
+    return null
+  }
+
+  function hasDuplicateVotes(): boolean {
+    const ids = Object.values(votes)
+    return new Set(ids).size !== ids.length
+  }
+
   function boothName(id: string | undefined): string {
     if (!id) return '未投票'
     return checkedBooths.find((b) => b.booth_id === id)?.booth_name ?? '不明なブース'
@@ -77,6 +114,10 @@ export function AwardVotePage() {
   async function saveAndGoHome() {
     if (!eventId || !userId) return
     setSaveError(null)
+    if (hasDuplicateVotes()) {
+      setSaveError('同じブースが複数のアワードに選ばれています。重複を解消してから保存してください。')
+      return
+    }
     setSaving(true)
     try {
       const client = createParticipantClient()
@@ -160,6 +201,36 @@ export function AwardVotePage() {
             <h1 className="h3">アワード投票</h1>
             <p className="mb-0">チェックインしたブースにだけ投票できます</p>
           </div>
+          <section className="mb-4" aria-labelledby="vote-rules-heading">
+            <h2 id="vote-rules-heading" className="h5 fw-bold text-danger text-center mb-3">
+              <i className="bi bi-exclamation-triangle-fill me-1" aria-hidden="true" />
+              投票の禁止事項
+            </h2>
+            <ul className="list-unstyled d-grid gap-2 mb-0">
+              {VOTE_RULES.map((rule) => (
+                <li
+                  key={rule.title}
+                  className="d-flex align-items-center gap-2 py-2 px-3 rounded-3 border border-danger-subtle bg-danger-subtle"
+                >
+                  <span
+                    className="position-relative flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle bg-white text-danger"
+                    style={{ width: 36, height: 36 }}
+                    aria-hidden="true"
+                  >
+                    <i className={`bi ${rule.icon} fs-6`} />
+                    <i
+                      className="bi bi-slash-circle position-absolute text-danger"
+                      style={{ fontSize: 36, lineHeight: 1, opacity: 0.85 }}
+                    />
+                  </span>
+                  <div className="text-start">
+                    <div className="small fw-bold text-danger-emphasis">{rule.title}</div>
+                    <div className="small text-body">{rule.detail}</div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
           {checkedBooths.length > 0 ? (
             awards.map((award) => (
               <div key={award.id} className="award-item mb-3">
@@ -178,11 +249,14 @@ export function AwardVotePage() {
                     onChange={(e) => handleSelect(award.id, e.target.value || null)}
                   >
                     <option value="">ブースを選択してください</option>
-                    {checkedBooths.map((booth) => (
-                      <option key={booth.booth_id} value={booth.booth_id}>
-                        {booth.booth_name}
-                      </option>
-                    ))}
+                    {checkedBooths.map((booth) => {
+                      const usedBy = usedByOtherAward(award.id, booth.booth_id)
+                      return (
+                        <option key={booth.booth_id} value={booth.booth_id} disabled={!!usedBy}>
+                          {usedBy ? `${booth.booth_name}（「${usedBy}」で選択済み）` : booth.booth_name}
+                        </option>
+                      )
+                    })}
                   </select>
                   <button
                     type="button"
