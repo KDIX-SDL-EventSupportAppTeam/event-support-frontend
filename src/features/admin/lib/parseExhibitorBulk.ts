@@ -1,12 +1,12 @@
 /**
  * 出展者一括登録の貼り付けテキストをパースする純関数。
  * React にも API にも依存しない（将来テスト基盤を入れたときにこの関数だけ検証できる）。
- * 仕様: 改修プラン frontend_43_出展者管理画面.md §4-2(b)
+ * 仕様: 改修プラン frontend_43_出展者管理画面.md §4-2(b)。
+ * パスワードは受け取らない（出展者本人が参加者登録画面で設定する）。
  */
 export type ParsedBulkRow = {
   line: number // 元テキストの行番号（1始まり。エラー表示用）
   email: string
-  password: string
   boothName: string
   boothId: string | null // 解決済み booth_id（エラー行は null）
   errors: string[] // 空配列なら有効行
@@ -33,18 +33,14 @@ export function parseExhibitorBulk(
     const errors: string[] = []
     // email は比較・送信とも toLowerCase()
     const email = (parts[0] ?? '').toLowerCase()
-    const password = parts[1] ?? ''
-    const boothName = parts[2] ?? ''
+    const boothName = parts[1] ?? ''
     let boothId: string | null = null
 
-    if (parts.length !== 3) {
-      errors.push('列数が3ではありません（メール/パスワード/ブース名）')
+    if (parts.length !== 2) {
+      errors.push('列数が2ではありません（メール/ブース名）')
     } else {
       if (!EMAIL_RE.test(email)) {
         errors.push('メールアドレスの形式が不正です')
-      }
-      if (password.length < 8) {
-        errors.push('パスワードが8文字未満です')
       }
       const matches = booths.filter((b) => b.name.trim() === boothName)
       if (matches.length === 0) {
@@ -56,17 +52,18 @@ export function parseExhibitorBulk(
       }
     }
 
-    rows.push({ line: lineNumber, email, password, boothName, boothId, errors })
+    rows.push({ line: lineNumber, email, boothName, boothId, errors })
   })
 
-  // ペースト内の email 重複チェック（小文字化して比較。2件目以降の行にエラーを追加）
-  const seenEmails = new Set<string>()
+  // ペースト内の (email, ブース) 重複チェック。同じメアドで別ブースは複数ブース担当として許す
+  const seen = new Set<string>()
   for (const row of rows) {
     if (!row.email) continue
-    if (seenEmails.has(row.email)) {
-      row.errors.push('上の行とメールアドレスが重複しています')
+    const key = `${row.email}\0${row.boothName}`
+    if (seen.has(key)) {
+      row.errors.push('上の行とメールアドレス・ブースが重複しています')
     } else {
-      seenEmails.add(row.email)
+      seen.add(key)
     }
   }
 
