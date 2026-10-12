@@ -185,3 +185,22 @@
 .bingo-unlock-message {
   color: #fff;
 }
+
+// 訪問済みだが未評価のマス（frontend#217）。評価済みのマスと見分けられるよう、
+// 枠をオレンジにして右上に「未評価」の札を付ける
+.bingo-cell-unrated {
+  border: 2px solid var(--pf-orange);
+}
+
+.bingo-cell-unrated-badge {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.15rem;
+  padding: 0 0.3rem;
+  border-radius: var(--pf-radius-pill);
+  background: var(--pf-orange);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  line-height: 1.5;
+}

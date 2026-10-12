@@ -4,7 +4,6 @@ import {
   fetchV1BingoCard,
   postV1CheckIn,
   postV1CheckInRating,
-  postV1CheckInRatingSkip,
   type V1CheckInResponse,
 } from '@/shared/api/v1Participant'
 import { ApiError } from '@/shared/api/unwrap'
@@ -54,6 +53,8 @@ export function CheckInPage() {
   /** 'qr' = QR 読取または ?booth_id= 経由（一覧を出さない）／ 'list' = フォールバックの一覧選択 */
   const [boothSource, setBoothSource] = useState<'qr' | 'list'>(boothIdParam ? 'qr' : 'list')
   const [submitting, setSubmitting] = useState(false)
+  // 今回のチェックインを評価できたか（送信が成功したときだけ true）。結果画面の「未評価」表示に使う
+  const [rated, setRated] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   /** 手動コード入力（issue #86）。QR が使えない参加者の代替。6桁の数字 */
   const [manualCode, setManualCode] = useState('')
@@ -241,13 +242,16 @@ export function CheckInPage() {
       return
     }
     if (rating < 1) {
+      setRated(false)
       setStep('result')
       return
     }
     setSubmitting(true)
     try {
       await postV1CheckInRating(eventId, checkInResponse.checkin_id, rating, comment, 'IMMEDIATE')
+      setRated(true)
     } catch {
+      setRated(false)
       /* noop */
     } finally {
       setSubmitting(false)
@@ -255,21 +259,10 @@ export function CheckInPage() {
     }
   }
 
-  // 「スキップ」はサーバーに記録する（server#199）。失敗しても画面は止めない
-  async function skipRating() {
-    if (!eventId || !checkInResponse) {
-      setStep('result')
-      return
-    }
-    setSubmitting(true)
-    try {
-      await postV1CheckInRatingSkip(eventId, checkInResponse.checkin_id, 'IMMEDIATE')
-    } catch {
-      /* noop */
-    } finally {
-      setSubmitting(false)
-      setStep('result')
-    }
+  // 「スキップ」は何も送らずに次へ進む。評価されていないので、結果画面で「未評価」を伝える
+  function skipRating() {
+    setRated(false)
+    setStep('result')
   }
 
   // 「ホームに戻る」= チェックイン成功ステップを閉じる。解放演出が残っていれば
@@ -402,7 +395,7 @@ export function CheckInPage() {
         ratingScale={ratingScale}
         submitting={submitting}
         onComplete={(r, c) => void completeRating(r, c)}
-        onSkip={() => void skipRating()}
+        onSkip={skipRating}
       />
     )
   }
@@ -449,6 +442,19 @@ export function CheckInPage() {
                 チェックインは記録されましたが、ビンゴカードには載りませんでした。
                 <br />
                 訪問ありがとうございます。
+              </p>
+            )
+          ) : null}
+          {checkInResponse ? (
+            rated ? (
+              <p className="checkin-rating-status checkin-rating-status-done">
+                <i className="bi bi-check-circle-fill" aria-hidden /> 評価ありがとうございました
+              </p>
+            ) : (
+              <p className="checkin-rating-status checkin-rating-status-pending">
+                <i className="bi bi-exclamation-circle-fill" aria-hidden /> このブースはまだ評価していません。
+                <br />
+                ビンゴカードのマスやブース一覧から、あとで評価できます。
               </p>
             )
           ) : null}

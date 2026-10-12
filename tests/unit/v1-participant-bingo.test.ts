@@ -10,7 +10,7 @@ vi.mock('@/shared/api/client', () => ({
   },
 }))
 
-const { fetchV1BingoCard, postV1CheckInRating, postV1CheckInRatingSkip, postV1CheckIn } = await import('@/shared/api/v1Participant')
+const { fetchV1BingoCard, postV1CheckInRating, postV1CheckIn } = await import('@/shared/api/v1Participant')
 
 describe('fetchV1BingoCard', () => {
   it('/bingo/card から BingoCard を取り出す', async () => {
@@ -112,10 +112,3 @@ describe('postV1CheckInRating', () => {
   })
 })
 
-describe('postV1CheckInRatingSkip（server#199）', () => {
-  it('既定の context は IMMEDIATE で /rating/skip に送る', async () => {
-    postMock.mockResolvedValueOnce({ data: { success: true, data: { skipped: true } } })
-    await postV1CheckInRatingSkip('evt-1', 'chk-1')
-    expect(postMock).toHaveBeenCalledWith('/events/evt-1/checkins/chk-1/rating/skip', { context: 'IMMEDIATE' })
-  })
-})

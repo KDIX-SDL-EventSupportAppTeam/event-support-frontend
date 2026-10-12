@@ -693,3 +693,27 @@ $protofes-award-colors: (
     border-color: $value;
   }
 }
+
+// チェックイン結果画面の評価状態（frontend#217）。評価済みと未評価で色とアイコンを分ける
+.checkin-rating-status {
+  margin: 0.75rem 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--pf-radius-sm);
+  font-size: 0.85rem;
+}
+
+.checkin-rating-status-done {
+  background: var(--pf-cream-light);
+  color: var(--pf-ink);
+}
+
+.checkin-rating-status-pending {
+  border: 2px solid var(--pf-orange);
+  background: var(--pf-surface);
+  color: var(--pf-ink-strong);
+  font-weight: 600;
+
+  .bi {
+    color: var(--pf-orange);
+  }
+}
