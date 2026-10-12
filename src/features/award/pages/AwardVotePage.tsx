@@ -202,7 +202,7 @@ export function AwardVotePage() {
             <p className="mb-0">チェックインしたブースにだけ投票できます</p>
           </div>
           <section className="mb-4" aria-labelledby="vote-rules-heading">
-            <h2 id="vote-rules-heading" className="h6 fw-bold text-danger text-center mb-2">
+            <h2 id="vote-rules-heading" className="h5 fw-bold text-danger text-center mb-3">
               <i className="bi bi-exclamation-triangle-fill me-1" aria-hidden="true" />
               投票の禁止事項
             </h2>
@@ -210,21 +210,21 @@ export function AwardVotePage() {
               {VOTE_RULES.map((rule) => (
                 <li
                   key={rule.title}
-                  className="d-flex align-items-center gap-3 p-3 rounded-3 border border-danger-subtle bg-danger-subtle"
+                  className="d-flex align-items-center gap-2 py-2 px-3 rounded-3 border border-danger-subtle bg-danger-subtle"
                 >
                   <span
                     className="position-relative flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle bg-white text-danger"
-                    style={{ width: 48, height: 48 }}
+                    style={{ width: 36, height: 36 }}
                     aria-hidden="true"
                   >
-                    <i className={`bi ${rule.icon} fs-4`} />
+                    <i className={`bi ${rule.icon} fs-6`} />
                     <i
                       className="bi bi-slash-circle position-absolute text-danger"
-                      style={{ fontSize: 48, lineHeight: 1, opacity: 0.85 }}
+                      style={{ fontSize: 36, lineHeight: 1, opacity: 0.85 }}
                     />
                   </span>
                   <div className="text-start">
-                    <div className="fw-bold text-danger-emphasis">{rule.title}</div>
+                    <div className="small fw-bold text-danger-emphasis">{rule.title}</div>
                     <div className="small text-body">{rule.detail}</div>
                   </div>
                 </li>
