@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createParticipantClient } from '@/shared/data/createParticipantClient'
 import { ApiError } from '@/shared/api/unwrap'
+import { invalidateAwardVoteSnapshot } from '@/shared/api/v1Awards'
 import { formatClientError } from '@/shared/lib/formatClientError'
 import { useAuthStore } from '@/shared/auth/authStore'
 import type { LegacyBooth } from '@/shared/types/legacyBooth'
@@ -62,6 +63,8 @@ export function AwardVotePage() {
     const client = createParticipantClient()
     ;(async () => {
       try {
+        // 投票画面は常に最新を表示する（ホームのバナー用キャッシュは使わない）
+        invalidateAwardVoteSnapshot(eventId)
         const snap = await client.getAwardVoteSnapshot(eventId, userId)
         setVotingClosed(!snap.votingOpen)
         setAwards(snap.awards)

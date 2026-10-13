@@ -46,12 +46,12 @@ describe('shared/api/socket（#132）', () => {
     __resetSocketForTest()
   })
 
-  function login(token: string) {
+  function login(token: string, role: string = 'manager') {
     useAuthStore.getState().setSession(token, {
       id: 'u1',
       event_id: 'e1',
       display_name: 'テスト',
-      role: 'manager',
+      role,
     } as never)
   }
 
@@ -128,5 +128,46 @@ describe('shared/api/socket（#132）', () => {
     subscribeSocket('checkin:new', vi.fn())
 
     expect(ioMock).not.toHaveBeenCalled()
+  })
+
+  it('T-7: 参加者は subscribeSocket を呼んでも io が呼ばれない', () => {
+    ioMock.mockReturnValue(makeFakeSocket())
+    login('token-p', 'participant')
+
+    subscribeSocket('bingo:unlocked', vi.fn())
+
+    expect(ioMock).not.toHaveBeenCalled()
+  })
+
+  it('T-8: 運営（manager / viewer）以外のロール（exhibitor / admin）も接続しない', () => {
+    ioMock.mockReturnValue(makeFakeSocket())
+    login('token-e', 'exhibitor')
+    subscribeSocket('checkin:new', vi.fn())
+    login('token-a', 'admin')
+    subscribeSocket('checkin:new', vi.fn())
+
+    expect(ioMock).not.toHaveBeenCalled()
+  })
+
+  it('T-9: viewer は接続する', () => {
+    ioMock.mockReturnValue(makeFakeSocket())
+    login('token-v', 'viewer')
+
+    subscribeSocket('checkin:new', vi.fn())
+
+    expect(ioMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('T-10: 運営から参加者へトークンが変わると切断し、張り直さない', () => {
+    const socketA = makeFakeSocket()
+    ioMock.mockReturnValueOnce(socketA)
+    bindSocketToAuth()
+    login('token-a', 'manager')
+    subscribeSocket('checkin:new', vi.fn())
+
+    login('token-p', 'participant')
+
+    expect(socketA.disconnect).toHaveBeenCalledTimes(1)
+    expect(ioMock).toHaveBeenCalledTimes(1)
   })
 })

@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useHomeBingoData } from '@/features/home/hooks/useHomeBingoData'
-import { useBingoUnlockedSocket } from '@/features/home/hooks/useBingoUnlockedSocket'
 import { useExhibitorStore } from '@/features/exhibitor/store/exhibitorStore'
 import { useAuthStore } from '@/shared/auth/authStore'
 import { fetchPublicEvent } from '@/shared/api/publicEvent'
@@ -14,7 +13,7 @@ import {
   shouldShowCoinCompleteArt,
 } from '@/features/home/celebration/bingoCelebrationView'
 import { BingoCardView } from '@/features/home/components/bingo/BingoCardView'
-import { createGachaClient, type GachaCoins } from '@/features/gachapon/api/gachaClient'
+import { useGachaCoins } from '@/features/home/hooks/useGachaCoins'
 import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
 import { XShareButton } from '@/features/home/components/XShareButton'
 import { buildSharePost } from '@/features/home/share/sharePostTemplate'
@@ -45,13 +44,6 @@ export function HomePage() {
     if (card) enqueuePairs(card.card_id, card.unlock_events)
   }, [card, enqueuePairs])
 
-  const handleUnlocked = useCallback(() => {
-    // socket.io の bingo:unlocked は副経路。カードを再取得し、unlock_events から
-    // 未再生の演出をキューに積み直す（docs/specs/bingo-dynamic-unlock/02-unlock-animation.md）
-    void refetch()
-  }, [refetch])
-  useBingoUnlockedSocket(handleUnlocked)
-
   function closeUnlockAnimation() {
     if (card) advance(card.card_id)
   }
@@ -64,24 +56,8 @@ export function HomePage() {
     ensureExhibitorLoaded(eventId, userId)
   }, [eventId, userId, ensureExhibitorLoaded])
 
-  // ガチャコインの所持枚数。card 取得（＝チェックインでライン数が動いた可能性）のたび取り直す。
-  // **ビンゴ達成モーダルの表示判定には使わない**（issue #149。依存の向き `ガチャ → ビンゴ` は禁止）
-  const [gachaCoins, setGachaCoins] = useState<GachaCoins | null>(null)
-  useEffect(() => {
-    if (!eventId || !userId) return
-    let alive = true
-    void createGachaClient()
-      .getCoins(eventId, userId)
-      .then((c) => {
-        if (alive) setGachaCoins(c)
-      })
-      .catch(() => {
-        /* コインボタンは枚数なしで表示する（ナビゲーションは可能） */
-      })
-    return () => {
-      alive = false
-    }
-  }, [eventId, userId, card])
+  // ガチャコインの所持枚数。成立ライン数が変わったときだけ取り直す（useGachaCoins）
+  const gachaCoins = useGachaCoins(eventId, userId, card?.lines_completed)
 
   // ライン成立モーダル。開いた時点の本数を固定して、開いたあとにカードが再取得されても
   // 中身が切り替わらないようにする。**専用アートは常に出す**（issue #149）
@@ -285,9 +261,14 @@ export function HomePage() {
           <div className="d-grid">
             <button
               type="button"
-              className="btn btn-light action-button btn-gachapon"
-              onClick={() => navigate('/gachapon')}
-              disabled={gachaCoins != null && gachaCoins.available <= 0}
+              className={`btn btn-light action-button btn-gachapon${
+                gachaCoins != null && gachaCoins.available <= 0 ? ' btn-gachapon--empty' : ''
+              }`}
+              // 残り0枚（ガチャ有効時）は、押せないボタンではなく使用履歴（領収書）画面へ
+              onClick={() =>
+                navigate(gachaCoins != null && gachaCoins.available <= 0 ? '/gachapon/history' : '/gachapon')
+              }
+              disabled={gachaCoins != null && gachaCoins.available <= 0 && !gachaCoins.is_enabled}
             >
               <img
                 src="/icon/action/gacha-bag-on-primary.png"

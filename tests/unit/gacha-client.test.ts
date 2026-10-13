@@ -102,6 +102,30 @@ describe('gachaClient（実 API 経路）', () => {
   })
 })
 
+describe('gachaClient.getHistory', () => {
+  it('実 API: /gacha/coins/history を GET して封筒を剥がす', async () => {
+    const history = {
+      ...COINS,
+      email: 'user@example.com',
+      display_name: '参加者',
+      uses: [{ coin_index: 0, used_at: '2026-10-16T05:12:03.000Z' }],
+    }
+    getMock.mockResolvedValueOnce({ data: { success: true, data: history } })
+    const result = await createGachaClient().getHistory('evt/1', 'user-1')
+    expect(getMock).toHaveBeenCalledWith('/events/evt%2F1/gacha/coins/history')
+    expect(result).toEqual(history)
+  })
+
+  it('sample モードでも動く（API を呼ばず、uses の件数が used と一致する）', async () => {
+    vi.stubEnv('VITE_DATA_SOURCE', 'sample')
+    const h = await createGachaClient().getHistory('evt-1', 'user-1')
+    expect(getMock).not.toHaveBeenCalled()
+    expect(h.email).toContain('@')
+    expect(h.uses).toHaveLength(h.used)
+    expect(h.uses.map((u) => u.coin_index)).toEqual(h.uses.map((_, i) => i))
+  })
+})
+
 describe('gachaClient（サンプル経路）', () => {
   it('sample モードでは API を呼ばない', async () => {
     vi.stubEnv('VITE_DATA_SOURCE', 'sample')

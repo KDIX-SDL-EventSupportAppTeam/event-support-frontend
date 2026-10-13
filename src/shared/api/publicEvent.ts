@@ -1,4 +1,5 @@
 import { publicClient } from '@/shared/api/publicClient'
+import { cachedFetch } from '@/shared/api/responseCache'
 import { unwrapApiData } from '@/shared/api/unwrap'
 import type { ApiResponse } from '@/shared/types/api'
 
@@ -28,9 +29,19 @@ type PublicEventResponse = {
   event: PublicEvent
 }
 
-export async function fetchPublicEvent(eventId: string): Promise<PublicEvent> {
-  const res = await publicClient.get<ApiResponse<PublicEventResponse>>(
-    `/events/${encodeURIComponent(eventId)}/public`,
-  )
-  return unwrapApiData(res).event
+/**
+ * eventId ごとにメモリ上でキャッシュする（ページを再読み込みするまで有効）。
+ * 同時に呼ばれたときは Promise を共有する。失敗はキャッシュしない。
+ */
+export function fetchPublicEvent(eventId: string): Promise<PublicEvent> {
+  return cachedFetch(publicEventCacheKey(eventId), async () => {
+    const res = await publicClient.get<ApiResponse<PublicEventResponse>>(
+      `/events/${encodeURIComponent(eventId)}/public`,
+    )
+    return unwrapApiData(res).event
+  })
+}
+
+function publicEventCacheKey(eventId: string): string {
+  return `public-event:${eventId}`
 }

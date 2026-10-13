@@ -21,6 +21,15 @@ function attachAllHandlers(target: Socket): void {
   }
 }
 
+/**
+ * socket に接続してよいロールか。接続するのは運営（manager / viewer）だけ。
+ * 参加者は socket を使わない（Cloud Run は WebSocket 1本を処理中リクエスト1件として数え、
+ * 300人が接続すると同時処理枠が埋まって API 全体が止まるため。#222）。
+ */
+function canUseSocket(role: string | undefined): boolean {
+  return role === 'manager' || role === 'viewer'
+}
+
 function connect(token: string): Socket {
   socket?.disconnect()
   const apiBase = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
@@ -35,7 +44,7 @@ function connect(token: string): Socket {
 }
 
 /**
- * イベントを購読する。未接続なら接続する（サンプルモードでは接続しない）。
+ * イベントを購読する。未接続なら接続する（サンプルモードと、運営以外のロールでは接続しない）。
  * 戻り値を呼ぶと購読を解除する。**接続は切らない**（D1）。
  * ログインしている間、購読の有無に関わらず接続を1本だけ保持する。
  */
@@ -45,8 +54,8 @@ export function subscribeSocket(event: string, handler: Handler): () => void {
   socket?.on(event, handler)
 
   if (!socket) {
-    const token = useAuthStore.getState().token
-    if (token && resolveEventDataSourceMode() === 'api') {
+    const { token, user } = useAuthStore.getState()
+    if (token && canUseSocket(user?.role) && resolveEventDataSourceMode() === 'api') {
       connect(token)
     }
   }
@@ -77,7 +86,7 @@ export function bindSocketToAuth(): void {
     socket?.disconnect()
     socket = null
     connectedToken = null
-    if (handlers.size > 0 && resolveEventDataSourceMode() === 'api') {
+    if (handlers.size > 0 && canUseSocket(state.user?.role) && resolveEventDataSourceMode() === 'api') {
       connect(token)
     }
   })
