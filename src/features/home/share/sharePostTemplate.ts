@@ -12,7 +12,7 @@
  * ハッシュタグ（`#` なし。本文へ入れるときに付ける）。フォーマット変更はここを直す。
  * X の Intent の `hashtags` パラメータはネイティブアプリに無視されるため、本文に含めて渡す（issue #169）。
  */
-const HASHTAGS = ['PRoToFES'] as const
+const HASHTAGS = ['プロトフェス2026', '第4回プロトフェス', 'PROTOFES2026'] as const
 
 export type SharePostParams = {
   /** イベント名（`fetchPublicEvent` の `name`）。空のときは既定語にフォールバックする */
