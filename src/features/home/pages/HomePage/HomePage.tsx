@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useHomeBingoData } from '@/features/home/hooks/useHomeBingoData'
-import { useBingoUnlockedSocket } from '@/features/home/hooks/useBingoUnlockedSocket'
 import { useExhibitorStore } from '@/features/exhibitor/store/exhibitorStore'
 import { useAuthStore } from '@/shared/auth/authStore'
 import { fetchPublicEvent } from '@/shared/api/publicEvent'
@@ -44,13 +43,6 @@ export function HomePage() {
   useEffect(() => {
     if (card) enqueuePairs(card.card_id, card.unlock_events)
   }, [card, enqueuePairs])
-
-  const handleUnlocked = useCallback(() => {
-    // socket.io の bingo:unlocked は副経路。カードを再取得し、unlock_events から
-    // 未再生の演出をキューに積み直す（docs/specs/bingo-dynamic-unlock/02-unlock-animation.md）
-    void refetch()
-  }, [refetch])
-  useBingoUnlockedSocket(handleUnlocked)
 
   function closeUnlockAnimation() {
     if (card) advance(card.card_id)
