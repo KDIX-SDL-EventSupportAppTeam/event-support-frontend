@@ -261,9 +261,14 @@ export function HomePage() {
           <div className="d-grid">
             <button
               type="button"
-              className="btn btn-light action-button btn-gachapon"
-              onClick={() => navigate('/gachapon')}
-              disabled={gachaCoins != null && gachaCoins.available <= 0}
+              className={`btn btn-light action-button btn-gachapon${
+                gachaCoins != null && gachaCoins.available <= 0 ? ' btn-gachapon--empty' : ''
+              }`}
+              // 残り0枚（ガチャ有効時）は、押せないボタンではなく使用履歴（領収書）画面へ
+              onClick={() =>
+                navigate(gachaCoins != null && gachaCoins.available <= 0 ? '/gachapon/history' : '/gachapon')
+              }
+              disabled={gachaCoins != null && gachaCoins.available <= 0 && !gachaCoins.is_enabled}
             >
               <img
                 src="/icon/action/gacha-bag-on-primary.png"

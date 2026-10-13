@@ -128,6 +128,20 @@
     border-color: var(--pf-ink-strong);
   }
 
+  /* 残り0枚。押せる（使用履歴へ進む）が、使えるコインがあるときより目立たせない。
+     高さは変えない（枚数が増減してもホームのレイアウトがずれないように） */
+  .btn-gachapon.btn-gachapon--empty,
+  .btn-gachapon.btn-gachapon--empty:hover {
+    background-color: var(--pf-surface);
+    border-color: var(--pf-divider);
+    color: var(--pf-ink-muted);
+    font-weight: normal;
+  }
+
+  .btn-gachapon--empty .gachapon-icon {
+    opacity: 0.45;
+  }
+
   /* ガチャポン袋（icon/action/gacha-bag-on-primary.png）。
      コイン2枚を左右に置く旧レイアウトから、先頭に袋アイコン1つへ変更。
      素材は正方形。幅・高さを固定して読み込み前後のレイアウトずれを防ぐ。 */
