@@ -20,6 +20,7 @@ import { LegacyPlaceholderPage } from '@/features/admin/pages/LegacyPlaceholderP
 import { GachaponIntroPage } from '@/features/gachapon/pages/GachaponIntroPage'
 import { GachaponUsePage } from '@/features/gachapon/pages/GachaponUsePage'
 import { GachaponCompletePage } from '@/features/gachapon/pages/GachaponCompletePage'
+import { GachaponHistoryPage } from '@/features/gachapon/pages/GachaponHistoryPage'
 import { VerifyEmailPage } from '@/features/auth/pages/VerifyEmailPage/VerifyEmailPage'
 import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage/ForgotPasswordPage'
 import { ResetPasswordPage } from '@/features/auth/pages/ResetPasswordPage/ResetPasswordPage'
@@ -128,6 +129,7 @@ export function AppRoutes() {
           <Route path="/gachapon" element={<GachaponIntroPage />} />
           <Route path="/gachapon/use" element={<GachaponUsePage />} />
           <Route path="/gachapon/complete" element={<GachaponCompletePage />} />
+          <Route path="/gachapon/history" element={<GachaponHistoryPage />} />
           <Route path="/qa" element={<QaPage />} />
           {/* participant-gated:end ── 参加者画面をこの外に書かない */}
         </Route>

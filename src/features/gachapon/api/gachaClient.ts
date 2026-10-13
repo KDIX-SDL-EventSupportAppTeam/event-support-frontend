@@ -30,6 +30,25 @@ export interface GachaUseResult extends GachaCoins {
   used_at: string
 }
 
+/** `gacha_coin_uses` の1行（1枚の使用）。 */
+export interface GachaCoinUse {
+  /** そのユーザーの何枚目か（0 起点）。 */
+  coin_index: number
+  /** ISO 8601（UTC）。 */
+  used_at: string
+}
+
+/**
+ * 使用履歴（`GET /gacha/coins/history`）。集計値は `GET /gacha/coins` と同じ値。
+ * 仕様: event-support-server `docs/specs/gacha-and-award/04-api/participant-api.md`
+ */
+export interface GachaHistory extends GachaCoins {
+  email: string
+  display_name: string
+  /** `coin_index` 昇順。 */
+  uses: GachaCoinUse[]
+}
+
 /** サーバー側のエラーコード（participant-api.md）。 */
 export const GACHA_DISABLED = 'GACHA_DISABLED'
 export const NO_COINS_AVAILABLE = 'NO_COINS_AVAILABLE'
@@ -37,6 +56,13 @@ export const NO_COINS_AVAILABLE = 'NO_COINS_AVAILABLE'
 async function apiGetCoins(eventId: string): Promise<GachaCoins> {
   const res = await apiClient.get<ApiResponse<GachaCoins>>(
     `/events/${encodeURIComponent(eventId)}/gacha/coins`,
+  )
+  return unwrapApiData(res)
+}
+
+async function apiGetHistory(eventId: string): Promise<GachaHistory> {
+  const res = await apiClient.get<ApiResponse<GachaHistory>>(
+    `/events/${encodeURIComponent(eventId)}/gacha/coins/history`,
   )
   return unwrapApiData(res)
 }
@@ -83,8 +109,21 @@ function sampleUseCoin(eventId: string, userId: string): GachaUseResult {
   }
 }
 
+/** サンプルモードの履歴。使用済み枚数ぶんの行を、現在時刻で作る。 */
+function sampleHistory(eventId: string, userId: string): GachaHistory {
+  const coins = sampleCoins(eventId, userId)
+  const usedAt = new Date().toISOString()
+  return {
+    ...coins,
+    email: 'sample-user@example.com',
+    display_name: 'サンプル参加者',
+    uses: Array.from({ length: coins.used }, (_, i) => ({ coin_index: i, used_at: usedAt })),
+  }
+}
+
 export interface GachaClient {
   getCoins(eventId: string, userId: string): Promise<GachaCoins>
+  getHistory(eventId: string, userId: string): Promise<GachaHistory>
   useCoin(eventId: string, userId: string, idempotencyKey: string): Promise<GachaUseResult>
 }
 
@@ -92,11 +131,13 @@ export function createGachaClient(): GachaClient {
   if (resolveEventDataSourceMode() === 'sample') {
     return {
       getCoins: async (eventId, userId) => sampleCoins(eventId, userId),
+      getHistory: async (eventId, userId) => sampleHistory(eventId, userId),
       useCoin: async (eventId, userId) => sampleUseCoin(eventId, userId),
     }
   }
   return {
     getCoins: (eventId) => apiGetCoins(eventId),
+    getHistory: (eventId) => apiGetHistory(eventId),
     useCoin: (eventId, _userId, key) => apiUseCoin(eventId, key),
   }
 }
