@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/api/client'
+import { cachedFetch, invalidateCache } from '@/shared/api/responseCache'
 import { toApiError, unwrapApiData } from '@/shared/api/unwrap'
 import type { ApiResponse } from '@/shared/types/api'
 import type { Award } from '@/shared/types/award'
@@ -52,15 +53,37 @@ function toSnapshot(s: ServerSnapshot): AwardVoteSnapshot {
   }
 }
 
-export async function fetchAwardVoteSnapshot(eventId: string): Promise<AwardVoteSnapshot> {
-  try {
-    const res = await apiClient.get<ApiResponse<ServerSnapshot>>(
-      `/events/${encodeURIComponent(eventId)}/awards/vote`,
-    )
-    return toSnapshot(unwrapApiData(res))
-  } catch (e) {
-    throw toApiError(e)
-  }
+/**
+ * 投票状況のキャッシュ有効期間。閉会式で運営が投票受付を開始（`voting_open` が false → true）したとき、
+ * 参加者のバナーに 1 分以内に反映させるため、TTL は必須。
+ */
+const AWARD_VOTE_SNAPSHOT_TTL_MS = 60_000
+
+function awardVoteCacheKey(eventId: string): string {
+  return `award-vote:${eventId}`
+}
+
+/** 投票状況のキャッシュを破棄する（投票画面を開くときなど、必ず最新が要るとき）。 */
+export function invalidateAwardVoteSnapshot(eventId: string): void {
+  invalidateCache(awardVoteCacheKey(eventId))
+}
+
+/** TTL 60 秒でキャッシュする。自分の投票が成功したら即座に破棄する。 */
+export function fetchAwardVoteSnapshot(eventId: string): Promise<AwardVoteSnapshot> {
+  return cachedFetch(
+    awardVoteCacheKey(eventId),
+    async () => {
+      try {
+        const res = await apiClient.get<ApiResponse<ServerSnapshot>>(
+          `/events/${encodeURIComponent(eventId)}/awards/vote`,
+        )
+        return toSnapshot(unwrapApiData(res))
+      } catch (e) {
+        throw toApiError(e)
+      }
+    },
+    AWARD_VOTE_SNAPSHOT_TTL_MS,
+  )
 }
 
 /**
@@ -76,6 +99,7 @@ export async function postAwardVotes(
       `/events/${encodeURIComponent(eventId)}/awards/vote`,
       { votes },
     )
+    invalidateAwardVoteSnapshot(eventId)
     return toSnapshot(unwrapApiData(res))
   } catch (e) {
     throw toApiError(e)
