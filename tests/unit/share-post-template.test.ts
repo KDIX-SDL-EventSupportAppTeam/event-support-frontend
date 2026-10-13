@@ -10,7 +10,7 @@ describe('buildSharePost', () => {
 
   it('ハッシュタグを本文に含める（X の hashtags パラメータはネイティブアプリに無視されるため。issue #169）', () => {
     const post = buildSharePost({ eventName: 'X' })
-    expect(post.text).toContain('#PRoToFES')
+    expect(post.text).toContain('#プロトフェス2026 #第4回プロトフェス #PROTOFES2026')
     // SharePost に hashtags フィールドは無い
     expect('hashtags' in post).toBe(false)
   })
@@ -44,7 +44,7 @@ describe('buildXIntentUrl', () => {
   it('text にハッシュタグが含まれ、クエリに hashtags が存在しない', () => {
     const { text, url } = buildSharePost({ eventName: 'X', shareUrl: 'https://e.example/' })
     const q = new URL(buildXIntentUrl({ text, url })).searchParams
-    expect(q.get('text')).toContain('#PRoToFES')
+    expect(q.get('text')).toContain('#プロトフェス2026 #第4回プロトフェス #PROTOFES2026')
     expect(q.has('hashtags')).toBe(false)
     expect(q.get('url')).toBe('https://e.example/')
   })
