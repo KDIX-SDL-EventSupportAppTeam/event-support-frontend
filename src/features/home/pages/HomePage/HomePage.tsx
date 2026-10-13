@@ -14,7 +14,7 @@ import {
   shouldShowCoinCompleteArt,
 } from '@/features/home/celebration/bingoCelebrationView'
 import { BingoCardView } from '@/features/home/components/bingo/BingoCardView'
-import { createGachaClient, type GachaCoins } from '@/features/gachapon/api/gachaClient'
+import { useGachaCoins } from '@/features/home/hooks/useGachaCoins'
 import { UnlockAnimation } from '@/features/home/components/bingo/UnlockAnimation'
 import { XShareButton } from '@/features/home/components/XShareButton'
 import { buildSharePost } from '@/features/home/share/sharePostTemplate'
@@ -64,24 +64,8 @@ export function HomePage() {
     ensureExhibitorLoaded(eventId, userId)
   }, [eventId, userId, ensureExhibitorLoaded])
 
-  // ガチャコインの所持枚数。card 取得（＝チェックインでライン数が動いた可能性）のたび取り直す。
-  // **ビンゴ達成モーダルの表示判定には使わない**（issue #149。依存の向き `ガチャ → ビンゴ` は禁止）
-  const [gachaCoins, setGachaCoins] = useState<GachaCoins | null>(null)
-  useEffect(() => {
-    if (!eventId || !userId) return
-    let alive = true
-    void createGachaClient()
-      .getCoins(eventId, userId)
-      .then((c) => {
-        if (alive) setGachaCoins(c)
-      })
-      .catch(() => {
-        /* コインボタンは枚数なしで表示する（ナビゲーションは可能） */
-      })
-    return () => {
-      alive = false
-    }
-  }, [eventId, userId, card])
+  // ガチャコインの所持枚数。成立ライン数が変わったときだけ取り直す（useGachaCoins）
+  const gachaCoins = useGachaCoins(eventId, userId, card?.lines_completed)
 
   // ライン成立モーダル。開いた時点の本数を固定して、開いたあとにカードが再取得されても
   // 中身が切り替わらないようにする。**専用アートは常に出す**（issue #149）
