@@ -1,5 +1,5 @@
 import type { AdminDashboardBingo, RecommenderState } from '@/shared/api/v1Admin'
-import { fallbackLevel, reasonMessage, remainingToNext } from '@/features/admin/lib/recommenderStateView'
+import { fallbackLevel, phaseLabel, reasonMessage, remainingToNext } from '@/features/admin/lib/recommenderStateView'
 
 type Props = { bingo: AdminDashboardBingo; rec: RecommenderState | null; recError: string | null }
 
@@ -82,7 +82,7 @@ function RecState({
   return (
     <dl className="row mb-0 small">
       <dt className="col-5 col-md-3">現在のフェーズ</dt>
-      <dd className="col-7 col-md-9 fw-semibold">{state.phase?.current ?? '（応答にフェーズが無い）'}</dd>
+      <dd className="col-7 col-md-9 fw-semibold">{phaseLabel(state.phase?.current) ?? '（応答にフェーズが無い）'}</dd>
       <dt className="col-5 col-md-3">決定表の件数</dt>
       <dd className="col-7 col-md-9">
         {size == null ? '（未取り込み）' : size}

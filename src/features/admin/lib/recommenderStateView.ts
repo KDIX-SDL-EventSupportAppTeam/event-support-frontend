@@ -11,13 +11,29 @@ export function reasonMessage(reason: RecommenderStateReason): string {
   return REASON_MESSAGE[reason] ?? `推薦エンジンの状態が不明です（${reason}）`
 }
 
-/** 表示のためだけの引き算（README:42 が許可）。材料が欠けていれば null（数字を作らない） */
+/**
+ * フェーズの表示名。推薦エンジンの方式は「ランダム → DRSA」の2段（recommend ADR 0010）だが、
+ * 契約の phase の値は変えず、ランダム期は COVERAGE として返る。値そのものも隠さない
+ * （ログ・記録と照合できるように）。未知の値はそのまま出す。
+ */
+const PHASE_LABEL: Record<string, string> = {
+  COVERAGE: 'ランダム（COVERAGE）',
+  DRSA: 'DRSA',
+  SIMILARITY: 'SIMILARITY（自動では使わない）',
+}
+export function phaseLabel(phase: string | undefined): string | null {
+  if (!phase) return null
+  return PHASE_LABEL[phase] ?? phase
+}
+
+/**
+ * 表示のためだけの引き算（README:42 が許可）。材料が欠けていれば null（数字を作らない）。
+ * 段階は「ランダム → DRSA」なので、次のしきい値は常に DRSA（phase_similarity_min は使わない）。
+ */
 export function remainingToNext(state: RecommenderOpsState): { label: string } | null {
   const size = state.snapshot?.decision_table_size
-  const sim = state.config?.phase_similarity_min
   const drsa = state.config?.phase_drsa_min
-  if (typeof size !== 'number' || typeof sim !== 'number' || typeof drsa !== 'number') return null
-  if (size < sim) return { label: `SIMILARITY まであと ${sim - size} 件` }
+  if (typeof size !== 'number' || typeof drsa !== 'number') return null
   if (size < drsa) return { label: `DRSA まであと ${drsa - size} 件` }
   return { label: 'しきい値は到達済み（品質ゲート待ち）' }
 }
