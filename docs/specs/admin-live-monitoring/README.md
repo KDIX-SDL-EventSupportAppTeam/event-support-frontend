@@ -1,6 +1,6 @@
 ---
 状態: 確定
-最終更新: 2026-09-01
+最終更新: 2026-10-15
 ---
 
 # 運営ダッシュボードの当日監視ブロック
@@ -37,11 +37,18 @@
 
 | 表示 | 出どころ |
 |---|---|
-| 現在のフェーズ | `state.phase.current` |
+| 現在のフェーズ | `state.phase.current`。値は変えずに意味を添える: `COVERAGE` →「ランダム（COVERAGE）」（下の注） |
 | 決定表の件数 | `state.snapshot.decision_table_size` |
-| 次のしきい値までの残り | `state.config.phase_*_min` と決定表件数から**表示のためだけに引き算する** |
+| 次のしきい値までの残り | `state.config.phase_drsa_min` と決定表件数から**表示のためだけに引き算する**（「DRSA まであと N 件」。到達後は「しきい値は到達済み（品質ゲート待ち）」） |
 | 品質ゲートの内訳 | `state.phase.gate_detail` の4項目（size / rules / gamma / coverage）を ○× で |
 | 最終取り込み時刻 | `state.snapshot.built_at` |
+
+> **注（2026-10-15）: 推薦の段階は「ランダム → DRSA」の2段。**
+> 推薦エンジンは recommend ADR 0010（ランダムから DRSA とセレンディピティ規則へ切り替える）で
+> SIMILARITY を自動では使わなくなった。契約の `phase` の値は変えていないので、**ランダム期は `COVERAGE` として返る**。
+> 画面で `COVERAGE` を「網羅（空いているブース優先）」と誤読しないよう「ランダム（COVERAGE）」と出し、
+> 次のしきい値も SIMILARITY ではなく DRSA にする。`state.config.phase_similarity_min` は使わない。
+> 値そのもの（`COVERAGE` など）は消さない（ログ・研究データと照合するため）。
 
 **`available: false` のときは、数字を出さずに理由を出す。**
 
