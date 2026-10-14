@@ -5,19 +5,11 @@ import { useResendVerification } from '@/features/auth/hooks/useResendVerificati
 import { ApiError } from '@/shared/api/unwrap'
 import { formatClientError } from '@/shared/lib/formatClientError'
 import { entryPathForRedirect } from '@/shared/lib/lastEventId'
-import {
-  VERIFY_ALREADY_ALERT,
-  VERIFY_ALREADY_GUIDANCE,
-  VERIFY_INVALID_ALERT,
-  VERIFY_SUCCESS_ALERT,
-  VERIFY_SUCCESS_GUIDANCE,
-  verifiedStatusKind,
-} from './verifySuccessContent'
+import { VERIFY_SUCCESS_ALERT, VERIFY_SUCCESS_GUIDANCE } from './verifySuccessContent'
 
 type VerifyStatus =
   | { kind: 'verifying' }
   | { kind: 'success' }
-  | { kind: 'already_verified' }
   | { kind: 'error'; code: 'TOKEN_EXPIRED' | 'TOKEN_INVALID' | 'OTHER'; message: string }
 
 /**
@@ -33,7 +25,7 @@ export function VerifyEmailPage() {
   const { canResend, state: resendState, message: resendMessage, resend } = useResendVerification()
 
   useEffect(() => {
-    if (started.current) return // StrictMode の2回目 effect を捨てる（サーバーは冪等化済み #208 だが、2回目が already_verified になり表示が変わるため）
+    if (started.current) return // StrictMode の2回目 effect を捨てる（成功でトークンが消え2回目が404になるため）
     started.current = true
 
     if (!token) {
@@ -43,8 +35,8 @@ export function VerifyEmailPage() {
 
     authApi
       .verifyEmail(token)
-      .then((res) => {
-        setStatus({ kind: verifiedStatusKind(res) })
+      .then(() => {
+        setStatus({ kind: 'success' })
       })
       .catch((e) => {
         if (e instanceof ApiError && (e.code === 'TOKEN_EXPIRED' || e.code === 'TOKEN_INVALID')) {
@@ -76,14 +68,6 @@ export function VerifyEmailPage() {
                 <>
                   <div className="alert alert-success mb-4">{VERIFY_SUCCESS_ALERT}</div>
                   <p className="mb-0">{VERIFY_SUCCESS_GUIDANCE}</p>
-                </>
-              ) : null}
-
-              {/* 確認済みの再訪（#232）。アプリへのリンク・ボタンは置かない（#133） */}
-              {status.kind === 'already_verified' ? (
-                <>
-                  <div className="alert alert-success mb-4">{VERIFY_ALREADY_ALERT}</div>
-                  <p className="mb-0">{VERIFY_ALREADY_GUIDANCE}</p>
                 </>
               ) : null}
 
@@ -120,7 +104,9 @@ export function VerifyEmailPage() {
 
               {status.kind === 'error' && status.code === 'TOKEN_INVALID' ? (
                 <>
-                  <div className="alert alert-danger mb-4">{VERIFY_INVALID_ALERT}</div>
+                  <div className="alert alert-danger mb-4">
+                    この確認リンクは無効です。すでに確認済みの場合は、そのままログインしてご利用いただけます
+                  </div>
                   {canResend ? (
                     <div className="mb-2">
                       <button
