@@ -59,7 +59,9 @@ export async function register(
 }
 
 /** GET /auth/verify-email?token= を呼ぶ。失敗は ApiError（code: TOKEN_INVALID | TOKEN_EXPIRED 等） */
-export async function verifyEmail(token: string): Promise<{ verified: boolean }> {
+export async function verifyEmail(
+  token: string,
+): Promise<{ verified: boolean; already_verified?: boolean }> {
   if (isMockAuthEnabled()) return mockVerifyEmail(token)
   try {
     return unwrapApiData(await apiClient.get('/auth/verify-email', { params: { token } }))
