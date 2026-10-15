@@ -187,8 +187,7 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
         {
           fps: HTML5_QRCODE_FPS,
           videoConstraints,
-          // 主な読み取りは frameQrDecoder が行う。こちらは予備なので QR だけ・反転なしで軽くする
-          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+          // 主な読み取りは frameQrDecoder が行う。こちらは予備なので反転なしで軽くする（QR 限定はコンストラクタで指定）
           disableFlip: true,
         },
         onDecoded,
@@ -256,6 +255,8 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
       // 検出器は BarcodeDetector（OS のハードウェア検出器）を優先する。
       // 現行の html5-qrcode は未指定でも優先するが、既定が変わっても標準カメラ並みの検出器を使い続けるよう明示する（issue #167）
       useBarCodeDetectorIfSupported: true,
+      // 予備の読み取り。QR 以外の形式を試さないことで 1 フレームを軽くする
+      formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
     })
     scannerRef.current = local
 
