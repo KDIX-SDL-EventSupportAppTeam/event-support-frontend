@@ -23,4 +23,8 @@ export const BASIC_CAMERA_CONSTRAINTS: CameraVideoConstraints = {
   facingMode: 'environment',
 }
 
+/** 自前デコード（frameQrDecoder）の上限。前のデコードが終わるまで次は始めないので、遅い端末では自然に下がる */
 export const SCAN_FPS = 15
+
+/** html5-qrcode 側のデコード。自前デコードが使えない場合の予備なので低めにして CPU を空ける */
+export const HTML5_QRCODE_FPS = 3
