@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
-import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode'
+import { Html5Qrcode, Html5QrcodeScannerState, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 import { CameraTroubleshoot } from '@/features/checkin/components/CameraTroubleshoot'
 import {
   BASIC_CAMERA_CONSTRAINTS,
   FULL_CAMERA_CONSTRAINTS,
+  HTML5_QRCODE_FPS,
   SCAN_FPS,
   type CameraVideoConstraints,
 } from '@/features/checkin/lib/cameraConstraints'
@@ -13,6 +14,7 @@ import {
   isOverconstrainedError,
   type CameraFailure,
 } from '@/features/checkin/lib/classifyCameraError'
+import { startFrameQrDecode } from '@/features/checkin/lib/frameQrDecoder'
 import { parseQrToCheckinTarget } from '@/features/checkin/lib/parseQrToCheckinTarget'
 import { CopyButton } from '@/shared/components/CopyButton'
 import { detectInAppBrowser } from '@/shared/lib/detectEnvironment'
@@ -130,7 +132,12 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
   // 映像を消してしまわないようにする（NG-9 で画面を作り直すようになった）。
   const readerId = `checkin-qr-reader-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
 
+  /** 自前デコードループ（frameQrDecoder）の停止関数 */
+  const stopFrameDecodeRef = useRef<(() => void) | null>(null)
+
   const safeStop = useCallback(async (target: Html5Qrcode | null) => {
+    stopFrameDecodeRef.current?.()
+    stopFrameDecodeRef.current = null
     if (!target) return
     try {
       if (target.getState() === Html5QrcodeScannerState.SCANNING) await target.stop()
@@ -178,8 +185,11 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
         // 設定側の videoConstraints で渡す。その場合の facingMode は videoConstraints 側が使われる
         { facingMode: 'environment' },
         {
-          fps: SCAN_FPS,
+          fps: HTML5_QRCODE_FPS,
           videoConstraints,
+          // 主な読み取りは frameQrDecoder が行う。こちらは予備なので QR だけ・反転なしで軽くする
+          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+          disableFlip: true,
         },
         onDecoded,
         () => {
@@ -215,6 +225,12 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
         setStalled(false)
         setPhase('running')
         markCameraStarted()
+        // html5-qrcode のデコードは表示サイズに縮めた画像で行われ精度が低い。表示範囲を元解像度で読む（issue #167）
+        const video = document.getElementById(readerId)?.querySelector('video')
+        if (video) {
+          stopFrameDecodeRef.current?.()
+          stopFrameDecodeRef.current = startFrameQrDecode(video, onDecoded, { fps: SCAN_FPS })
+        }
       })
       .catch((err: unknown) => {
         window.clearTimeout(stallTimer)
@@ -228,7 +244,7 @@ export function CheckInQrScanView({ onDetected, onDetectedToken, onFallback, onM
       .finally(() => {
         startingRef.current = false
       })
-  }, [safeStop])
+  }, [safeStop, readerId])
 
   useEffect(() => {
     const life = { cancelled: false }
