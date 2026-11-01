@@ -32,6 +32,26 @@ const VOTE_RULES = [
   },
 ] as const
 
+/** 選択肢の表示名「番号.作品名」。番号未設定ならブース名のみ */
+function boothLabel(b: LegacyBooth): string {
+  return b.booth_display_code ? `${b.booth_display_code}.${b.booth_name}` : b.booth_name
+}
+
+/** 番号順（数値として自然順）。番号なしは末尾に回し、名前順 */
+function sortBoothsByCode(booths: LegacyBooth[]): LegacyBooth[] {
+  return [...booths].sort((a, b) => {
+    const ac = a.booth_display_code
+    const bc = b.booth_display_code
+    if (ac && bc) {
+      const c = ac.localeCompare(bc, 'ja', { numeric: true })
+      if (c !== 0) return c
+    } else if (ac || bc) {
+      return ac ? -1 : 1
+    }
+    return a.booth_name.localeCompare(b.booth_name, 'ja')
+  })
+}
+
 export function AwardVotePage() {
   const navigate = useNavigate()
   const eventId = useAuthStore((s) => s.user?.event_id)
@@ -68,7 +88,7 @@ export function AwardVotePage() {
         const snap = await client.getAwardVoteSnapshot(eventId, userId)
         setVotingClosed(!snap.votingOpen)
         setAwards(snap.awards)
-        setCheckedBooths(snap.checkedBooths)
+        setCheckedBooths(sortBoothsByCode(snap.checkedBooths))
         setVotes(snap.votes)
       } catch (e) {
         setLoadError(formatClientError(e, 'データの取得に失敗しました。'))
@@ -111,7 +131,8 @@ export function AwardVotePage() {
 
   function boothName(id: string | undefined): string {
     if (!id) return '未投票'
-    return checkedBooths.find((b) => b.booth_id === id)?.booth_name ?? '不明なブース'
+    const booth = checkedBooths.find((b) => b.booth_id === id)
+    return booth ? boothLabel(booth) : '不明なブース'
   }
 
   async function saveAndGoHome() {
@@ -256,7 +277,7 @@ export function AwardVotePage() {
                       const usedBy = usedByOtherAward(award.id, booth.booth_id)
                       return (
                         <option key={booth.booth_id} value={booth.booth_id} disabled={!!usedBy}>
-                          {usedBy ? `${booth.booth_name}（「${usedBy}」で選択済み）` : booth.booth_name}
+                          {usedBy ? `${boothLabel(booth)}（「${usedBy}」で選択済み）` : boothLabel(booth)}
                         </option>
                       )
                     })}
