@@ -18,6 +18,8 @@ interface ImportMetaEnv {
   readonly VITE_X_SHARE_URL?: string
   /** CD 動作確認用（本番ビルド時のみ index.html コメントに埋め込む） */
   readonly VITE_CD_TEST?: string
+  /** ビルド元のコミット（cloudbuild.yaml が `$COMMIT_SHA` を渡す）。index.html の `<meta name="app-commit">` に埋まる */
+  readonly VITE_APP_COMMIT?: string
 }
 
 interface ImportMeta {

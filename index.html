@@ -11,6 +11,8 @@
     <meta name="theme-color" content="#fcbf01" />
     <title>Event Support</title>
     <!-- cd-test:%VITE_CD_TEST% -->
+    <!-- デプロイ中のコミット。サーバーの GET /health の commit と突き合わせて世代ずれを見つける -->
+    <meta name="app-commit" content="%VITE_APP_COMMIT%" />
     <!-- build-env: data-source=%VITE_DATA_SOURCE% mock-api=%VITE_MOCK_API% -->
   </head>
   <body>

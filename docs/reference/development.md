@@ -121,6 +121,7 @@ npm run build
 | `VITE_DEV_EVENT_ID` | 本番イベントの UUID（必須） | **名前に反して本番でも必要**（運営ログインの event_id。`cloudbuild.yaml` の `_DEV_EVENT_ID`） |
 | `VITE_DEV_LOGIN_EMAIL` / `VITE_DEV_LOGIN_PASSWORD` / `VITE_DEV_DISPLAY_NAME` | 設定しない | 設定されているとビルド失敗 |
 | `VITE_CD_TEST` | 任意 | `index.html` のコメントに埋まる |
+| `VITE_APP_COMMIT` | CD が `$COMMIT_SHA` を渡す | `index.html` の `<meta name="app-commit">` に埋まる。サーバーの `GET /health` の `commit` と並べて世代ずれを確認する |
 | `VITE_FEEDBACK_FORM_URL` | 任意 | |
 
 > `VITE_` 接頭辞付きの値は **クライアントバンドルに埋め込まれて公開される**。秘密情報は絶対に置かない。
